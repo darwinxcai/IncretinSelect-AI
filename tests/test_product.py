@@ -1,5 +1,5 @@
-import csv
 import contextlib
+import csv
 import hashlib
 import io
 import json
@@ -8,9 +8,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from incretinselect.cli import EXAMPLE_SEQUENCE, format_csv, format_text, main as cli_main
+from incretinselect.cli import EXAMPLE_SEQUENCE, format_csv, format_text
+from incretinselect.cli import main as cli_main
 from incretinselect.product import ProductError, load_model, model_info, predict
-from incretinselect.web import main as web_main, render_page
+from incretinselect.web import main as web_main
+from incretinselect.web import render_page
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
