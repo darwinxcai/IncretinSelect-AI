@@ -32,3 +32,4 @@ reports/*.json
 !reports/distribution_verification.json
 !reports/release_readiness.json
 !reports/static_demo_verification.json
+!reports/publication_receipt.json
