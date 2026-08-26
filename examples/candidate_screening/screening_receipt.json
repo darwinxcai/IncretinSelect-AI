@@ -1,0 +1,103 @@
+{
+  "counts": {
+    "input_error_rows": 0,
+    "out_of_scope_rows": 1,
+    "ranked_rows": 3,
+    "ranking_eligible_rows": 3,
+    "total_rows": 4,
+    "valid_prediction_rows": 4
+  },
+  "exit_code": 0,
+  "input": {
+    "filename": "candidates.csv",
+    "maximum_bytes": 10000000,
+    "maximum_rows": 10000,
+    "required_columns": [
+      "candidate_id",
+      "aligned_sequence"
+    ],
+    "sha256": "96e39e9116693c6b0217212a25e22894e2e17c389bed0ff3fc4e6da63f46c01f"
+  },
+  "model": {
+    "artifact_id": "incretinselect_aligned_ridge_v1",
+    "artifact_sha256": "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321",
+    "artifact_version": "1.0.0",
+    "benchmark_context": {
+      "development_records": 125,
+      "development_sequence_components": 17,
+      "external_evaluation": "Mixed result on 15 published designs: the GCGR point error was lower but its dependence-aware interval crossed zero, while pooled GLP-1R error was worse versus tied 1-NN; no overall superiority.",
+      "metric_note": "Development out-of-fold MAE is population-level benchmark context, not an individual prediction interval.",
+      "metrics": {
+        "gcgr": {
+          "development_oof_geometric_fold_error": 4.23281117273472,
+          "development_oof_mae_log10": 0.6266288948693587
+        },
+        "glp1r": {
+          "development_oof_geometric_fold_error": 11.737565047381793,
+          "development_oof_mae_log10": 1.0695780120593172
+        },
+        "selectivity": {
+          "development_oof_geometric_fold_error": 13.668809588838407,
+          "development_oof_mae_log10": 1.1357306936819258
+        }
+      }
+    },
+    "software_version": "0.5.0"
+  },
+  "objective": {
+    "definition": "minimize the worse (larger) of predicted GLP-1R and GCGR log10 EC50 (pM)",
+    "direction": "lower score ranks first",
+    "name": "dual"
+  },
+  "output": {
+    "columns": [
+      "input_row",
+      "candidate_id",
+      "aligned_sequence",
+      "status",
+      "error_code",
+      "error_message",
+      "ranking_objective",
+      "ranking_objective_definition",
+      "ranking_eligible",
+      "ranking_exclusion_reason",
+      "rank",
+      "ranking_score",
+      "glp1r_log10_ec50_pm",
+      "glp1r_ec50_pm",
+      "gcgr_log10_ec50_pm",
+      "gcgr_ec50_pm",
+      "selectivity_log10_gcgr_over_glp1r",
+      "applicability_tier",
+      "nearest_aligned_identity",
+      "nearest_reference_ids",
+      "standard_residue_count",
+      "duplicate_sequence_count",
+      "software_version",
+      "artifact_id",
+      "artifact_version",
+      "artifact_sha256",
+      "endpoint_warning",
+      "validation_warning",
+      "ranking_warning"
+    ],
+    "filename": "screened_dual.csv",
+    "sha256": "5da7d7a81a3c32a4288cc0da4166203bfb1940ed79b12e2af25186733bd07f04"
+  },
+  "ranking_gate": {
+    "minimum_standard_residue_count": 26,
+    "required_applicability_tier": "close_analogue",
+    "tie_policy": "dense rank when scores are equal within absolute tolerance 1e-12; input order breaks display ties"
+  },
+  "schema_version": 1,
+  "scientific_boundaries": {
+    "endpoint": "cell-based cAMP EC50 functional potency, not binding affinity",
+    "experimental_recommendation_claim": false,
+    "holdout_labels_accessed": false,
+    "missing_values_converted_to_negative_labels": false,
+    "p1_p15_outcomes_accessed": false,
+    "structure_inference_run": false
+  },
+  "status": "completed",
+  "tool": "incretin-screen"
+}

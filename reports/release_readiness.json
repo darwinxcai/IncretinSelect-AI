@@ -1,0 +1,75 @@
+{
+  "as_of": "2026-08-26",
+  "decision": "LOCAL_RELEASE_READY_PUBLICATION_BLOCKED",
+  "local_gates": [
+    {
+      "evidence": "all required release files present",
+      "name": "required_release_files",
+      "status": "pass"
+    },
+    {
+      "evidence": "pyproject=0.5.0; citation=0.5.0; changelog entry=True",
+      "name": "version_alignment",
+      "status": "pass"
+    },
+    {
+      "evidence": "no raw workbook or reserved holdout-label mirror tracked",
+      "name": "public_bundle_hygiene",
+      "status": "pass"
+    },
+    {
+      "evidence": "checked-in wheel receipt passed prediction, guarded screening, and browser checks; no holdout outcomes or structure inference accessed",
+      "name": "built_distribution",
+      "status": "pass"
+    },
+    {
+      "evidence": "static model bytes match; browser/Python parity and local-only privacy pass",
+      "name": "zero_install_browser_demo",
+      "status": "pass"
+    },
+    {
+      "evidence": "reader docs retain EC50-not-affinity, mixed-result, and P1\u2013P15 boundaries",
+      "name": "scientific_claim_boundaries",
+      "status": "pass"
+    },
+    {
+      "evidence": "Python 3.10/3.12 CI runs tests, product smoke, static-demo parity, and built-distribution verification",
+      "name": "ci_contract",
+      "status": "pass"
+    }
+  ],
+  "local_release_ready": true,
+  "project": "IncretinSelect-AI",
+  "public_gates": [
+    {
+      "evidence": "no verified public darwinxcai/IncretinSelect-AI URL supplied",
+      "name": "public_repository",
+      "status": "blocked"
+    },
+    {
+      "evidence": "no verified darwinxcai.github.io/IncretinSelect-AI demo URL supplied",
+      "name": "public_browser_demo",
+      "status": "blocked"
+    },
+    {
+      "evidence": "no verified GitHub Actions run URL supplied",
+      "name": "remote_ci",
+      "status": "blocked"
+    },
+    {
+      "evidence": "fresh public-clone release check not yet attested",
+      "name": "fresh_public_clone",
+      "status": "blocked"
+    }
+  ],
+  "public_release_verified": false,
+  "schema_version": 1,
+  "scientific_scope": {
+    "affinity_claim": false,
+    "endpoint": "cell-based cAMP EC50 functional potency",
+    "overall_external_superiority_claim": false,
+    "p1_p15_reused_for_tuning": false,
+    "structure_inference_claim": false
+  },
+  "version": "0.5.0"
+}

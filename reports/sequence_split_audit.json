@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "frozen_on": "2026-08-20",
+  "label_blind": true,
+  "holdout_labels_accessed": false,
+  "training_records": 125,
+  "training_sha256": "faf17d94804569a8149661c63e4b93b6944fa4ced17d23adad0b760648a40144",
+  "config_sha256": "b426960d66add3dfd1213ac232f9627a33fee0e395d0428dfd71ba56feb65cd3",
+  "identity_definition": "Exact character matches divided by aligned columns where at least one sequence is non-gap; double-gap columns are excluded.",
+  "selection_rule": {
+    "strategy": "lowest_candidate_with_balanced_label_blind_folds",
+    "maximum_fold_size_ratio": 1.1,
+    "minimum_components": 9
+  },
+  "selected_threshold": 0.85,
+  "selected_components": 17,
+  "fold_sizes": [
+    42,
+    42,
+    41
+  ],
+  "maximum_cross_fold_identity": 0.8333333333333334,
+  "maximum_cross_fold_pair": [
+    "seq_pep13",
+    "seq_pep65"
+  ],
+  "threshold_audit": [
+    {
+      "identity_threshold": 0.7,
+      "pair_edges_at_or_above_threshold": 1935,
+      "components": 5,
+      "singletons": 2,
+      "largest_component": 119,
+      "largest_component_fraction": 0.952,
+      "fold_sizes": [
+        119,
+        3,
+        3
+      ],
+      "fold_size_ratio": 39.666666666666664,
+      "eligible": false
+    },
+    {
+      "identity_threshold": 0.75,
+      "pair_edges_at_or_above_threshold": 1586,
+      "components": 8,
+      "singletons": 4,
+      "largest_component": 73,
+      "largest_component_fraction": 0.584,
+      "fold_sizes": [
+        73,
+        44,
+        8
+      ],
+      "fold_size_ratio": 9.125,
+      "eligible": false
+    },
+    {
+      "identity_threshold": 0.8,
+      "pair_edges_at_or_above_threshold": 1368,
+      "components": 12,
+      "singletons": 5,
+      "largest_component": 54,
+      "largest_component_fraction": 0.432,
+      "fold_sizes": [
+        54,
+        40,
+        31
+      ],
+      "fold_size_ratio": 1.7419354838709677,
+      "eligible": false
+    },
+    {
+      "identity_threshold": 0.85,
+      "pair_edges_at_or_above_threshold": 972,
+      "components": 17,
+      "singletons": 8,
+      "largest_component": 40,
+      "largest_component_fraction": 0.32,
+      "fold_sizes": [
+        42,
+        42,
+        41
+      ],
+      "fold_size_ratio": 1.024390243902439,
+      "eligible": true
+    },
+    {
+      "identity_threshold": 0.9,
+      "pair_edges_at_or_above_threshold": 734,
+      "components": 21,
+      "singletons": 11,
+      "largest_component": 39,
+      "largest_component_fraction": 0.312,
+      "fold_sizes": [
+        42,
+        42,
+        41
+      ],
+      "fold_size_ratio": 1.024390243902439,
+      "eligible": true
+    },
+    {
+      "identity_threshold": 0.95,
+      "pair_edges_at_or_above_threshold": 105,
+      "components": 53,
+      "singletons": 35,
+      "largest_component": 33,
+      "largest_component_fraction": 0.264,
+      "fold_sizes": [
+        42,
+        42,
+        41
+      ],
+      "fold_size_ratio": 1.024390243902439,
+      "eligible": true
+    }
+  ]
+}

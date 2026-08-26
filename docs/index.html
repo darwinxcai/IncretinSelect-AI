@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self';
+                 connect-src 'self'; img-src 'self' data:; object-src 'none';
+                 base-uri 'none'; form-action 'none'">
+  <title>IncretinSelect-AI · browser demo</title>
+  <meta name="description" content="Zero-install browser demo of a frozen incretin
+        peptide functional-potency model.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Zero-install demo · frozen model · research only</p>
+        <h1>IncretinSelect-AI</h1>
+        <p class="lede">Explore how one compatible incretin-like peptide sequence is
+          estimated to behave at GLP-1R and GCGR in a cell-based cAMP assay.</p>
+      </div>
+      <div class="privacy-card">
+        <strong>Runs in this browser</strong>
+        <span>No API, account, analytics, or sequence upload.</span>
+      </div>
+    </header>
+
+    <section class="boundary" aria-label="Scientific boundary">
+      <strong>This is not an affinity or drug-success predictor.</strong>
+      EC50 is a functional cell-assay readout. The model does not establish binding,
+      maximum efficacy, safety, activity in animals or people, or a candidate recommendation.
+    </section>
+
+    <section class="panel input-panel">
+      <div class="section-heading">
+        <div>
+          <p class="step">Step 1</p>
+          <h2>Enter one aligned peptide core</h2>
+        </div>
+        <div id="model-state" class="model-state loading" role="status">
+          Verifying frozen model…
+        </div>
+      </div>
+
+      <form id="prediction-form" novalidate>
+        <label for="sequence">Exactly 30 aligned positions</label>
+        <div class="ruler" aria-hidden="true">123456789012345678901234567890</div>
+        <textarea id="sequence" name="sequence" rows="2" maxlength="256"
+                  spellcheck="false" autocomplete="off"
+                  aria-describedby="sequence-help sequence-count"></textarea>
+        <div class="input-meta">
+          <p id="sequence-help">Use standard amino-acid letters and <code>-</code> for an
+            alignment gap. The demo never guesses an alignment or trims a sequence.</p>
+          <p id="sequence-count" class="count">0 / 30</p>
+        </div>
+        <div class="actions">
+          <button id="predict-button" type="submit" disabled>Estimate EC50</button>
+          <button id="example-button" class="secondary" type="button">Restore example</button>
+        </div>
+      </form>
+      <div id="input-error" class="error-box" role="alert" hidden></div>
+    </section>
+
+    <section id="results" hidden>
+      <section class="panel">
+        <div class="section-heading">
+          <div>
+            <p class="step">Step 2</p>
+            <h2>Research estimate</h2>
+          </div>
+          <span id="applicability-badge" class="badge"></span>
+        </div>
+        <p id="normalized-sequence" class="sequence-output"></p>
+        <div class="metric-grid">
+          <article class="metric-card">
+            <p class="metric-label">GLP-1R cAMP EC50</p>
+            <p id="glp1r-value" class="metric-value"></p>
+            <p id="glp1r-detail" class="metric-detail"></p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">GCGR cAMP EC50</p>
+            <p id="gcgr-value" class="metric-value"></p>
+            <p id="gcgr-detail" class="metric-detail"></p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">GCGR / GLP-1R EC50</p>
+            <p id="balance-value" class="metric-value"></p>
+            <p id="balance-detail" class="metric-detail"></p>
+          </article>
+        </div>
+        <p class="reading-note"><strong>Direction:</strong> lower predicted EC50 means less
+          peptide is estimated to be needed for half of the measured maximum response in
+          this assay. It does not mean tighter binding.</p>
+      </section>
+
+      <section id="applicability-panel" class="panel">
+        <p class="step">Step 3</p>
+        <h2>Check whether the estimate is in scope</h2>
+        <div id="ranking-block" class="stop-box" hidden>
+          <strong>Do not use this output to rank experiments.</strong>
+          This sequence is outside the model's close-analogue neighborhood.
+        </div>
+        <dl class="facts">
+          <div><dt>Applicability</dt><dd id="applicability-name"></dd></div>
+          <div><dt>Nearest identity</dt><dd id="nearest-identity"></dd></div>
+          <div><dt>Nearest reference</dt><dd id="nearest-reference"></dd></div>
+        </dl>
+        <p id="applicability-summary"></p>
+        <p class="fine">The 85% boundary is the benchmark's sequence-family threshold.
+          It is not a calibrated probability that a prediction is correct.</p>
+      </section>
+
+      <section class="panel">
+        <h2>How much error did the model show?</h2>
+        <p>These are development-set averages, not a confidence interval for this sequence.</p>
+        <div class="error-grid">
+          <div><strong id="gcgr-error"></strong><span>GCGR geometric fold error</span></div>
+          <div><strong id="glp1r-error"></strong><span>GLP-1R geometric fold error</span></div>
+          <div><strong id="balance-error"></strong><span>Balance geometric fold error</span></div>
+        </div>
+        <p class="mixed-result"><strong>Independent check:</strong> the separate 15-peptide
+          result was mixed—better GCGR point error, worse pooled GLP-1R error, and no overall
+          superiority result.</p>
+      </section>
+
+      <section class="panel limitations">
+        <h2>Limitations that travel with every result</h2>
+        <ul id="warnings"></ul>
+        <p class="fine model-proof">Model <span id="model-id"></span><br>
+          Artifact SHA-256: <code id="model-sha"></code></p>
+      </section>
+    </section>
+
+    <footer>
+      <p><strong>What this demo proves:</strong> the released frozen model can run
+        reproducibly in a browser without sending the sequence anywhere.</p>
+      <p>What it does not prove: that the model is ready to select a drug candidate.</p>
+    </footer>
+  </main>
+  <script type="module" src="app.mjs"></script>
+</body>
+</html>

@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "receipt_type": "label_free_external_prediction_lock",
+  "protocol_id": "p1_p15_one_shot_external_evaluation_v1",
+  "locked_on": "2026-08-20",
+  "pre_evaluation_commit": "f0bed8df2adf6f7add37e3a465cc1cad6b86f679",
+  "pre_evaluation_tree": "7c28705120533e3c5b3188405649db487326b62d",
+  "accessed_path_classes": [
+    "locked protocol and model configuration",
+    "125-record development workbook",
+    "frozen development component table",
+    "P1--P15 sequence workbook",
+    "prediction implementation files"
+  ],
+  "forbidden_path_classes": [
+    "GCGR P1--P15 outcome workbook",
+    "GLP-1R P1--P15 outcome workbook",
+    "data/derived/prospective_holdout.json"
+  ],
+  "holdout_sequences_accessed": true,
+  "holdout_outcomes_accessed": false,
+  "holdout_outcomes_accessed_by_this_command": false,
+  "holdout_outcome_cells_read_by_this_command": false,
+  "historical_outcome_audit_already_performed": true,
+  "public_unblinded_labels": true,
+  "outcome_isolation_scope": "prediction-freeze command only",
+  "design_workbook_sheet_allowlist": [
+    "P1",
+    "P2",
+    "P3",
+    "P4",
+    "P5",
+    "P6",
+    "P7",
+    "P8",
+    "P9",
+    "P10",
+    "P11",
+    "P12",
+    "P13",
+    "P14",
+    "P15"
+  ],
+  "design_workbook_cells_read_per_sheet": "row 2, columns A:AE; A must equal sheet ID and B:AE encode the 30-position aligned sequence",
+  "outcome_hashes_declared_in_protocol_but_not_verified": {
+    "gcgr": "afa8caf9fcd51805e80609977342e4485068091c0b6bef8e19013b2246ccda8a",
+    "glp1r": "246c142e1da9dd1b918fbedd8e9948e4599c4125147ce529957c1c76d4a4dd89"
+  },
+  "verified_input_sha256": {
+    "training": "faf17d94804569a8149661c63e4b93b6944fa4ced17d23adad0b760648a40144",
+    "outer_folds_with_components": "ad7bd4f04ba0d963797877ff84892f966ff534b05ce6ff022c643f8610ec4f54",
+    "cpu_model_config": "78669e41b634f3e8170aeb89ee27ecdb09ee0d217e9507181bad5b711881a9ba",
+    "design_sequences": "2538300d334ac3ecb0ea0d77fe8dd8e306c75c7d25a09fef3b6746903b92f809",
+    "external_evaluation_protocol": "3112b14e773213635ab292c6f2c8773b3914e1888062d57372267e8bfdea39fe",
+    "sequence_model_code": "be94e18d972bd0482c73d2514307b9bd0000a409d37f8a31b99dd77187b07924",
+    "baseline_code": "929345973618ac7cf4991b8b79e941eb0f8e0a978c31af366d2204c93bdc9efd"
+  },
+  "implementation_sha256": {
+    "preparation_script_sha256": "4ea3259ba751708786baede908e00d8e698a3c7d73a058e2f9f82447f8abfdb7",
+    "external_evaluation_module_sha256": "99d20f6720fc936509b94760307e457776587a37da3516ebedb623c3a2f80cbc",
+    "sequence_model_module_sha256": "be94e18d972bd0482c73d2514307b9bd0000a409d37f8a31b99dd77187b07924",
+    "training_module_sha256": "3f0d63b116b34be84a5121d0e54e780489c5c2d953ce5401b944367f651d36b3",
+    "clustering_module_sha256": "15f4485d1b5a6c7f30bfa96e2b18ba5288ab83c1f8aec8c528321fba00d9e29e",
+    "holdout_module_sha256": "721b8b1f248ce5aa12a7b46f30846fa20761d061f27387512d719b8bc08fc09a",
+    "baseline_module_sha256": "929345973618ac7cf4991b8b79e941eb0f8e0a978c31af366d2204c93bdc9efd"
+  },
+  "development_records": 125,
+  "development_components": 17,
+  "external_predictions": 15,
+  "external_parent_clusters": 5,
+  "external_sequence_components": 4,
+  "combined_linked_components": 3,
+  "parent_cluster_derivation": "Construct a bipartite graph connecting each P1-P15 design to every development peptide tied at its maximum aligned identity within 1e-12. Parent clusters are connected components of design nodes through shared donor nodes and transitive closure; sort by minimum numeric P ID to assign PC001 onward.",
+  "parent_cluster_contract": {
+    "PC001": {
+      "members": [
+        "P1"
+      ],
+      "donors": [
+        "seq_pep93"
+      ]
+    },
+    "PC002": {
+      "members": [
+        "P2",
+        "P3",
+        "P4",
+        "P5"
+      ],
+      "donors": [
+        "seq_pep60",
+        "seq_pep62"
+      ]
+    },
+    "PC003": {
+      "members": [
+        "P6",
+        "P7",
+        "P8",
+        "P9",
+        "P10"
+      ],
+      "donors": [
+        "seq_pep6"
+      ]
+    },
+    "PC004": {
+      "members": [
+        "P11"
+      ],
+      "donors": [
+        "seq_pep58"
+      ]
+    },
+    "PC005": {
+      "members": [
+        "P12",
+        "P13",
+        "P14",
+        "P15"
+      ],
+      "donors": [
+        "seq_pep7"
+      ]
+    }
+  },
+  "external_sequence_component_contract": {
+    "EC001": [
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5"
+    ],
+    "EC002": [
+      "P6",
+      "P7",
+      "P8",
+      "P9",
+      "P10"
+    ],
+    "EC003": [
+      "P11"
+    ],
+    "EC004": [
+      "P12",
+      "P13",
+      "P14",
+      "P15"
+    ]
+  },
+  "combined_linked_component_contract": {
+    "LC001": {
+      "members": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "P8",
+        "P9",
+        "P10"
+      ],
+      "development_components": [
+        "SC002"
+      ]
+    },
+    "LC002": {
+      "members": [
+        "P11"
+      ],
+      "development_components": [
+        "SC001"
+      ]
+    },
+    "LC003": {
+      "members": [
+        "P12",
+        "P13",
+        "P14",
+        "P15"
+      ],
+      "development_components": [
+        "SC006"
+      ]
+    }
+  },
+  "selected_alpha": 10.0,
+  "selection_objective": "leave-one-development-component-out macro two-receptor MAE",
+  "inner_scores": [
+    {
+      "alpha": 0.0001,
+      "component_macro_two_receptor_mae": 1.6400176220558114
+    },
+    {
+      "alpha": 0.001,
+      "component_macro_two_receptor_mae": 1.549816968177149
+    },
+    {
+      "alpha": 0.01,
+      "component_macro_two_receptor_mae": 1.214604133260643
+    },
+    {
+      "alpha": 0.1,
+      "component_macro_two_receptor_mae": 0.9290667369291792
+    },
+    {
+      "alpha": 1.0,
+      "component_macro_two_receptor_mae": 0.7890551581412586
+    },
+    {
+      "alpha": 10.0,
+      "component_macro_two_receptor_mae": 0.7715242402667664
+    },
+    {
+      "alpha": 100.0,
+      "component_macro_two_receptor_mae": 0.965736040871105
+    },
+    {
+      "alpha": 1000.0,
+      "component_macro_two_receptor_mae": 1.1882691437485549
+    },
+    {
+      "alpha": 10000.0,
+      "component_macro_two_receptor_mae": 1.2584034386215588
+    },
+    {
+      "alpha": 100000.0,
+      "component_macro_two_receptor_mae": 1.2669134691815989
+    }
+  ],
+  "prediction_file": "data/derived/external_predictions_locked.csv",
+  "prediction_sha256": "b85e47af4bc25041f17007e050b8152a24cd1d7e57e29e70f3b87fe61cc645bd",
+  "dependency_group_file": "data/derived/external_dependency_groups.csv",
+  "dependency_group_sha256": "a643b58cde245fb1a74846dbfd4505ce916e02a81d4038afc2c0fc4387a36661",
+  "model_ids": [
+    "ridge",
+    "nn",
+    "median",
+    "component_mean"
+  ]
+}

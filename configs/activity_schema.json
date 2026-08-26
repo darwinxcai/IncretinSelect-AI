@@ -1,0 +1,43 @@
+{
+  "dataset_sheet": "dataset",
+  "alignment_sheet": "alignment",
+  "expected_records": 125,
+  "aligned_length": 30,
+  "id_column": "pep_ID",
+  "sequence_column": "sequence",
+  "length_column": "length",
+  "required_dataset_columns": [
+    "pep_ID",
+    "alias",
+    "sequence",
+    "length",
+    "EC50_T1",
+    "EC50_LOG_T1",
+    "EC50_T2",
+    "EC50_LOG_T2"
+  ],
+  "required_alignment_columns": [
+    "pep_ID",
+    "alias",
+    "sequence",
+    "length"
+  ],
+  "measurements": [
+    {
+      "receptor": "GCGR",
+      "ec50_column": "EC50_T1",
+      "ec50_unit": "pM",
+      "log_column": "EC50_LOG_T1",
+      "log_definition": "log10(molar EC50)"
+    },
+    {
+      "receptor": "GLP-1R",
+      "ec50_column": "EC50_T2",
+      "ec50_unit": "pM",
+      "log_column": "EC50_LOG_T2",
+      "log_definition": "log10(molar EC50)"
+    }
+  ],
+  "log_consistency_tolerance": 0.011
+}
+

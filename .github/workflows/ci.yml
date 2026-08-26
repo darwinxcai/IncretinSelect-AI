@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Lint
+        run: python -m ruff check .
+      - name: Test
+        run: make test
+      - name: Product smoke test
+        run: |
+          make product-smoke
+          incretin-predict --example --format json > /tmp/incretin-example.json
+          incretin-web --smoke-test
+      - name: Verify zero-install browser demo
+        run: make static-demo
+      - name: Verify built distribution
+        run: make release-check
+      - name: Audit release readiness
+        run: make release-readiness

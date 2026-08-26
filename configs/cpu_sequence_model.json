@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "model_id": "component_weighted_aligned_ridge_v1",
+  "feature_encoding": "Position-specific one-hot encoding of the frozen 30-column alignment using a fixed 20-residue-plus-gap alphabet.",
+  "alphabet": "-ACDEFGHIKLMNPQRSTVWY",
+  "aligned_length": 30,
+  "targets": [
+    "GCGR log10 EC50 (pM)",
+    "GLP-1R log10 EC50 (pM)"
+  ],
+  "selectivity_prediction": "GCGR prediction minus GLP-1R prediction; no separately fitted selectivity target.",
+  "outer_evaluation": "Exactly the frozen cluster-intact outer folds in data/derived/outer_folds.csv.",
+  "inner_selection": "Leave one training-only sequence component out; minimize the unweighted mean of component-level, two-receptor MAE.",
+  "component_weighting": "Within every fit, each training sequence component has equal total weight; records within a component share that weight equally.",
+  "alpha_grid": [
+    0.0001,
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0,
+    1000.0,
+    10000.0,
+    100000.0
+  ],
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20260820,
+    "confidence_level": 0.95,
+    "unit": "sequence_component"
+  },
+  "prospective_holdout_access": "forbidden"
+}

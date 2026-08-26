@@ -1,0 +1,1022 @@
+{
+  "schema_version": 1,
+  "receipt_type": "one_shot_external_evaluation",
+  "protocol_id": "p1_p15_one_shot_external_evaluation_v1",
+  "prediction_lock_commit": "7feed50339e6695859efdddcd92efd7197c7d1d3",
+  "pre_evaluation_commit": "f0bed8df2adf6f7add37e3a465cc1cad6b86f679",
+  "prediction_receipt_sha256": "29799e9ec9688b61cd153928880fb06cf7fb8d253feae8f9a00e7e56adb75163",
+  "prediction_sha256": "b85e47af4bc25041f17007e050b8152a24cd1d7e57e29e70f3b87fe61cc645bd",
+  "dependency_group_table_sha256": "a643b58cde245fb1a74846dbfd4505ce916e02a81d4038afc2c0fc4387a36661",
+  "protocol_sha256": "3112b14e773213635ab292c6f2c8773b3914e1888062d57372267e8bfdea39fe",
+  "outcome_sha256": {
+    "gcgr": "afa8caf9fcd51805e80609977342e4485068091c0b6bef8e19013b2246ccda8a",
+    "glp1r": "246c142e1da9dd1b918fbedd8e9948e4599c4125147ce529957c1c76d4a4dd89"
+  },
+  "preparation_implementation_sha256": {
+    "preparation_script_sha256": "4ea3259ba751708786baede908e00d8e698a3c7d73a058e2f9f82447f8abfdb7",
+    "external_evaluation_module_sha256": "99d20f6720fc936509b94760307e457776587a37da3516ebedb623c3a2f80cbc",
+    "sequence_model_module_sha256": "be94e18d972bd0482c73d2514307b9bd0000a409d37f8a31b99dd77187b07924",
+    "training_module_sha256": "3f0d63b116b34be84a5121d0e54e780489c5c2d953ce5401b944367f651d36b3",
+    "clustering_module_sha256": "15f4485d1b5a6c7f30bfa96e2b18ba5288ab83c1f8aec8c528321fba00d9e29e",
+    "holdout_module_sha256": "721b8b1f248ce5aa12a7b46f30846fa20761d061f27387512d719b8bc08fc09a",
+    "baseline_module_sha256": "929345973618ac7cf4991b8b79e941eb0f8e0a978c31af366d2204c93bdc9efd"
+  },
+  "scoring_implementation_sha256": {
+    "scoring_script_sha256": "409727d9e51c35f817a587f7b21c7da97e2e265e713a1c56b2ea1755b9962653",
+    "external_evaluation_module_sha256": "99d20f6720fc936509b94760307e457776587a37da3516ebedb623c3a2f80cbc",
+    "sequence_model_module_sha256": "be94e18d972bd0482c73d2514307b9bd0000a409d37f8a31b99dd77187b07924",
+    "training_module_sha256": "3f0d63b116b34be84a5121d0e54e780489c5c2d953ce5401b944367f651d36b3",
+    "clustering_module_sha256": "15f4485d1b5a6c7f30bfa96e2b18ba5288ab83c1f8aec8c528321fba00d9e29e",
+    "holdout_module_sha256": "721b8b1f248ce5aa12a7b46f30846fa20761d061f27387512d719b8bc08fc09a",
+    "baseline_module_sha256": "929345973618ac7cf4991b8b79e941eb0f8e0a978c31af366d2204c93bdc9efd"
+  },
+  "outcomes_accessed": true,
+  "historical_outcome_audit_already_performed": true,
+  "public_unblinded_labels": true,
+  "isolation_scope": "prediction-freeze and scoring commands were separated by a commit",
+  "model_refit_after_outcomes": false,
+  "hyperparameters_changed_after_outcomes": false,
+  "censored_thresholds_imputed_as_exact": false,
+  "selected_alpha": 10.0,
+  "external_peptides": 15,
+  "external_sequence_components": 4,
+  "nearest_donor_parent_proxies": 5,
+  "combined_linked_components": 3,
+  "endpoint_peptide_records": 30,
+  "replicate_cells": 90,
+  "observation_status_counts": {
+    "gcgr:exact": 12,
+    "gcgr:lower_bound": 3,
+    "glp1r:exact": 11,
+    "glp1r:lower_bound": 4,
+    "selectivity:exact": 10,
+    "selectivity:lower_bound": 1,
+    "selectivity:uninformative": 2,
+    "selectivity:upper_bound": 2
+  },
+  "primary_and_interval_metrics": [
+    {
+      "model": "ridge",
+      "endpoint": "gcgr",
+      "n_informative": 15,
+      "constraint_mae_lower_bound": 1.790796224787757,
+      "exact_complete_n": 12,
+      "exact_complete_mae_log10_pm": 1.4245581916417713,
+      "bound_constraints": 3,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "ridge",
+      "endpoint": "glp1r",
+      "n_informative": 15,
+      "constraint_mae_lower_bound": 1.6985712359816967,
+      "exact_complete_n": 11,
+      "exact_complete_mae_log10_pm": 0.9465870383567043,
+      "bound_constraints": 4,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "ridge",
+      "endpoint": "selectivity",
+      "n_informative": 13,
+      "constraint_mae_lower_bound": 0.44705330024472667,
+      "exact_complete_n": 10,
+      "exact_complete_mae_log10_pm": 0.42702854897700604,
+      "bound_constraints": 3,
+      "bound_satisfaction_rate": 0.3333333333333333
+    },
+    {
+      "model": "nn",
+      "endpoint": "gcgr",
+      "n_informative": 15,
+      "constraint_mae_lower_bound": 2.031318102029402,
+      "exact_complete_n": 12,
+      "exact_complete_mae_log10_pm": 1.6971013838402984,
+      "bound_constraints": 3,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "nn",
+      "endpoint": "glp1r",
+      "n_informative": 15,
+      "constraint_mae_lower_bound": 1.3613589041262713,
+      "exact_complete_n": 11,
+      "exact_complete_mae_log10_pm": 0.9878265239614502,
+      "bound_constraints": 4,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "nn",
+      "endpoint": "selectivity",
+      "n_informative": 13,
+      "constraint_mae_lower_bound": 0.478793090625044,
+      "exact_complete_n": 10,
+      "exact_complete_mae_log10_pm": 0.6224310178125572,
+      "bound_constraints": 3,
+      "bound_satisfaction_rate": 1.0
+    },
+    {
+      "model": "median",
+      "endpoint": "gcgr",
+      "n_informative": 15,
+      "constraint_mae_lower_bound": 2.3011162288643163,
+      "exact_complete_n": 12,
+      "exact_complete_mae_log10_pm": 2.558633551996486,
+      "bound_constraints": 3,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "median",
+      "endpoint": "glp1r",
+      "n_informative": 15,
+      "constraint_mae_lower_bound": 2.049503021595317,
+      "exact_complete_n": 11,
+      "exact_complete_mae_log10_pm": 1.4673503322847667,
+      "bound_constraints": 4,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "median",
+      "endpoint": "selectivity",
+      "n_informative": 13,
+      "constraint_mae_lower_bound": 2.013390531925835,
+      "exact_complete_n": 10,
+      "exact_complete_mae_log10_pm": 1.9565396978162362,
+      "bound_constraints": 3,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "component_mean",
+      "endpoint": "gcgr",
+      "n_informative": 15,
+      "constraint_mae_lower_bound": 2.167487288771723,
+      "exact_complete_n": 12,
+      "exact_complete_mae_log10_pm": 2.2245612017650025,
+      "bound_constraints": 3,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "component_mean",
+      "endpoint": "glp1r",
+      "n_informative": 15,
+      "constraint_mae_lower_bound": 2.112042568239232,
+      "exact_complete_n": 11,
+      "exact_complete_mae_log10_pm": 1.6663397988790414,
+      "bound_constraints": 4,
+      "bound_satisfaction_rate": 0.0
+    },
+    {
+      "model": "component_mean",
+      "endpoint": "selectivity",
+      "n_informative": 13,
+      "constraint_mae_lower_bound": 1.4634130808190682,
+      "exact_complete_n": 10,
+      "exact_complete_mae_log10_pm": 1.339653254745693,
+      "bound_constraints": 3,
+      "bound_satisfaction_rate": 0.0
+    }
+  ],
+  "headline_external_component_resampling": [
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "n_peptides": 15,
+      "n_dependency_groups": 4,
+      "mae_delta_log10_pm": -0.2405218772416454,
+      "interval_lower": -0.8181526060802642,
+      "interval_upper": 0.343094812507356,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_frozen_0_85_external_sequence_component",
+      "uncertainty_role": "headline_descriptive_resampling_interval"
+    },
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "median",
+      "n_peptides": 15,
+      "n_dependency_groups": 4,
+      "mae_delta_log10_pm": -0.5103200040765593,
+      "interval_lower": -2.8848094641266693,
+      "interval_upper": 2.447767228029767,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_frozen_0_85_external_sequence_component",
+      "uncertainty_role": "headline_descriptive_resampling_interval"
+    },
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "component_mean",
+      "n_peptides": 15,
+      "n_dependency_groups": 4,
+      "mae_delta_log10_pm": -0.37669106398396607,
+      "interval_lower": -2.278615839504465,
+      "interval_upper": 1.7796225275668005,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_frozen_0_85_external_sequence_component",
+      "uncertainty_role": "headline_descriptive_resampling_interval"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "n_peptides": 15,
+      "n_dependency_groups": 4,
+      "mae_delta_log10_pm": 0.3372123318554255,
+      "interval_lower": -0.7380492897136224,
+      "interval_upper": 1.0800383266779772,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_frozen_0_85_external_sequence_component",
+      "uncertainty_role": "headline_descriptive_resampling_interval"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "median",
+      "n_peptides": 15,
+      "n_dependency_groups": 4,
+      "mae_delta_log10_pm": -0.35093178561362043,
+      "interval_lower": -0.6679248403924267,
+      "interval_upper": 0.028214643028248942,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_frozen_0_85_external_sequence_component",
+      "uncertainty_role": "headline_descriptive_resampling_interval"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "component_mean",
+      "n_peptides": 15,
+      "n_dependency_groups": 4,
+      "mae_delta_log10_pm": -0.41347133225753535,
+      "interval_lower": -0.9705970110186768,
+      "interval_upper": 0.34091237624782295,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_frozen_0_85_external_sequence_component",
+      "uncertainty_role": "headline_descriptive_resampling_interval"
+    }
+  ],
+  "leave_one_external_component_out": [
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "external_sequence_component_id",
+      "n_dependency_groups": 4,
+      "minimum_leave_one_group_out_delta": -0.5530621828822794,
+      "maximum_leave_one_group_out_delta": 0.046660952383923364,
+      "estimates": [
+        {
+          "omitted_group": "EC001",
+          "retained_peptides": 10,
+          "mae_delta_log10_pm": -0.5530621828822794
+        },
+        {
+          "omitted_group": "EC002",
+          "retained_peptides": 10,
+          "mae_delta_log10_pm": -0.20625297598037023
+        },
+        {
+          "omitted_group": "EC003",
+          "retained_peptides": 14,
+          "mae_delta_log10_pm": -0.2674002402479074
+        },
+        {
+          "omitted_group": "EC004",
+          "retained_peptides": 11,
+          "mae_delta_log10_pm": 0.046660952383923364
+        }
+      ]
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "external_sequence_component_id",
+      "n_dependency_groups": 4,
+      "minimum_leave_one_group_out_delta": -0.18407459824665756,
+      "maximum_leave_one_group_out_delta": 0.5127172487470526,
+      "estimates": [
+        {
+          "omitted_group": "EC001",
+          "retained_peptides": 10,
+          "mae_delta_log10_pm": 0.4603009781658297
+        },
+        {
+          "omitted_group": "EC002",
+          "retained_peptides": 10,
+          "mae_delta_log10_pm": -0.18407459824665756
+        },
+        {
+          "omitted_group": "EC003",
+          "retained_peptides": 14,
+          "mae_delta_log10_pm": 0.5127172487470526
+        },
+        {
+          "omitted_group": "EC004",
+          "retained_peptides": 11,
+          "mae_delta_log10_pm": 0.47584087744033515
+        }
+      ]
+    }
+  ],
+  "nearest_parent_proxy_resampling_sensitivity": [
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "n_peptides": 15,
+      "n_dependency_groups": 5,
+      "mae_delta_log10_pm": -0.2405218772416454,
+      "interval_lower": -0.7612075756805468,
+      "interval_upper": 0.36194204956747716,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_nearest_donor_parent_proxy",
+      "uncertainty_role": "dependence_sensitivity_only"
+    },
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "median",
+      "n_peptides": 15,
+      "n_dependency_groups": 5,
+      "mae_delta_log10_pm": -0.5103200040765593,
+      "interval_lower": -2.9617510939471376,
+      "interval_upper": 2.013488338865769,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_nearest_donor_parent_proxy",
+      "uncertainty_role": "dependence_sensitivity_only"
+    },
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "component_mean",
+      "n_peptides": 15,
+      "n_dependency_groups": 5,
+      "mae_delta_log10_pm": -0.37669106398396607,
+      "interval_lower": -2.415087248113802,
+      "interval_upper": 1.507711487643533,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_nearest_donor_parent_proxy",
+      "uncertainty_role": "dependence_sensitivity_only"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "n_peptides": 15,
+      "n_dependency_groups": 5,
+      "mae_delta_log10_pm": 0.3372123318554255,
+      "interval_lower": -0.6438578376347905,
+      "interval_upper": 1.0668668376552481,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_nearest_donor_parent_proxy",
+      "uncertainty_role": "dependence_sensitivity_only"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "median",
+      "n_peptides": 15,
+      "n_dependency_groups": 5,
+      "mae_delta_log10_pm": -0.35093178561362043,
+      "interval_lower": -0.7385264144957852,
+      "interval_upper": -0.011645794604715792,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_nearest_donor_parent_proxy",
+      "uncertainty_role": "dependence_sensitivity_only"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "component_mean",
+      "n_peptides": 15,
+      "n_dependency_groups": 5,
+      "mae_delta_log10_pm": -0.41347133225753535,
+      "interval_lower": -0.9943700144027093,
+      "interval_upper": 0.2189063901519144,
+      "interval_mass": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "whole_nearest_donor_parent_proxy",
+      "uncertainty_role": "dependence_sensitivity_only"
+    }
+  ],
+  "leave_one_parent_proxy_out_sensitivity": [
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "parent_cluster_id",
+      "n_dependency_groups": 5,
+      "minimum_leave_one_group_out_delta": -0.44255192585500874,
+      "maximum_leave_one_group_out_delta": 0.046660952383923364,
+      "estimates": [
+        {
+          "omitted_group": "PC001",
+          "retained_peptides": 14,
+          "mae_delta_log10_pm": -0.3050270573601699
+        },
+        {
+          "omitted_group": "PC002",
+          "retained_peptides": 11,
+          "mae_delta_log10_pm": -0.44255192585500874
+        },
+        {
+          "omitted_group": "PC003",
+          "retained_peptides": 10,
+          "mae_delta_log10_pm": -0.20625297598037023
+        },
+        {
+          "omitted_group": "PC004",
+          "retained_peptides": 14,
+          "mae_delta_log10_pm": -0.2674002402479074
+        },
+        {
+          "omitted_group": "PC005",
+          "retained_peptides": 11,
+          "mae_delta_log10_pm": 0.046660952383923364
+        }
+      ]
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "parent_cluster_id",
+      "n_dependency_groups": 5,
+      "minimum_leave_one_group_out_delta": -0.18407459824665756,
+      "maximum_leave_one_group_out_delta": 0.5127172487470526,
+      "estimates": [
+        {
+          "omitted_group": "PC001",
+          "retained_peptides": 14,
+          "mae_delta_log10_pm": 0.3029697451148558
+        },
+        {
+          "omitted_group": "PC002",
+          "retained_peptides": 11,
+          "mae_delta_log10_pm": 0.4926925752619725
+        },
+        {
+          "omitted_group": "PC003",
+          "retained_peptides": 10,
+          "mae_delta_log10_pm": -0.18407459824665756
+        },
+        {
+          "omitted_group": "PC004",
+          "retained_peptides": 14,
+          "mae_delta_log10_pm": 0.5127172487470526
+        },
+        {
+          "omitted_group": "PC005",
+          "retained_peptides": 11,
+          "mae_delta_log10_pm": 0.47584087744033515
+        }
+      ]
+    }
+  ],
+  "naive_stratified_peptide_bootstrap_sensitivity": [
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "n_peptides": 15,
+      "mae_delta_log10_pm": -0.2405218772416454,
+      "ci_lower": -0.45986421960286444,
+      "ci_upper": -0.017559320341437746,
+      "confidence_level": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "peptide_stratified_by_design_group",
+      "uncertainty_role": "naive_sensitivity_only"
+    },
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "median",
+      "n_peptides": 15,
+      "mae_delta_log10_pm": -0.5103200040765593,
+      "ci_lower": -0.7043603545854912,
+      "ci_upper": -0.2897402256144693,
+      "confidence_level": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "peptide_stratified_by_design_group",
+      "uncertainty_role": "naive_sensitivity_only"
+    },
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "component_mean",
+      "n_peptides": 15,
+      "mae_delta_log10_pm": -0.37669106398396607,
+      "ci_lower": -0.49360141927560586,
+      "ci_upper": -0.2450565916812897,
+      "confidence_level": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "peptide_stratified_by_design_group",
+      "uncertainty_role": "naive_sensitivity_only"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "n_peptides": 15,
+      "mae_delta_log10_pm": 0.3372123318554255,
+      "ci_lower": -0.0254514276034098,
+      "ci_upper": 0.626156543807479,
+      "confidence_level": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "peptide_stratified_by_design_group",
+      "uncertainty_role": "naive_sensitivity_only"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "median",
+      "n_peptides": 15,
+      "mae_delta_log10_pm": -0.35093178561362043,
+      "ci_lower": -0.5665703331465258,
+      "ci_upper": -0.11977724377444846,
+      "confidence_level": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "peptide_stratified_by_design_group",
+      "uncertainty_role": "naive_sensitivity_only"
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "component_mean",
+      "n_peptides": 15,
+      "mae_delta_log10_pm": -0.41347133225753535,
+      "ci_lower": -0.6584683216372128,
+      "ci_upper": -0.16105189577006415,
+      "confidence_level": 0.95,
+      "resamples": 10000,
+      "seed": 20260820,
+      "bootstrap_unit": "peptide_stratified_by_design_group",
+      "uncertainty_role": "naive_sensitivity_only"
+    }
+  ],
+  "leave_one_combined_linked_component_out_sensitivity": [
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "linked_component_id",
+      "n_dependency_groups": 3,
+      "minimum_leave_one_group_out_delta": -0.7970646860003631,
+      "maximum_leave_one_group_out_delta": 0.046660952383923364,
+      "estimates": [
+        {
+          "omitted_group": "LC001",
+          "retained_peptides": 5,
+          "mae_delta_log10_pm": -0.7970646860003631
+        },
+        {
+          "omitted_group": "LC002",
+          "retained_peptides": 14,
+          "mae_delta_log10_pm": -0.2674002402479074
+        },
+        {
+          "omitted_group": "LC003",
+          "retained_peptides": 11,
+          "mae_delta_log10_pm": 0.046660952383923364
+        }
+      ]
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "linked_component_id",
+      "n_dependency_groups": 3,
+      "minimum_leave_one_group_out_delta": -0.4591842357279319,
+      "maximum_leave_one_group_out_delta": 0.5127172487470526,
+      "estimates": [
+        {
+          "omitted_group": "LC001",
+          "retained_peptides": 5,
+          "mae_delta_log10_pm": -0.4591842357279319
+        },
+        {
+          "omitted_group": "LC002",
+          "retained_peptides": 14,
+          "mae_delta_log10_pm": 0.5127172487470526
+        },
+        {
+          "omitted_group": "LC003",
+          "retained_peptides": 11,
+          "mae_delta_log10_pm": 0.47584087744033515
+        }
+      ]
+    }
+  ],
+  "dependence_group_macro_sensitivity": [
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "external_sequence_component_id",
+      "n_dependency_groups": 4,
+      "macro_mae_delta_log10_pm": -0.20475009989762752,
+      "group_mean_deltas": {
+        "EC001": 0.38455873403962265,
+        "EC002": -0.30905967976419574,
+        "EC003": 0.13577520484602257,
+        "EC004": -1.0302746587119596
+      }
+    },
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "parent_cluster_id",
+      "n_dependency_groups": 5,
+      "macro_mae_delta_log10_pm": -0.04518954655346621,
+      "group_mean_deltas": {
+        "PC001": 0.6625506444176978,
+        "PC002": 0.31506075644510384,
+        "PC003": -0.30905967976419574,
+        "PC004": 0.13577520484602257,
+        "PC005": -1.0302746587119596
+      }
+    },
+    {
+      "endpoint": "gcgr",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "linked_component_id",
+      "n_dependency_groups": 3,
+      "macro_mae_delta_log10_pm": -0.28558330890940786,
+      "group_mean_deltas": {
+        "LC001": 0.03774952713771344,
+        "LC002": 0.13577520484602257,
+        "LC003": -1.0302746587119596
+      }
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "external_sequence_component_id",
+      "n_dependency_groups": 4,
+      "macro_mae_delta_log10_pm": -0.17326286045905567,
+      "group_mean_deltas": {
+        "EC001": 0.0910350392346168,
+        "EC002": 1.3797861920595913,
+        "EC003": -2.1198565046273545,
+        "EC004": -0.04401616850307627
+      }
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "parent_cluster_id",
+      "n_dependency_groups": 5,
+      "macro_mae_delta_log10_pm": -0.01156725447200364,
+      "group_mean_deltas": {
+        "PC001": 0.8166085462234004,
+        "PC002": -0.0903583375125791,
+        "PC003": 1.3797861920595913,
+        "PC004": -2.1198565046273545,
+        "PC005": -0.04401616850307627
+      }
+    },
+    {
+      "endpoint": "glp1r",
+      "challenger": "ridge",
+      "baseline": "nn",
+      "group_field": "linked_component_id",
+      "n_dependency_groups": 3,
+      "macro_mae_delta_log10_pm": -0.4761540191611089,
+      "group_mean_deltas": {
+        "LC001": 0.7354106156471041,
+        "LC002": -2.1198565046273545,
+        "LC003": -0.04401616850307627
+      }
+    }
+  ],
+  "dependence_definition_stability": [
+    {
+      "endpoint": "gcgr",
+      "direction_stable_across_group_macros": true,
+      "directions": [
+        -1
+      ],
+      "classification": "direction-stable but descriptive"
+    },
+    {
+      "endpoint": "glp1r",
+      "direction_stable_across_group_macros": true,
+      "directions": [
+        -1
+      ],
+      "classification": "direction-stable but descriptive"
+    }
+  ],
+  "exact_complete_case_point_metrics": [
+    {
+      "model": "ridge",
+      "endpoint": "gcgr",
+      "subset": "three_exact_replicates",
+      "n": 12,
+      "mae_log10_pm": 1.4245581916417713,
+      "rmse_log10_pm": 1.9970028681351657,
+      "geometric_fold_error": 26.58019676959233,
+      "pearson_r": 0.3611965043411925,
+      "spearman_rho": 0.598950130429286,
+      "r_squared": 0.044627665120713256
+    },
+    {
+      "model": "nn",
+      "endpoint": "gcgr",
+      "subset": "three_exact_replicates",
+      "n": 12,
+      "mae_log10_pm": 1.6971013838402984,
+      "rmse_log10_pm": 2.2083896070168705,
+      "geometric_fold_error": 49.78532927361197,
+      "pearson_r": 0.7859087851195413,
+      "spearman_rho": 0.5779224548718539,
+      "r_squared": -0.16833307915894702
+    },
+    {
+      "model": "median",
+      "endpoint": "gcgr",
+      "subset": "three_exact_replicates",
+      "n": 12,
+      "mae_log10_pm": 2.558633551996486,
+      "rmse_log10_pm": 2.9977131329617084,
+      "geometric_fold_error": 361.9374747640915,
+      "pearson_r": null,
+      "spearman_rho": null,
+      "r_squared": -1.1527590566329535
+    },
+    {
+      "model": "component_mean",
+      "endpoint": "gcgr",
+      "subset": "three_exact_replicates",
+      "n": 12,
+      "mae_log10_pm": 2.2245612017650025,
+      "rmse_log10_pm": 2.5497820776701285,
+      "geometric_fold_error": 167.71086610589558,
+      "pearson_r": null,
+      "spearman_rho": null,
+      "r_squared": -0.5574761759519602
+    },
+    {
+      "model": "ridge",
+      "endpoint": "glp1r",
+      "subset": "three_exact_replicates",
+      "n": 11,
+      "mae_log10_pm": 0.9465870383567043,
+      "rmse_log10_pm": 1.3659002470233024,
+      "geometric_fold_error": 8.842743717195958,
+      "pearson_r": 0.5410026185731186,
+      "spearman_rho": 0.5181818181818182,
+      "r_squared": 0.25816701130004893
+    },
+    {
+      "model": "nn",
+      "endpoint": "glp1r",
+      "subset": "three_exact_replicates",
+      "n": 11,
+      "mae_log10_pm": 0.9878265239614502,
+      "rmse_log10_pm": 1.2406733529689775,
+      "geometric_fold_error": 9.723587439695786,
+      "pearson_r": 0.8144485847973583,
+      "spearman_rho": 0.2912371274935854,
+      "r_squared": 0.38795538076432723
+    },
+    {
+      "model": "median",
+      "endpoint": "glp1r",
+      "subset": "three_exact_replicates",
+      "n": 11,
+      "mae_log10_pm": 1.4673503322847667,
+      "rmse_log10_pm": 1.7278783404077391,
+      "geometric_fold_error": 29.332584624476137,
+      "pearson_r": null,
+      "spearman_rho": null,
+      "r_squared": -0.18711965675566855
+    },
+    {
+      "model": "component_mean",
+      "endpoint": "glp1r",
+      "subset": "three_exact_replicates",
+      "n": 11,
+      "mae_log10_pm": 1.6663397988790414,
+      "rmse_log10_pm": 1.8741307868481678,
+      "geometric_fold_error": 46.380966983648044,
+      "pearson_r": null,
+      "spearman_rho": null,
+      "r_squared": -0.39658690306560174
+    },
+    {
+      "model": "ridge",
+      "endpoint": "selectivity",
+      "subset": "both_receptors_three_exact_replicates",
+      "n": 10,
+      "mae_log10_pm": 0.42702854897700604,
+      "rmse_log10_pm": 0.5537560423824225,
+      "geometric_fold_error": 2.673182128387967,
+      "pearson_r": 0.9365679044718258,
+      "spearman_rho": 0.7333333333333333,
+      "r_squared": 0.8052986282943158
+    },
+    {
+      "model": "nn",
+      "endpoint": "selectivity",
+      "subset": "both_receptors_three_exact_replicates",
+      "n": 10,
+      "mae_log10_pm": 0.6224310178125572,
+      "rmse_log10_pm": 0.7865915609725128,
+      "geometric_fold_error": 4.192094052823943,
+      "pearson_r": 0.8252986747667871,
+      "spearman_rho": 0.8806115037346112,
+      "r_squared": 0.6071465056768106
+    },
+    {
+      "model": "median",
+      "endpoint": "selectivity",
+      "subset": "both_receptors_three_exact_replicates",
+      "n": 10,
+      "mae_log10_pm": 1.9565396978162362,
+      "rmse_log10_pm": 2.3244358127261497,
+      "geometric_fold_error": 90.47731370992936,
+      "pearson_r": null,
+      "spearman_rho": null,
+      "r_squared": -2.430576995381402
+    },
+    {
+      "model": "component_mean",
+      "endpoint": "selectivity",
+      "subset": "both_receptors_three_exact_replicates",
+      "n": 10,
+      "mae_log10_pm": 1.339653254745693,
+      "rmse_log10_pm": 1.5896349925662203,
+      "geometric_fold_error": 21.86015589317836,
+      "pearson_r": null,
+      "spearman_rho": null,
+      "r_squared": -0.6044525713613391
+    }
+  ],
+  "ridge_intended_group_summaries": [
+    {
+      "model": "ridge",
+      "endpoint": "gcgr",
+      "design_group": "dual",
+      "n_informative": 5,
+      "constraint_mae_lower_bound": 0.9850283496749025
+    },
+    {
+      "model": "ridge",
+      "endpoint": "gcgr",
+      "design_group": "gcgr_selective",
+      "n_informative": 5,
+      "constraint_mae_lower_bound": 3.9011420473047034
+    },
+    {
+      "model": "ridge",
+      "endpoint": "gcgr",
+      "design_group": "glp1r_selective",
+      "n_informative": 5,
+      "constraint_mae_lower_bound": 0.48621827738366513
+    },
+    {
+      "model": "ridge",
+      "endpoint": "glp1r",
+      "design_group": "dual",
+      "n_informative": 5,
+      "constraint_mae_lower_bound": 0.8236965922600517
+    },
+    {
+      "model": "ridge",
+      "endpoint": "glp1r",
+      "design_group": "gcgr_selective",
+      "n_informative": 5,
+      "constraint_mae_lower_bound": 3.7478314543222124
+    },
+    {
+      "model": "ridge",
+      "endpoint": "glp1r",
+      "design_group": "glp1r_selective",
+      "n_informative": 5,
+      "constraint_mae_lower_bound": 0.5241856613628257
+    },
+    {
+      "model": "ridge",
+      "endpoint": "selectivity",
+      "design_group": "dual",
+      "n_informative": 5,
+      "constraint_mae_lower_bound": 0.5180580578196832
+    },
+    {
+      "model": "ridge",
+      "endpoint": "selectivity",
+      "design_group": "gcgr_selective",
+      "n_informative": 3,
+      "constraint_mae_lower_bound": 0.2589295488191916
+    },
+    {
+      "model": "ridge",
+      "endpoint": "selectivity",
+      "design_group": "glp1r_selective",
+      "n_informative": 5,
+      "constraint_mae_lower_bound": 0.48892279352509116
+    }
+  ],
+  "replicate_cell_sensitivity": [
+    {
+      "model": "ridge",
+      "receptor": "gcgr",
+      "replicate_cells": 45,
+      "constraint_mae_lower_bound": 1.7941169179807082,
+      "independence_warning": "Three cells per peptide are repeated assay replicates, not independent units."
+    },
+    {
+      "model": "ridge",
+      "receptor": "glp1r",
+      "replicate_cells": 45,
+      "constraint_mae_lower_bound": 1.696295436517773,
+      "independence_warning": "Three cells per peptide are repeated assay replicates, not independent units."
+    },
+    {
+      "model": "nn",
+      "receptor": "gcgr",
+      "replicate_cells": 45,
+      "constraint_mae_lower_bound": 2.033033210911247,
+      "independence_warning": "Three cells per peptide are repeated assay replicates, not independent units."
+    },
+    {
+      "model": "nn",
+      "receptor": "glp1r",
+      "replicate_cells": 45,
+      "constraint_mae_lower_bound": 1.3556410095956484,
+      "independence_warning": "Three cells per peptide are repeated assay replicates, not independent units."
+    },
+    {
+      "model": "median",
+      "receptor": "gcgr",
+      "replicate_cells": 45,
+      "constraint_mae_lower_bound": 2.3077028428839053,
+      "independence_warning": "Three cells per peptide are repeated assay replicates, not independent units."
+    },
+    {
+      "model": "median",
+      "receptor": "glp1r",
+      "replicate_cells": 45,
+      "constraint_mae_lower_bound": 2.061274799037666,
+      "independence_warning": "Three cells per peptide are repeated assay replicates, not independent units."
+    },
+    {
+      "model": "component_mean",
+      "receptor": "gcgr",
+      "replicate_cells": 45,
+      "constraint_mae_lower_bound": 2.174073902791312,
+      "independence_warning": "Three cells per peptide are repeated assay replicates, not independent units."
+    },
+    {
+      "model": "component_mean",
+      "receptor": "glp1r",
+      "replicate_cells": 45,
+      "constraint_mae_lower_bound": 2.123814345681581,
+      "independence_warning": "Three cells per peptide are repeated assay replicates, not independent units."
+    }
+  ],
+  "local_detail_artifact_sha256": {
+    "endpoint_records": "6e4bf4f4add63d6958ee8459be6f9ce14e3ec61544646d9db288c87f6829601b",
+    "replicate_records": "8bea1b854933567b256bbaade5cb41064913ee9b00cf4527474aab6e6c1b05eb"
+  },
+  "release_artifact_sha256": {
+    "metrics_csv": "ff54ffd4ccf956ee35ddfc6fe28c38336d3a00fbdb3ec81b79de84ada54f7d09"
+  },
+  "claim_boundary": "Retrospective public-label evaluation on local designed analogues; not blinded, prospective in this project, distant-family generalization, binding affinity, or a comparison with the source paper's CNN."
+}

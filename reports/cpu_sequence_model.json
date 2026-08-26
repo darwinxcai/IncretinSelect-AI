@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "model_id": "component_weighted_aligned_ridge_v1",
+  "endpoint": "cAMP accumulation EC50",
+  "unit": "log10(pM)",
+  "endpoint_warning": "Functional potency, not binding affinity or efficacy.",
+  "training_records": 125,
+  "observed_training_labels": 250,
+  "censored_training_labels": 0,
+  "sequence_components": 17,
+  "feature_count": 630,
+  "training_sha256": "faf17d94804569a8149661c63e4b93b6944fa4ced17d23adad0b760648a40144",
+  "folds_sha256": "ad7bd4f04ba0d963797877ff84892f966ff534b05ce6ff022c643f8610ec4f54",
+  "config_sha256": "78669e41b634f3e8170aeb89ee27ecdb09ee0d217e9507181bad5b711881a9ba",
+  "holdout_sequences_accessed": false,
+  "holdout_labels_accessed": false,
+  "censored_values_imputed": 0,
+  "model_contract": {
+    "schema_version": 1,
+    "model_id": "component_weighted_aligned_ridge_v1",
+    "feature_encoding": "Position-specific one-hot encoding of the frozen 30-column alignment using a fixed 20-residue-plus-gap alphabet.",
+    "alphabet": "-ACDEFGHIKLMNPQRSTVWY",
+    "aligned_length": 30,
+    "targets": [
+      "GCGR log10 EC50 (pM)",
+      "GLP-1R log10 EC50 (pM)"
+    ],
+    "selectivity_prediction": "GCGR prediction minus GLP-1R prediction; no separately fitted selectivity target.",
+    "outer_evaluation": "Exactly the frozen cluster-intact outer folds in data/derived/outer_folds.csv.",
+    "inner_selection": "Leave one training-only sequence component out; minimize the unweighted mean of component-level, two-receptor MAE.",
+    "component_weighting": "Within every fit, each training sequence component has equal total weight; records within a component share that weight equally.",
+    "alpha_grid": [
+      0.0001,
+      0.001,
+      0.01,
+      0.1,
+      1.0,
+      10.0,
+      100.0,
+      1000.0,
+      10000.0,
+      100000.0
+    ],
+    "bootstrap": {
+      "resamples": 10000,
+      "seed": 20260820,
+      "confidence_level": 0.95,
+      "unit": "sequence_component"
+    },
+    "prospective_holdout_access": "forbidden"
+  },
+  "hyperparameter_selections": [
+    {
+      "outer_fold": 1,
+      "outer_training_records": 83,
+      "outer_test_records": 42,
+      "outer_training_components": 14,
+      "selected_alpha": 1.0,
+      "inner_scores": [
+        {
+          "alpha": 0.0001,
+          "component_macro_two_receptor_mae": 1.4319731276260277
+        },
+        {
+          "alpha": 0.001,
+          "component_macro_two_receptor_mae": 1.3906366103686576
+        },
+        {
+          "alpha": 0.01,
+          "component_macro_two_receptor_mae": 1.1888987781958424
+        },
+        {
+          "alpha": 0.1,
+          "component_macro_two_receptor_mae": 0.9825188432643396
+        },
+        {
+          "alpha": 1.0,
+          "component_macro_two_receptor_mae": 0.8537067213304022
+        },
+        {
+          "alpha": 10.0,
+          "component_macro_two_receptor_mae": 0.8905626501956032
+        },
+        {
+          "alpha": 100.0,
+          "component_macro_two_receptor_mae": 1.1110376992302344
+        },
+        {
+          "alpha": 1000.0,
+          "component_macro_two_receptor_mae": 1.2965013649081112
+        },
+        {
+          "alpha": 10000.0,
+          "component_macro_two_receptor_mae": 1.3426279973243194
+        },
+        {
+          "alpha": 100000.0,
+          "component_macro_two_receptor_mae": 1.3480636068987764
+        }
+      ]
+    },
+    {
+      "outer_fold": 2,
+      "outer_training_records": 83,
+      "outer_test_records": 42,
+      "outer_training_components": 11,
+      "selected_alpha": 10.0,
+      "inner_scores": [
+        {
+          "alpha": 0.0001,
+          "component_macro_two_receptor_mae": 1.0488204067946683
+        },
+        {
+          "alpha": 0.001,
+          "component_macro_two_receptor_mae": 1.0385206029246516
+        },
+        {
+          "alpha": 0.01,
+          "component_macro_two_receptor_mae": 0.9766675107762456
+        },
+        {
+          "alpha": 0.1,
+          "component_macro_two_receptor_mae": 0.9329388956436254
+        },
+        {
+          "alpha": 1.0,
+          "component_macro_two_receptor_mae": 0.7856169508310612
+        },
+        {
+          "alpha": 10.0,
+          "component_macro_two_receptor_mae": 0.6820783211892912
+        },
+        {
+          "alpha": 100.0,
+          "component_macro_two_receptor_mae": 0.9028604638813483
+        },
+        {
+          "alpha": 1000.0,
+          "component_macro_two_receptor_mae": 1.113490703087721
+        },
+        {
+          "alpha": 10000.0,
+          "component_macro_two_receptor_mae": 1.1630773839326494
+        },
+        {
+          "alpha": 100000.0,
+          "component_macro_two_receptor_mae": 1.1695584068599822
+        }
+      ]
+    },
+    {
+      "outer_fold": 3,
+      "outer_training_records": 84,
+      "outer_test_records": 41,
+      "outer_training_components": 9,
+      "selected_alpha": 1.0,
+      "inner_scores": [
+        {
+          "alpha": 0.0001,
+          "component_macro_two_receptor_mae": 1.3277220794980988
+        },
+        {
+          "alpha": 0.001,
+          "component_macro_two_receptor_mae": 1.3257821838874788
+        },
+        {
+          "alpha": 0.01,
+          "component_macro_two_receptor_mae": 1.3075028480272255
+        },
+        {
+          "alpha": 0.1,
+          "component_macro_two_receptor_mae": 1.1865791981292508
+        },
+        {
+          "alpha": 1.0,
+          "component_macro_two_receptor_mae": 1.0379474354365748
+        },
+        {
+          "alpha": 10.0,
+          "component_macro_two_receptor_mae": 1.1083658660590057
+        },
+        {
+          "alpha": 100.0,
+          "component_macro_two_receptor_mae": 1.1387950244163134
+        },
+        {
+          "alpha": 1000.0,
+          "component_macro_two_receptor_mae": 1.1863951891912048
+        },
+        {
+          "alpha": 10000.0,
+          "component_macro_two_receptor_mae": 1.1992737117481473
+        },
+        {
+          "alpha": 100000.0,
+          "component_macro_two_receptor_mae": 1.2004846017271023
+        }
+      ]
+    }
+  ],
+  "pooled_metrics": [
+    {
+      "model": "nn",
+      "endpoint": "GCGR log10 EC50 (pM)",
+      "component_macro_mae_log10_pm": 0.6380331856673797,
+      "n": 125,
+      "mae_log10_pm": 0.7687827351016461,
+      "rmse_log10_pm": 1.1191588765557035,
+      "geometric_fold_error": 5.871955221966534,
+      "pearson_r": 0.7099488782367112,
+      "spearman_rho": 0.670928760560818,
+      "r_squared": 0.4397922805107598
+    },
+    {
+      "model": "nn",
+      "endpoint": "GLP-1R log10 EC50 (pM)",
+      "component_macro_mae_log10_pm": 1.0796795663811949,
+      "n": 125,
+      "mae_log10_pm": 1.177839122708687,
+      "rmse_log10_pm": 1.4676578408183427,
+      "geometric_fold_error": 15.060490715842828,
+      "pearson_r": 0.5154676936605199,
+      "spearman_rho": 0.4642572543833096,
+      "r_squared": 0.0160073965472326
+    },
+    {
+      "model": "nn",
+      "endpoint": "selectivity log10 ratio",
+      "component_macro_mae_log10_pm": 0.8951368264494041,
+      "n": 125,
+      "mae_log10_pm": 1.0948322102545507,
+      "rmse_log10_pm": 1.3275130696412538,
+      "geometric_fold_error": 12.440338862139345,
+      "pearson_r": 0.5515559415767951,
+      "spearman_rho": 0.5758501220144654,
+      "r_squared": 0.1617428950235693
+    },
+    {
+      "model": "ridge",
+      "endpoint": "GCGR log10 EC50 (pM)",
+      "component_macro_mae_log10_pm": 0.6115218852732901,
+      "n": 125,
+      "mae_log10_pm": 0.6266288948693587,
+      "rmse_log10_pm": 0.8458460706389159,
+      "geometric_fold_error": 4.23281117273472,
+      "pearson_r": 0.8701814048949627,
+      "spearman_rho": 0.7395466574255684,
+      "r_squared": 0.6800012558111284
+    },
+    {
+      "model": "ridge",
+      "endpoint": "GLP-1R log10 EC50 (pM)",
+      "component_macro_mae_log10_pm": 1.1891200126253016,
+      "n": 125,
+      "mae_log10_pm": 1.0695780120593172,
+      "rmse_log10_pm": 1.3749155583242259,
+      "geometric_fold_error": 11.737565047381793,
+      "pearson_r": 0.5107588090612061,
+      "spearman_rho": 0.5758268969708659,
+      "r_squared": 0.13643655830770862
+    },
+    {
+      "model": "ridge",
+      "endpoint": "selectivity log10 ratio",
+      "component_macro_mae_log10_pm": 1.0174352685928372,
+      "n": 125,
+      "mae_log10_pm": 1.1357306936819258,
+      "rmse_log10_pm": 1.424913341940377,
+      "geometric_fold_error": 13.668809588838407,
+      "pearson_r": 0.5342021106105699,
+      "spearman_rho": 0.5377211822558988,
+      "r_squared": 0.03422371256044243
+    }
+  ],
+  "paired_comparisons": [
+    {
+      "endpoint": "GCGR log10 EC50 (pM)",
+      "ridge_mae_log10_pm": 0.6266288948693587,
+      "nn_mae_log10_pm": 0.7687827351016461,
+      "mae_delta_log10_pm": -0.1421538402322873,
+      "confidence_level": 0.95,
+      "ci_lower": -0.7790162421387624,
+      "ci_upper": 0.18216244113397465,
+      "resamples": 10000,
+      "seed": 20260820,
+      "components": 17
+    },
+    {
+      "endpoint": "GLP-1R log10 EC50 (pM)",
+      "ridge_mae_log10_pm": 1.0695780120593172,
+      "nn_mae_log10_pm": 1.177839122708687,
+      "mae_delta_log10_pm": -0.10826111064936973,
+      "confidence_level": 0.95,
+      "ci_lower": -0.7273762818433716,
+      "ci_upper": 0.2489188883238488,
+      "resamples": 10000,
+      "seed": 20260820,
+      "components": 17
+    },
+    {
+      "endpoint": "selectivity log10 ratio",
+      "ridge_mae_log10_pm": 1.1357306936819258,
+      "nn_mae_log10_pm": 1.0948322102545507,
+      "mae_delta_log10_pm": 0.04089848342737513,
+      "confidence_level": 0.95,
+      "ci_lower": -0.13855903823374047,
+      "ci_upper": 0.22907842839579742,
+      "resamples": 10000,
+      "seed": 20260820,
+      "components": 17
+    }
+  ],
+  "ridge_fold_metrics": [
+    {
+      "outer_fold": 1,
+      "n": 42,
+      "gcgr_mae_log10_pm": 0.293035287324367,
+      "glp1r_mae_log10_pm": 1.514269280683833,
+      "selectivity_mae_log10_pm": 1.605869882577503
+    },
+    {
+      "outer_fold": 2,
+      "n": 42,
+      "gcgr_mae_log10_pm": 1.0471534402767293,
+      "glp1r_mae_log10_pm": 0.9275343293298492,
+      "selectivity_mae_log10_pm": 1.155471636431489
+    },
+    {
+      "outer_fold": 3,
+      "n": 41,
+      "gcgr_mae_log10_pm": 0.5375776902298486,
+      "glp1r_mae_log10_pm": 0.759548777727805,
+      "selectivity_mae_log10_pm": 0.6339022661430016
+    }
+  ],
+  "bootstrap": {
+    "resamples": 10000,
+    "seed": 20260820,
+    "confidence_level": 0.95,
+    "unit": "sequence_component"
+  }
+}

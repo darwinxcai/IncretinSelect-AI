@@ -1,0 +1,57 @@
+{
+  "artifact": "src/incretinselect/assets/incretin_ridge_v1.json",
+  "artifact_id": "incretinselect_aligned_ridge_v1",
+  "artifact_sha256": "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321",
+  "artifact_version": "1.0.0",
+  "contains_reference_activity_labels": false,
+  "inner_scores": [
+    {
+      "alpha": 0.0001,
+      "component_macro_two_receptor_mae": 1.6400176220558114
+    },
+    {
+      "alpha": 0.001,
+      "component_macro_two_receptor_mae": 1.549816968177149
+    },
+    {
+      "alpha": 0.01,
+      "component_macro_two_receptor_mae": 1.214604133260643
+    },
+    {
+      "alpha": 0.1,
+      "component_macro_two_receptor_mae": 0.9290667369291792
+    },
+    {
+      "alpha": 1.0,
+      "component_macro_two_receptor_mae": 0.7890551581412586
+    },
+    {
+      "alpha": 10.0,
+      "component_macro_two_receptor_mae": 0.7715242402667664
+    },
+    {
+      "alpha": 100.0,
+      "component_macro_two_receptor_mae": 0.965736040871105
+    },
+    {
+      "alpha": 1000.0,
+      "component_macro_two_receptor_mae": 1.1882691437485549
+    },
+    {
+      "alpha": 10000.0,
+      "component_macro_two_receptor_mae": 1.2584034386215588
+    },
+    {
+      "alpha": 100000.0,
+      "component_macro_two_receptor_mae": 1.2669134691815989
+    }
+  ],
+  "portable_without_raw_workbooks": true,
+  "schema_version": 1,
+  "selected_alpha": 10.0,
+  "source_sha256": {
+    "cpu_model_config": "78669e41b634f3e8170aeb89ee27ecdb09ee0d217e9507181bad5b711881a9ba",
+    "outer_folds_with_components": "ad7bd4f04ba0d963797877ff84892f966ff534b05ce6ff022c643f8610ec4f54",
+    "training": "faf17d94804569a8149661c63e4b93b6944fa4ced17d23adad0b760648a40144"
+  }
+}

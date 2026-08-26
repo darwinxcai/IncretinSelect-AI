@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "incretinselect-ai"
+version = "0.5.0"
+description = "Local research tool for sequence-based incretin functional-potency estimation"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Darwin Cai"}]
+license = {file = "LICENSE"}
+keywords = ["GPCR", "incretin", "peptide", "machine learning", "drug discovery"]
+dependencies = ["numpy>=1.24,<3"]
+
+[project.optional-dependencies]
+data = ["openpyxl>=3.1,<4"]
+plot = ["matplotlib>=3.8,<4"]
+dev = ["matplotlib>=3.8,<4", "openpyxl>=3.1,<4", "ruff==0.16.4", "setuptools>=68"]
+
+[project.scripts]
+incretin-validate = "incretinselect.activity:main"
+incretin-structures = "incretinselect.structures:main"
+incretin-fetch = "incretinselect.sources:main"
+incretin-predict = "incretinselect.cli:main"
+incretin-screen = "incretinselect.screen:main"
+incretin-web = "incretinselect.web:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+incretinselect = ["assets/*.json"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# This preparation script is checksum-locked as part of the pre-score receipt.
+"scripts/freeze_external_predictions.py" = ["I001"]

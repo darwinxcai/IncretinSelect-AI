@@ -1,0 +1,3846 @@
+{
+  "applicability_reference": {
+    "identity_definition": "Aligned identity over the 30 columns, excluding columns that are gap in both sequences.",
+    "labels_included": false,
+    "sequences": [
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRAQDFVQWLEEGE",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep1"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRAAACFVQWLLNGG",
+        "component_id": "SC005",
+        "peptide_id": "seq_pep10"
+      },
+      {
+        "aligned_sequence": "HAEGTTS-DVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep100"
+      },
+      {
+        "aligned_sequence": "HAEGTFS-DVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep101"
+      },
+      {
+        "aligned_sequence": "HAEGTFT-DVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep102"
+      },
+      {
+        "aligned_sequence": "HAEGTFT-SVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep103"
+      },
+      {
+        "aligned_sequence": "HAEGTFT-SDSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep104"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDV-SYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep105"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSL-EGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep106"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSY-EGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep107"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYL-GQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep108"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLE-QAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep109"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRAAAKFVQWLLNGG",
+        "component_id": "SC005",
+        "peptide_id": "seq_pep11"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEI-AWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep110"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEF-AWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep111"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEF-IWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep112"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEF-IALVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep113"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEFIAWV-KGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep114"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEFIAWL-KGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep115"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEFIAWLVGR-",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep116"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEFIAWLVKR-",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep117"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLEEEAVRLFICWLMNT-",
+        "component_id": "SC010",
+        "peptide_id": "seq_pep118"
+      },
+      {
+        "aligned_sequence": "TNMLWQVFDQARRSDLYKSYDSTFTGQSH-",
+        "component_id": "SC011",
+        "peptide_id": "seq_pep119"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRCAAAFVQWLLNGG",
+        "component_id": "SC005",
+        "peptide_id": "seq_pep12"
+      },
+      {
+        "aligned_sequence": "RGKVLWAIFEKAAQGELYSSVDSTFTGEAH",
+        "component_id": "SC012",
+        "peptide_id": "seq_pep120"
+      },
+      {
+        "aligned_sequence": "HGEGTFTSDVSSYMERQSVDEFIAWLLKGR",
+        "component_id": "SC007",
+        "peptide_id": "seq_pep121"
+      },
+      {
+        "aligned_sequence": "HGEGTFTSDVSSYMESQLVDEFIAWLLKGR",
+        "component_id": "SC007",
+        "peptide_id": "seq_pep122"
+      },
+      {
+        "aligned_sequence": "HGEGTFTSDVSSYMEPQSTDEFIAWLLKGR",
+        "component_id": "SC007",
+        "peptide_id": "seq_pep123"
+      },
+      {
+        "aligned_sequence": "HGEGTFTSDVSSYMDFQSLVEFLAWLLKGR",
+        "component_id": "SC013",
+        "peptide_id": "seq_pep124"
+      },
+      {
+        "aligned_sequence": "HGEGTFTSDLSKQMDFESLVLFLEWLDNG-",
+        "component_id": "SC014",
+        "peptide_id": "seq_pep125"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRKAAAFVQWLLNGG",
+        "component_id": "SC005",
+        "peptide_id": "seq_pep13"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIAEDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep14"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIAKDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep15"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIARDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep16"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIAFDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep17"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIAADKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep18"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIEMDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep19"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRAEDFVQWLENGE",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep2"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIKMDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep20"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIRMDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep21"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIFMDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep22"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSISMDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep23"
+      },
+      {
+        "aligned_sequence": "YSEGTFTSDYSKLKEEEANRLFIEWLLAGG",
+        "component_id": "SC006",
+        "peptide_id": "seq_pep24"
+      },
+      {
+        "aligned_sequence": "YSEGTFTSDLSILKEKEANREFVNWLLAGG",
+        "component_id": "SC015",
+        "peptide_id": "seq_pep25"
+      },
+      {
+        "aligned_sequence": "YSEGTFTSDYSKLLEEEAVRDFIEWLLAGG",
+        "component_id": "SC006",
+        "peptide_id": "seq_pep26"
+      },
+      {
+        "aligned_sequence": "YSEGTFTSDYSKLLERQAIDEFVNWLLKGG",
+        "component_id": "SC016",
+        "peptide_id": "seq_pep27"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep28"
+      },
+      {
+        "aligned_sequence": "YSEGTFTSDYSIYLDKEAAAAFVQWLVAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep29"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRAEDFVQWLENT-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep3"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSEYLDKQAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep30"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDKQAAQEFVNWLEAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep31"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDKQAEREFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep32"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDKQAREEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep33"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDRQAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep34"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDEQAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep35"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDEIAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep36"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDIEAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep37"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDIKAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep38"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYEDKQAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep39"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRAEDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep4"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYRDKQAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep40"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSITLDKQAAQEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep41"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDKQAAEAFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep42"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDKQAAYEFVNWLLAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep43"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIYLDKEAAAAFVQWLVAGG",
+        "component_id": "SC003",
+        "peptide_id": "seq_pep44"
+      },
+      {
+        "aligned_sequence": "YAEGTFISDYSIAMDKIHQQDFVNWLLAGG",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep45"
+      },
+      {
+        "aligned_sequence": "AHSQGTFTSDYSKYLDSRAAAAFVQWLMNT",
+        "component_id": "SC008",
+        "peptide_id": "seq_pep46"
+      },
+      {
+        "aligned_sequence": "AHSQGTFTSDYSKYLDSRAAAAFVQWLVAG",
+        "component_id": "SC008",
+        "peptide_id": "seq_pep47"
+      },
+      {
+        "aligned_sequence": "HGEGTFTSDLSKQMEEECARLFIEWLKNGG",
+        "component_id": "SC017",
+        "peptide_id": "seq_pep48"
+      },
+      {
+        "aligned_sequence": "HGDGSFSDEMNTILDNQAARDFINWLIQTK",
+        "component_id": "SC009",
+        "peptide_id": "seq_pep49"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRAQDFVQWLEAEG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep5"
+      },
+      {
+        "aligned_sequence": "HGDGSFSDEMNTILDGQAARDFINWLIQTK",
+        "component_id": "SC009",
+        "peptide_id": "seq_pep50"
+      },
+      {
+        "aligned_sequence": "HAEGTFTDDVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep51"
+      },
+      {
+        "aligned_sequence": "HAEGTFTADVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep52"
+      },
+      {
+        "aligned_sequence": "HAEGTFTKDVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep53"
+      },
+      {
+        "aligned_sequence": "HAEGTFTTDVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep54"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVLSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep55"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSAYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep56"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVDSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep57"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVASYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep58"
+      },
+      {
+        "aligned_sequence": "YAPGTFISDYSIAMDKIHQQDFVNWLLAQK",
+        "component_id": "SC004",
+        "peptide_id": "seq_pep59"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRAQDFVQWLEAEE",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep6"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRASEFVQWLISG-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep60"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRASEFVQWLIAE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep61"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRRASEFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep62"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDRAAASDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep63"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRSARDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep64"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRSASDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep65"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDEAAASDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep66"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSEAASDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep67"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSASASDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep68"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSERARDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep69"
+      },
+      {
+        "aligned_sequence": "YSQGTFTSDYSKYLEEEAVRLFIEWLLAG-",
+        "component_id": "SC006",
+        "peptide_id": "seq_pep7"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQAAKFI-AWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep70"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLE-GAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep71"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEG--QAEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep72"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQ-AKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep73"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLEGQ-AAEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep74"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLE--AAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep75"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLE---AAEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep76"
+      },
+      {
+        "aligned_sequence": "HAEGTFTSDVSSYLE----AEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep77"
+      },
+      {
+        "aligned_sequence": "HRQGTFTSDYSKYLDSERARDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep78"
+      },
+      {
+        "aligned_sequence": "HSIGTFTSDYSKYLDSERARDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep79"
+      },
+      {
+        "aligned_sequence": "YAEGTFTSDYSIALEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep8"
+      },
+      {
+        "aligned_sequence": "HSMGTFTSDYSKYLDSERARDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep80"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSEYLDSERARDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep81"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLESERARDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep82"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSERAREFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep83"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSERARDFVEWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep84"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSERARDFVAWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep85"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSERARDFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep86"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSERARDFVQWLISEG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep87"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSEYSKYLDSERARDFVQWLVAGG",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep88"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSERASEFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep89"
+      },
+      {
+        "aligned_sequence": "YSEGTFTSDYSKLLEEEAVRLFIEWLVKGP",
+        "component_id": "SC006",
+        "peptide_id": "seq_pep9"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSIRASEFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep90"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSEYLDSRRASEFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep91"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSRYLDSRRASEFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep92"
+      },
+      {
+        "aligned_sequence": "HSQGTFTSDYSKYLDSRAASEFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep93"
+      },
+      {
+        "aligned_sequence": "HSIGTFTSDYSKYLDSRRASEFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep94"
+      },
+      {
+        "aligned_sequence": "-HQGTFTSDYSKYLDSRRASEFVQWLISE-",
+        "component_id": "SC002",
+        "peptide_id": "seq_pep95"
+      },
+      {
+        "aligned_sequence": "-HEGTFTSDVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep96"
+      },
+      {
+        "aligned_sequence": "HA-GTFTSDVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep97"
+      },
+      {
+        "aligned_sequence": "HAET-FTSDVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep98"
+      },
+      {
+        "aligned_sequence": "HAEG-FTSDVSSYLEGQAAKEFIAWLVKGR",
+        "component_id": "SC001",
+        "peptide_id": "seq_pep99"
+      }
+    ]
+  },
+  "artifact_id": "incretinselect_aligned_ridge_v1",
+  "artifact_version": "1.0.0",
+  "benchmark_context": {
+    "development_records": 125,
+    "development_sequence_components": 17,
+    "external_evaluation": "Mixed result on 15 published designs: the GCGR point error was lower but its dependence-aware interval crossed zero, while pooled GLP-1R error was worse versus tied 1-NN; no overall superiority.",
+    "metric_note": "Development out-of-fold MAE is population-level benchmark context, not an individual prediction interval.",
+    "metrics": {
+      "gcgr": {
+        "development_oof_geometric_fold_error": 4.23281117273472,
+        "development_oof_mae_log10": 0.6266288948693587
+      },
+      "glp1r": {
+        "development_oof_geometric_fold_error": 11.737565047381793,
+        "development_oof_mae_log10": 1.0695780120593172
+      },
+      "selectivity": {
+        "development_oof_geometric_fold_error": 13.668809588838407,
+        "development_oof_mae_log10": 1.1357306936819258
+      }
+    }
+  },
+  "created_on": "2026-08-20",
+  "endpoint": {
+    "assay": "cell-based cAMP accumulation",
+    "targets": [
+      "GCGR log10 EC50 (pM)",
+      "GLP-1R log10 EC50 (pM)"
+    ],
+    "warning": "Functional potency only; not binding affinity, efficacy, safety, or clinical activity."
+  },
+  "input_contract": {
+    "aligned_length": 30,
+    "alignment_policy": "Input must already be aligned. Product code must not infer alignment, trim residues, or encode noncanonical chemistry.",
+    "alphabet": "-ACDEFGHIKLMNPQRSTVWY",
+    "representation": "30-column aligned natural-amino-acid sequence"
+  },
+  "model": {
+    "coefficients": [
+      [
+        0.026789090501871934,
+        0.06820003612899846
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.0871015833086083,
+        0.018794749783794147
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.04904815899743956,
+        -0.07455422251080479
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.10123445103380015,
+        0.1795938705193904
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.16324510374249224,
+        0.09870985289980269
+      ],
+      [
+        -0.012309264477064765,
+        0.033681453189895356
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.04753644610497714,
+        0.0427926420430439
+      ],
+      [
+        -0.34083040056514907,
+        -0.39123649189595316
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.007301842512064586,
+        0.01789152588723866
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.038410555968240466,
+        0.057637217445811136
+      ],
+      [
+        0.2891315886346907,
+        0.1183416568684986
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.02013756957496819,
+        -0.02636498933959065
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.03633928256716636,
+        0.024194546916995453
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.011997871856047278,
+        0.003954016506370232
+      ],
+      [
+        -0.3331842416115936,
+        -0.1467547376395148
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.01420927766707018,
+        -0.023371315043545362
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.002944943857773434,
+        0.03581187844553313
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.005571488878405937,
+        0.05937001370016021
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.038410555968240466,
+        0.057637217445811136
+      ],
+      [
+        -0.04410340089913129,
+        -0.10456666774398354
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.011797892815282067,
+        -0.015871621892654925
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.038564795972951364,
+        -0.0062063976444604076
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.012934724632433213,
+        0.12194403820809752
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.033171849248990797,
+        0.101020062045615
+      ],
+      [
+        -0.05737090769072073,
+        -0.2105235368517247
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0029430077730812905,
+        0.13026250126786706
+      ],
+      [
+        0.0017821177803283212,
+        -0.030578386452501473
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.03914232710338717,
+        0.034786496847031806
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0013687047409064758,
+        0.010300521510852586
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.058798139015108664,
+        -0.11828338901565244
+      ],
+      [
+        -0.03680070717082808,
+        -0.04856576369471276
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03672333321708728,
+        -0.066261191906295
+      ],
+      [
+        0.05979814887571073,
+        0.06218882167353922
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.032313840285912464,
+        0.018453023939461227
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.034921704561449114,
+        -0.015189500566808374
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.02042985053034611,
+        0.11305320699352753
+      ],
+      [
+        0.038410555968240466,
+        0.057637217445811136
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.09353765595514954,
+        -0.011966195481747247
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.12695934561982808,
+        -0.16561274792789835
+      ],
+      [
+        0.0010257973126723621,
+        0.01389939667696709
+      ],
+      [
+        0.04236700044085416,
+        -0.002196441570828061
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.04209533431422725,
+        -0.008979383130866577
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.002043709475450206,
+        -0.013374601914741045
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.038410555968240466,
+        0.057637217445811136
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.011892398531342288,
+        0.0019130491394660646
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.012361195609514038,
+        -0.04983716898848366
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041306047042294375,
+        -0.01567338837154099
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.09249163642285058,
+        0.03334782756479857
+      ],
+      [
+        -0.2578058773153499,
+        -0.05634501699320625
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.017742661860975027,
+        0.0225697101093987
+      ],
+      [
+        0.05549378041147544,
+        0.008300819233222616
+      ],
+      [
+        0.038410555968240466,
+        0.057637217445811136
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.05722202952727867,
+        0.05460748784739859
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0050167468663965785,
+        0.006682787018238717
+      ],
+      [
+        -0.061893198737978744,
+        0.007210695761880155
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.038410555968240466,
+        0.057637217445811136
+      ],
+      [
+        -0.030172588817607145,
+        -0.024191197644397557
+      ],
+      [
+        0.04205861854648351,
+        -0.1289622901011054
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.016561274500258683,
+        0.18158221047778403
+      ],
+      [
+        0.046107395988689126,
+        0.043377786500377775
+      ],
+      [
+        0.00831160435814322,
+        0.009977644509985341
+      ],
+      [
+        0.0016721135965753436,
+        0.01588319916124876
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.12329455179647976,
+        -0.22380554097722166
+      ],
+      [
+        -0.002062420942124246,
+        0.046321787614736404
+      ],
+      [
+        0.01254202777398668,
+        0.01583943641736785
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.015998294791595098,
+        0.054887891890252984
+      ],
+      [
+        0.008353190178801196,
+        0.011650598822182391
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.07853139879709474,
+        -0.05586941692703307
+      ],
+      [
+        -0.2250755066468926,
+        -0.18189764109103945
+      ],
+      [
+        0.08295656879404556,
+        0.10859732938762227
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.01749211344419665,
+        0.0129105772878984
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0032856268256800077,
+        0.01478206260262724
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0005875789660811757,
+        0.16592655883678153
+      ],
+      [
+        0.02598612455988648,
+        -0.1318093847936004
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.0052934814141835,
+        0.05481879305195003
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.10322721545404777,
+        -0.1636008606073781
+      ],
+      [
+        -0.017671873891073685,
+        0.038363483412124734
+      ],
+      [
+        0.012953456445357146,
+        0.004506122903875579
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.016337108964238456,
+        -0.020652497349431087
+      ],
+      [
+        0.07381541809308713,
+        0.10492990149670997
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.029823569406191748,
+        0.11996583888499332
+      ],
+      [
+        -0.018761552559735075,
+        0.33140294075428994
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.018606673766441126,
+        -0.25361814862228077
+      ],
+      [
+        -0.17784849591349666,
+        -0.21805566422957068
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.017165084450347787,
+        0.044916200066593234
+      ],
+      [
+        0.026933949728839977,
+        -0.011833070027722489
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.019484214123005304,
+        -0.05827057027540706
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.007817017927389048,
+        0.015415238444809545
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.014453029142260118,
+        0.093207501118457
+      ],
+      [
+        -0.011963519237364495,
+        -0.037761187687083655
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.17122124474805883,
+        -0.02197631652096519
+      ],
+      [
+        -0.1830767575451271,
+        -0.011257231716693614
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        -0.011229015046314348,
+        0.031176096104313475
+      ],
+      [
+        -0.10396090539215211,
+        -0.2427361820367019
+      ],
+      [
+        0.24873810824916184,
+        0.05939158653887415
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.012934724632433213,
+        0.12194403820809752
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.010980076631475513,
+        0.054220623029505095
+      ],
+      [
+        0.03865144373174992,
+        -0.14312635187206152
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.21137102803698976,
+        -0.015692891478247338
+      ],
+      [
+        0.006017570603346552,
+        0.1492037352129258
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.006919965259045341,
+        0.006966265129602359
+      ],
+      [
+        -0.006596327126477482,
+        -0.02924459607234185
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.011349744674836544,
+        0.03136554935970333
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.0026453789793634912,
+        -0.04932905271128661
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.017671873891073685,
+        0.038363483412124734
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.07511704296476693,
+        -0.0710185726017317
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.010775148783144829,
+        0.146032541930268
+      ],
+      [
+        0.019178734856264458,
+        0.034113788074675126
+      ],
+      [
+        0.05036268878823345,
+        0.022078019537115325
+      ],
+      [
+        -0.018761552559735075,
+        0.33140294075428994
+      ],
+      [
+        -0.12802819276964186,
+        -0.4607303668124182
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.06366649353009954,
+        -0.04509366712499194
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.023406426137182114,
+        -0.04668201008385546
+      ],
+      [
+        0.0046930227481037975,
+        0.01847427982629988
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.00703231957056106,
+        0.09247058737537252
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.05907305565898862,
+        0.20493687482533005
+      ],
+      [
+        0.01996638621468533,
+        -0.16072832596178432
+      ],
+      [
+        -0.027842605380696536,
+        -0.08753941642433566
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.017671873891073685,
+        0.038363483412124734
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.004990237527651173,
+        -0.014201805844159676
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.13403528937009526,
+        -0.010762568540972009
+      ],
+      [
+        -0.08742034946066554,
+        -0.03526258509967637
+      ],
+      [
+        0.0282482516840125,
+        0.164951363156112
+      ],
+      [
+        0.010926026432374487,
+        -0.14103290006634323
+      ],
+      [
+        0.0038432320496476747,
+        0.009148675485340277
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.11007011770059011,
+        -0.06541315227572368
+      ],
+      [
+        0.011198642997836659,
+        0.09275182104796845
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.01909879328995842,
+        -0.023870987912846416
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.007834459480661714,
+        0.03631155131483419
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.011744499026182057,
+        0.06098899418449495
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.098273059998669,
+        0.0009275286018612933
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.017671873891073685,
+        0.038363483412124734
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        -0.10361001894307419,
+        -0.0878394427964932
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.06813771121893314,
+        -0.01701825871045789
+      ],
+      [
+        -4.642065633770054e-06,
+        -0.07328060103460253
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.06790835582431809,
+        0.10571399337471558
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.003067302376910418,
+        -0.0009162852313905153
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.07829179369407849,
+        0.0578977725496069
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.09284814320926697,
+        -0.05995605754588374
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.0014390234170773063,
+        -0.002197290935187549
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.00982531039221944,
+        0.014637854337175307
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.013754965324487849,
+        0.03637189314318228
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0024906315151911025,
+        -0.023931329741194485
+      ],
+      [
+        -0.03909835497893669,
+        -0.03451858293910306
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0062642286889595025,
+        -0.05832264962348717
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.09065431742123195,
+        0.1671394473566429
+      ],
+      [
+        -0.03320744098049907,
+        0.11173486616593395
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.06890138302276919,
+        0.00708498395969377
+      ],
+      [
+        0.10721559192149074,
+        0.014442763121141162
+      ],
+      [
+        -0.09253801958159388,
+        -0.2877909217748169
+      ],
+      [
+        -4.642065633770054e-06,
+        -0.07328060103460253
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.12146329367304425,
+        0.09691409229237952
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.015232634079725105,
+        -0.07985023585195199
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.007402533985630751,
+        0.003208684778808443
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.004452480038134817,
+        -0.023621504221529564
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.11865078379863755,
+        -0.017446827284993565
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.05912693263212649,
+        0.037384812462771845
+      ],
+      [
+        -0.07685768983904002,
+        0.1020766117813237
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.038410555968240466,
+        0.057637217445811136
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.05338787508113061,
+        -0.007485363708364995
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.02002857765318976,
+        -0.07190339540187496
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.029267602280478797,
+        -0.08628404910858044
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.11363221335927556,
+        0.01052563541774195
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0433240575328949,
+        -0.04307448977926285
+      ],
+      [
+        0.041123664160944394,
+        0.03645867324382081
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.05912693263212649,
+        0.037384812462771845
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.02291620131703288,
+        0.11387164032890931
+      ],
+      [
+        0.006051090603777727,
+        -0.06568044124701679
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.030076530096273306,
+        -0.0032017813183839194
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.29794271251406546,
+        0.0016280115774224336
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.021946314396531608,
+        0.06498258352506743
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.188752625417803,
+        -0.33506477408505686
+      ],
+      [
+        0.009239024627289042,
+        -0.014380653706705456
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.06132675728527332,
+        0.1715088577747204
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.027641405700307136,
+        0.012736105126842775
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.09205614651205118,
+        0.0612050573249375
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        -0.05912693263212649,
+        0.037384812462771845
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "feature_mean": [
+      0.0032006920415224914,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.5247404844290666,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.2955882352941177,
+      0.0,
+      0.1713235294117646,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.35294117647058826,
+      0.0620242214532872,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0017301038062283738,
+      0.353157439446367,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0014705882352941176,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.5671568627450987,
+      0.0,
+      0.0,
+      0.0,
+      0.0034602076124567475,
+      0.058823529411764705,
+      0.0,
+      0.060553633217993084,
+      0.0,
+      0.0049019607843137246,
+      0.18598615916955044,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.8220588235294115,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0014705882352941176,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0029411764705882353,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.7617647058823527,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.8220588235294115,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.06029411764705882,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.05882352941176471,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.061764705882352944,
+      0.7029411764705891,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.007352941176470588,
+      0.0014705882352941176,
+      0.0,
+      0.06029411764705882,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0014705882352941176,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.7514705882352938,
+      0.06029411764705882,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.8188581314878892,
+      0.060553633217993084,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.061764705882352944,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.06029411764705882,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.1764705882352941,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.17352941176470585,
+      0.0,
+      0.4132352941176475,
+      0.0014705882352941176,
+      0.06029411764705882,
+      0.0,
+      0.0014705882352941176,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0014705882352941176,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.7588235294117645,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.06029411764705882,
+      0.0,
+      0.0,
+      0.007136678200692041,
+      0.0,
+      0.0,
+      0.0,
+      0.17426470588235296,
+      0.4065743944636681,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.060553633217993084,
+      0.23235294117647054,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.09460784313725491,
+      0.0,
+      0.0,
+      0.0049019607843137246,
+      0.0049019607843137246,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.06372549019607843,
+      0.16323529411764706,
+      0.0,
+      0.0,
+      0.0,
+      0.11764705882352941,
+      0.06372549019607843,
+      0.0049019607843137246,
+      0.003676470588235294,
+      0.0,
+      0.0,
+      0.41985294117647154,
+      0.0029411764705882353,
+      0.0049019607843137246,
+      0.0,
+      0.0,
+      0.008578431372549019,
+      0.0049019607843137246,
+      0.0,
+      0.0,
+      0.0,
+      0.07843137254901959,
+      0.44558823529411856,
+      0.2696078431372549,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.008578431372549019,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0014705882352941176,
+      0.0,
+      0.0,
+      0.4688581314878895,
+      0.4120242214532877,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.007352941176470588,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.2443771626297578,
+      0.11764705882352941,
+      0.08088235294117643,
+      0.0,
+      0.007352941176470588,
+      0.15808823529411764,
+      0.058823529411764705,
+      0.0,
+      0.029411764705882353,
+      0.019607843137254898,
+      0.0,
+      0.08383794694348326,
+      0.1337946943483275,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0058823529411764705,
+      0.005190311418685122,
+      0.0,
+      0.0,
+      0.32936851211072676,
+      0.0,
+      0.0014705882352941176,
+      0.0,
+      0.06423010380622837,
+      0.003676470588235294,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.3272058823529417,
+      0.08650519031141864,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.007352941176470588,
+      0.4407439446366787,
+      0.07352941176470588,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.05882352941176471,
+      0.0,
+      0.07352941176470588,
+      0.019607843137254898,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.1055363321799307,
+      0.16205305651672436,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0014705882352941176,
+      0.40147058823529486,
+      0.0,
+      0.0,
+      0.003676470588235294,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.11764705882352941,
+      0.0,
+      0.07352941176470588,
+      0.0,
+      0.060294117647058824,
+      0.003676470588235294,
+      0.11764705882352941,
+      0.019607843137254898,
+      0.14215686274509803,
+      0.0,
+      0.0,
+      0.0,
+      0.13088235294117648,
+      0.0,
+      0.11764705882352941,
+      0.01254325259515571,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.05294117647058821,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.10077854671280273,
+      0.3202854671280278,
+      0.08477508650519026,
+      0.0,
+      0.11764705882352941,
+      0.0,
+      0.0625,
+      0.0,
+      0.09926470588235296,
+      0.014705882352941176,
+      0.23096885813148813,
+      0.3594723183391011,
+      0.0014705882352941176,
+      0.0,
+      0.0,
+      0.0,
+      0.014705882352941176,
+      0.22058823529411767,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.8205882352941173,
+      0.0,
+      0.0,
+      0.0029411764705882353,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.007352941176470588,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.34558823529411814,
+      0.0,
+      0.11764705882352941,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.058823529411764705,
+      0.35294117647058865,
+      0.0,
+      0.0,
+      0.0,
+      0.1752595155709342,
+      0.058823529411764705,
+      0.0,
+      0.1782006920415225,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0029411764705882353,
+      0.0,
+      0.0,
+      0.0,
+      0.286764705882353,
+      0.0,
+      0.12153979238754313,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0014705882352941176,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.8220588235294115,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.8220588235294115,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0014705882352941176,
+      0.058823529411764705,
+      0.0,
+      0.0029411764705882353,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.012326989619377162,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.07958477508650516,
+      0.058823529411764705,
+      0.5036764705882354,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.10735294117647054,
+      0.0,
+      0.0,
+      0.0,
+      0.2551903114186855,
+      0.0,
+      0.0,
+      0.060553633217993084,
+      0.0,
+      0.0014705882352941176,
+      0.0,
+      0.0,
+      0.24852941176470586,
+      0.0,
+      0.029411764705882353,
+      0.2387543252595156,
+      0.0,
+      0.058823529411764705,
+      0.0,
+      0.07785467128027679,
+      0.0,
+      0.029411764705882353,
+      0.0,
+      0.0,
+      0.0,
+      0.08823529411764705,
+      0.0,
+      0.0,
+      0.02249134948096886,
+      0.0,
+      0.6247981545559409,
+      0.058823529411764705,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.029411764705882353,
+      0.0,
+      0.05392156862745098,
+      0.0029411764705882353,
+      0.0,
+      0.1193771626297578,
+      0.0,
+      0.0,
+      0.0,
+      0.21487889273356411,
+      0.0,
+      0.0,
+      0.0,
+      0.005190311418685122,
+      0.0,
+      0.39071510957324135,
+      0.058823529411764705,
+      0.0,
+      0.11274509803921569,
+      0.0,
+      0.0,
+      0.0,
+      0.014705882352941176,
+      0.0,
+      0.17352941176470582,
+      0.0,
+      0.029411764705882353,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "selected_alpha": 10.0,
+    "target_mean": [
+      3.5165467303546323,
+      2.257673641631622
+    ],
+    "target_order": [
+      "gcgr_log10_ec50_pm",
+      "glp1r_log10_ec50_pm"
+    ],
+    "type": "component-weighted multi-output ridge regression"
+  },
+  "provenance": {
+    "components_sha256": "ad7bd4f04ba0d963797877ff84892f966ff534b05ce6ff022c643f8610ec4f54",
+    "config_sha256": "78669e41b634f3e8170aeb89ee27ecdb09ee0d217e9507181bad5b711881a9ba",
+    "external_prediction_lock_sha256": "b85e47af4bc25041f17007e050b8152a24cd1d7e57e29e70f3b87fe61cc645bd",
+    "fit_contract": "All 125 development records, component-balanced weights, ridge alpha selected by leave-one-development-component-out two-receptor MAE.",
+    "primary_source": "Puszkarska et al., Nature Chemistry (2024), doi:10.1038/s41557-024-01532-x",
+    "training_sha256": "faf17d94804569a8149661c63e4b93b6944fa4ced17d23adad0b760648a40144",
+    "upstream_data_license": "CC BY 4.0"
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,7 @@
+identity_threshold,pair_edges_at_or_above_threshold,components,singletons,largest_component,largest_component_fraction,fold_sizes,fold_size_ratio,eligible
+0.7,1935,5,2,119,0.952,119;3;3,39.666666666666664,False
+0.75,1586,8,4,73,0.584,73;44;8,9.125,False
+0.8,1368,12,5,54,0.432,54;40;31,1.7419354838709677,False
+0.85,972,17,8,40,0.32,42;42;41,1.024390243902439,True
+0.9,734,21,11,39,0.312,42;42;41,1.024390243902439,True
+0.95,105,53,35,33,0.264,42;42;41,1.024390243902439,True

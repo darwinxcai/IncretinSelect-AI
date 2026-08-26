@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "frozen_on": "2026-08-20",
+  "identity_definition": "Exact character matches divided by aligned columns where at least one sequence is non-gap; double-gap columns are excluded.",
+  "candidate_identity_thresholds": [0.70, 0.75, 0.80, 0.85, 0.90, 0.95],
+  "outer_folds": 3,
+  "selection_rule": {
+    "strategy": "lowest_candidate_with_balanced_label_blind_folds",
+    "maximum_fold_size_ratio": 1.10,
+    "minimum_components": 9
+  },
+  "expected_selected_threshold": 0.85,
+  "label_access": "forbidden during clustering, threshold selection, and fold assignment"
+}

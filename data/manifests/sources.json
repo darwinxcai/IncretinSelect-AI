@@ -1,0 +1,139 @@
+{
+  "manifest_version": 1,
+  "audited_on": "2026-08-20",
+  "sources": [
+    {
+      "id": "puszkarska_2024_training",
+      "kind": "activity_workbook",
+      "status": "download_and_schema_verified",
+      "paper": {
+        "title": "Machine learning designs new GCGR/GLP-1R dual agonists with enhanced biological potency",
+        "journal": "Nature Chemistry",
+        "year": 2024,
+        "doi": "10.1038/s41557-024-01532-x",
+        "url": "https://www.nature.com/articles/s41557-024-01532-x"
+      },
+      "repository": {
+        "url": "https://github.com/amp91/PeptideModels",
+        "commit": "0a23c0bb86ed251acb671db09295aeac7c9c11cf",
+        "license": "Apache-2.0"
+      },
+      "files": [
+        {
+          "role": "training",
+          "path": "peptide_models/data/training_data.xlsx",
+          "download_url": "https://raw.githubusercontent.com/amp91/PeptideModels/0a23c0bb86ed251acb671db09295aeac7c9c11cf/peptide_models/data/training_data.xlsx",
+          "sha256": "faf17d94804569a8149661c63e4b93b6944fa4ced17d23adad0b760648a40144",
+          "observed_sheets": ["dataset", "alignment"],
+          "observed_data_rows_per_sheet": 125
+        },
+        {
+          "role": "external_reference",
+          "path": "peptide_models/data/reference_data.xlsx",
+          "download_url": "https://raw.githubusercontent.com/amp91/PeptideModels/0a23c0bb86ed251acb671db09295aeac7c9c11cf/peptide_models/data/reference_data.xlsx",
+          "sha256": "86aae0cc42cb8f89d0f622a19c1ff069c5052a0aee93fd0acd3f5fb4e4c97eca",
+          "observed_sheets": ["2009Day"],
+          "observed_data_rows": 26
+        }
+      ],
+      "assay": {
+        "endpoint": "cAMP accumulation EC50",
+        "cell_background": "CHO cells expressing human GCGR or human GLP-1R",
+        "incubation_minutes": 30,
+        "primary_targets": ["GCGR", "GLP-1R"],
+        "T1_mapping": "GCGR",
+        "T2_mapping": "GLP-1R",
+        "raw_ec50_unit": "pM",
+        "log_columns": "log10(molar EC50)"
+      },
+      "dataset_facts": {
+        "unique_peptides": 125,
+        "aligned_length": 30,
+        "alphabet": "20 naturally occurring amino acids plus alignment gap",
+        "c_terminally_amidated_records_reported_in_paper": 122
+      },
+      "notes": [
+        "EC50 measures functional potency, not binding affinity.",
+        "The paper reports that many examples are inactive; censoring/assay ceilings require explicit treatment.",
+        "The reference workbook is a separate-assay external set and must not be merged naively with the 125-peptide training labels."
+      ]
+    },
+    {
+      "id": "puszkarska_2024_prospective_holdout",
+      "kind": "prospective_activity_workbooks",
+      "status": "download_checksum_and_parser_verified",
+      "paper": {
+        "title": "Machine learning designs new GCGR/GLP-1R dual agonists with enhanced biological potency",
+        "journal": "Nature Chemistry",
+        "year": 2024,
+        "doi": "10.1038/s41557-024-01532-x",
+        "url": "https://www.nature.com/articles/s41557-024-01532-x",
+        "license": "CC BY 4.0"
+      },
+      "files": [
+        {
+          "role": "design_sequences",
+          "path": "nature_supplementary/source_data_fig5.xlsx",
+          "download_url": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41557-024-01532-x/MediaObjects/41557_2024_1532_MOESM11_ESM.xlsx",
+          "sha256": "2538300d334ac3ecb0ea0d77fe8dd8e306c75c7d25a09fef3b6746903b92f809",
+          "observed_sheets": ["P1-P15", "5a_GCG", "5b_GLP1"]
+        },
+        {
+          "role": "glp1r_replicates",
+          "path": "nature_supplementary/glp1r_prospective_ec50.xlsx",
+          "download_url": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41557-024-01532-x/MediaObjects/41557_2024_1532_MOESM3_ESM.xlsx",
+          "sha256": "246c142e1da9dd1b918fbedd8e9948e4599c4125147ce529957c1c76d4a4dd89",
+          "expected_sheet": "data_GLP-1R"
+        },
+        {
+          "role": "gcgr_replicates",
+          "path": "nature_supplementary/gcgr_prospective_ec50.xlsx",
+          "download_url": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41557-024-01532-x/MediaObjects/41557_2024_1532_MOESM4_ESM.xlsx",
+          "sha256": "afa8caf9fcd51805e80609977342e4485068091c0b6bef8e19013b2246ccda8a",
+          "expected_sheet": "data_GCGR"
+        }
+      ],
+      "assay": {
+        "endpoint": "cAMP accumulation EC50",
+        "targets": ["GCGR", "GLP-1R"],
+        "replicates_per_target": 3,
+        "raw_ec50_unit": "pM"
+      },
+      "notes": [
+        "P1-P15 were prospectively synthesized and tested after model-guided design.",
+        "The receptor identity is validated from the workbook sheet name and biological controls, not inferred from supplementary-link order.",
+        "Some replicate cells are right-censored strings such as >280000 and must not be treated as exact values.",
+        "The two Greek-symbol summary headers appear transposed relative to values; the parser ignores them and computes an exact mean only when all three replicates are observed."
+      ]
+    },
+    {
+      "id": "rcsb_structure_panel",
+      "kind": "structure_metadata",
+      "status": "entry_ids_and_primary_citations_verified",
+      "api": "https://data.rcsb.org/rest/v1/core",
+      "coordinate_template": "https://files.rcsb.org/download/{pdb_id}.cif",
+      "entry_ids": [
+        "6X18",
+        "6LMK",
+        "7VBH",
+        "7V35",
+        "7FIN",
+        "7FIM",
+        "7FIY",
+        "8YW3",
+        "8YW5",
+        "8YW4"
+      ],
+      "primary_citations": [
+        "10.1016/j.molcel.2020.09.020",
+        "10.1126/science.aaz5346",
+        "10.1038/s41467-022-28683-0",
+        "10.1038/s41421-024-00700-0"
+      ],
+      "notes": [
+        "GIPR structures are context-only until a matched, compatible activity dataset is sourced.",
+        "Engineered multi-agonists contain chemistry not represented in the 125-sequence natural-amino-acid model input."
+      ]
+    }
+  ]
+}

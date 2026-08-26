@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, cite it and the primary experimental dataset."
+title: "IncretinSelect-AI"
+type: software
+authors:
+  - family-names: Cai
+    given-names: Darwin
+version: 0.5.0
+date-released: 2026-08-26
+license: MIT
+keywords:
+  - GPCR
+  - incretin
+  - peptide drug design
+  - machine learning
+  - leakage-resistant evaluation
+references:
+  - type: article
+    title: "Machine learning designs new GCGR/GLP-1R dual agonists with enhanced biological potency"
+    authors:
+      - family-names: Puszkarska
+        given-names: Anna M.
+    journal: Nature Chemistry
+    year: 2024
+    doi: 10.1038/s41557-024-01532-x

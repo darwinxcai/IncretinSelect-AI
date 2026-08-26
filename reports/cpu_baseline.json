@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "endpoint": "cAMP accumulation EC50",
+  "unit": "log10(pM)",
+  "endpoint_warning": "Functional potency, not binding affinity or efficacy.",
+  "model_selection": "none",
+  "holdout_labels_accessed": false,
+  "training_records": 125,
+  "training_sha256": "faf17d94804569a8149661c63e4b93b6944fa4ced17d23adad0b760648a40144",
+  "folds_sha256": "ad7bd4f04ba0d963797877ff84892f966ff534b05ce6ff022c643f8610ec4f54",
+  "observed_training_labels": 250,
+  "censored_training_labels": 0,
+  "nearest_identity_min": 0.06666666666666667,
+  "nearest_identity_max": 0.8333333333333334,
+  "queries_with_nearest_ties": 98,
+  "pooled_metrics": [
+    {
+      "model": "median",
+      "endpoint": "GCGR log10 EC50 (pM)",
+      "n": 125,
+      "mae_log10_pm": 1.5036822984090688,
+      "rmse_log10_pm": 1.945493634208503,
+      "geometric_fold_error": 31.892039873811076,
+      "pearson_r": -0.556911139851678,
+      "spearman_rho": -0.5973230450893972,
+      "r_squared": -0.6928763191167218
+    },
+    {
+      "model": "median",
+      "endpoint": "GLP-1R log10 EC50 (pM)",
+      "n": 125,
+      "mae_log10_pm": 1.5352386548247692,
+      "rmse_log10_pm": 1.7527773676730798,
+      "geometric_fold_error": 34.295619710640416,
+      "pearson_r": -0.2767420883048147,
+      "spearman_rho": -0.2728925576450179,
+      "r_squared": -0.4034460077088311
+    },
+    {
+      "model": "median",
+      "endpoint": "selectivity log10 ratio",
+      "n": 125,
+      "mae_log10_pm": 1.3746018872753538,
+      "rmse_log10_pm": 1.6775822825445228,
+      "geometric_fold_error": 23.69200890883318,
+      "pearson_r": 0.1877335099130934,
+      "spearman_rho": 0.2876549008089516,
+      "r_squared": -0.3386507747891532
+    },
+    {
+      "model": "nn",
+      "endpoint": "GCGR log10 EC50 (pM)",
+      "n": 125,
+      "mae_log10_pm": 0.7687827351016461,
+      "rmse_log10_pm": 1.1191588765557035,
+      "geometric_fold_error": 5.871955221966534,
+      "pearson_r": 0.7099488782367112,
+      "spearman_rho": 0.670928760560818,
+      "r_squared": 0.4397922805107598
+    },
+    {
+      "model": "nn",
+      "endpoint": "GLP-1R log10 EC50 (pM)",
+      "n": 125,
+      "mae_log10_pm": 1.177839122708687,
+      "rmse_log10_pm": 1.4676578408183427,
+      "geometric_fold_error": 15.060490715842828,
+      "pearson_r": 0.5154676936605199,
+      "spearman_rho": 0.4642572543833096,
+      "r_squared": 0.0160073965472326
+    },
+    {
+      "model": "nn",
+      "endpoint": "selectivity log10 ratio",
+      "n": 125,
+      "mae_log10_pm": 1.0948322102545507,
+      "rmse_log10_pm": 1.3275130696412538,
+      "geometric_fold_error": 12.440338862139345,
+      "pearson_r": 0.5515559415767951,
+      "spearman_rho": 0.5758501220144654,
+      "r_squared": 0.1617428950235693
+    }
+  ],
+  "nn_fold_metrics": [
+    {
+      "outer_fold": 1,
+      "n": 42,
+      "gcgr_mae_log10_pm": 0.2274808985212219,
+      "glp1r_mae_log10_pm": 1.2271210300372999,
+      "selectivity_mae_log10_ratio": 1.3387469272995045
+    },
+    {
+      "outer_fold": 2,
+      "n": 42,
+      "gcgr_mae_log10_pm": 0.7974775980840285,
+      "glp1r_mae_log10_pm": 0.8580539758229468,
+      "selectivity_mae_log10_ratio": 1.2792421583864597
+    },
+    {
+      "outer_fold": 3,
+      "n": 41,
+      "gcgr_mae_log10_pm": 1.2938923178118351,
+      "glp1r_mae_log10_pm": 1.4549400022550123,
+      "selectivity_mae_log10_ratio": 0.6560606020245943
+    }
+  ]
+}

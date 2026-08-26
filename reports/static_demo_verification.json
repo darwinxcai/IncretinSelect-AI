@@ -1,0 +1,36 @@
+{
+  "artifact": {
+    "id": "incretinselect_aligned_ridge_v1",
+    "sha256": "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321",
+    "source_and_demo_bytes_identical": true,
+    "version": "1.0.0"
+  },
+  "browser_python_parity": {
+    "applicability_exact": true,
+    "cases": 12,
+    "maximum_absolute_log10_delta": 7.993605777301127e-15,
+    "reference_source": "label-free model applicability references",
+    "tolerance": 1e-12
+  },
+  "browser_validation": {
+    "all_gap_rejected": true,
+    "fasta_rejected": true,
+    "noncanonical_symbols_rejected": true,
+    "outside_neighborhood_do_not_rank_warning": true,
+    "wrong_length_rejected": true
+  },
+  "privacy": {
+    "analytics": false,
+    "external_api": false,
+    "outbound_runtime_urls": 0,
+    "sequence_upload": false
+  },
+  "scientific_boundaries": {
+    "endpoint": "cell-based cAMP EC50 functional potency, not binding affinity",
+    "holdout_labels_accessed": false,
+    "overall_external_superiority_claim": false,
+    "structure_inference_run": false
+  },
+  "status": "passed",
+  "verification_scope": "static model identity, privacy, and browser/Python parity"
+}

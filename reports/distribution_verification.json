@@ -1,0 +1,39 @@
+{
+  "installed_product": {
+    "csv_rows": 1,
+    "ec50_warning_present": true,
+    "model_artifact_id": "incretinselect_aligned_ridge_v1",
+    "model_artifact_sha256": "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321",
+    "prediction_schema_version": 1,
+    "screening_objective": "dual",
+    "screening_out_of_scope_rows": 1,
+    "screening_output_sha256": "5da7d7a81a3c32a4288cc0da4166203bfb1940ed79b12e2af25186733bd07f04",
+    "screening_ranked_rows": 3,
+    "screening_rows": 4,
+    "software_version": "0.5.0",
+    "web_smoke": "ok: rendered 7147 bytes with incretinselect_aligned_ridge_v1 v1.0.0"
+  },
+  "python": "3.12.13",
+  "scientific_boundaries": {
+    "endpoint": "cell-based cAMP EC50 functional potency, not binding affinity",
+    "holdout_labels_accessed": false,
+    "p1_p15_outcomes_accessed": false,
+    "structure_inference_run": false
+  },
+  "status": "passed",
+  "verification_scope": "built wheel installed and exercised outside source tree",
+  "wheel": {
+    "filename": "incretinselect_ai-0.5.0-py3-none-any.whl",
+    "member_count": 21,
+    "required_runtime_files": [
+      "incretinselect/__init__.py",
+      "incretinselect/cli.py",
+      "incretinselect/product.py",
+      "incretinselect/screen.py",
+      "incretinselect/web.py",
+      "incretinselect/assets/incretin_ridge_v1.json"
+    ],
+    "sha256": "2be3bf03936ed2c73ec05f8b52952cdb1bbf0c31121587d0d8dfc802f2b7e97b",
+    "source_date_epoch": "946684800"
+  }
+}
