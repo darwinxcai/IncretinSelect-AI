@@ -7,6 +7,10 @@
   },
   "browser_python_parity": {
     "applicability_exact": true,
+    "batch_maximum_absolute_numeric_delta": 1.000444171950221e-10,
+    "batch_maximum_relative_numeric_delta": 1.4084354423118146e-13,
+    "batch_policy_cases": 5,
+    "batch_policy_exact": true,
     "cases": 12,
     "maximum_absolute_log10_delta": 7.993605777301127e-15,
     "reference_source": "label-free model applicability references",
@@ -14,16 +18,23 @@
   },
   "browser_validation": {
     "all_gap_rejected": true,
-    "fasta_rejected": true,
+    "batch_csv_import": true,
+    "batch_download_audit_receipt": true,
+    "fasta_local_import": true,
+    "fasta_paste_rejected": true,
     "noncanonical_symbols_rejected": true,
     "outside_neighborhood_do_not_rank_warning": true,
+    "short_close_analogue_do_not_rank_warning": true,
+    "single_result_csv_download": true,
+    "single_result_json_download": true,
     "wrong_length_rejected": true
   },
   "privacy": {
     "analytics": false,
     "external_api": false,
+    "local_file_import": true,
     "outbound_runtime_urls": 0,
-    "sequence_upload": false
+    "outbound_sequence_transmission": false
   },
   "scientific_boundaries": {
     "endpoint": "cell-based cAMP EC50 functional potency, not binding affinity",
@@ -32,5 +43,5 @@
     "structure_inference_run": false
   },
   "status": "passed",
-  "verification_scope": "static model identity, privacy, and browser/Python parity"
+  "verification_scope": "static model identity, local-file privacy, single-prediction parity, batch-screening parity, and downloadable artifact contracts"
 }

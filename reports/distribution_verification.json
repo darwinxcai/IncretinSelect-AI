@@ -7,11 +7,11 @@
     "prediction_schema_version": 1,
     "screening_objective": "dual",
     "screening_out_of_scope_rows": 1,
-    "screening_output_sha256": "5da7d7a81a3c32a4288cc0da4166203bfb1940ed79b12e2af25186733bd07f04",
+    "screening_output_sha256": "669ace57e3a5c086988a657940681c28c88f78345220144f24fd2edc35b644e6",
     "screening_ranked_rows": 3,
     "screening_rows": 4,
-    "software_version": "0.5.0",
-    "web_smoke": "ok: rendered 7147 bytes with incretinselect_aligned_ridge_v1 v1.0.0"
+    "software_version": "0.6.0",
+    "web_smoke": "ok: rendered 7616 bytes with incretinselect_aligned_ridge_v1 v1.0.0"
   },
   "python": "3.12.13",
   "scientific_boundaries": {
@@ -23,7 +23,7 @@
   "status": "passed",
   "verification_scope": "built wheel installed and exercised outside source tree",
   "wheel": {
-    "filename": "incretinselect_ai-0.5.0-py3-none-any.whl",
+    "filename": "incretinselect_ai-0.6.0-py3-none-any.whl",
     "member_count": 21,
     "required_runtime_files": [
       "incretinselect/__init__.py",
@@ -33,7 +33,7 @@
       "incretinselect/web.py",
       "incretinselect/assets/incretin_ridge_v1.json"
     ],
-    "sha256": "2be3bf03936ed2c73ec05f8b52952cdb1bbf0c31121587d0d8dfc802f2b7e97b",
+    "sha256": "caff0b4c53ed155859405e92d0d55e6466bcda7eff8d63b4278b14b5b024659c",
     "source_date_epoch": "946684800"
   }
 }

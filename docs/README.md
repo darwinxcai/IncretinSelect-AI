@@ -1,9 +1,10 @@
-# Browser demo
+# Browser application
 
-This directory is a static, zero-install inference demo for GitHub Pages. It uses
-the same frozen, label-free model artifact as the Python package. Prediction math
-runs in the browser; there is no server API, analytics, account, or sequence
-upload.
+This directory contains the static, zero-install application deployed through
+GitHub Pages. It uses the same frozen, label-free model artifact as the Python
+package. Prediction math, aligned FASTA/text import, CSV screening, and result
+downloads run locally in the browser. There is no server API, analytics service,
+account, or outbound transmission of an imported sequence.
 
 Preview it locally from the repository root:
 
@@ -25,7 +26,13 @@ make static-demo
 and checksum manifest. The deployment workflow refuses stale or numerically
 inconsistent assets.
 
-The output remains a point estimate of cell-based cAMP EC50 functional potency.
-It is not affinity, efficacy, safety, experimental validation, or a drug-candidate
-recommendation. Inputs outside the close-analogue neighborhood receive a prominent
-do-not-rank warning.
+Single-sequence input must contain exactly one already-aligned 30-position core.
+Batch input must be UTF-8 CSV with exactly `candidate_id,aligned_sequence`; the
+browser requires an explicit GLP-1R, GCGR, or dual sorting objective and retains
+invalid and out-of-scope rows in the downloaded result. Structure files are not
+accepted because this release does not perform structure-aware inference.
+
+Outputs remain point estimates of cell-based cAMP EC50 functional potency. They
+are not affinity, efficacy, safety, experimental validation, or a drug-candidate
+recommendation. Inputs outside the close-analogue and modeled-length ranking gate
+receive a prominent do-not-rank warning.

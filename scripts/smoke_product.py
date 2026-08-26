@@ -26,7 +26,10 @@ def main() -> int:
     if EXAMPLE_SEQUENCE not in format_csv(result):
         raise RuntimeError("CSV output lost the input sequence")
     page = render_page(sequence=EXAMPLE_SEQUENCE, result=result)
-    if "Research estimate" not in page or result["model"]["artifact_sha256"] not in page:
+    if (
+        "Sequence-only functional-potency estimate" not in page
+        or result["model"]["artifact_sha256"] not in page
+    ):
         raise RuntimeError("Local web interface did not render a complete result")
     screening_input = (
         "candidate_id,aligned_sequence\n"

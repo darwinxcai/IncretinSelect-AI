@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -22,6 +23,29 @@ class ReleaseReadinessTests(unittest.TestCase):
     def test_public_evidence_is_blocked_when_not_supplied(self) -> None:
         gates = audit_release_readiness.audit_public(None, None, None, False)
         self.assertEqual({item["status"] for item in gates}, {"blocked"})
+
+    def test_stale_publication_receipt_cannot_verify_a_new_version(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "reports").mkdir()
+            (root / "pyproject.toml").write_text(
+                '[project]\nname = "incretinselect-ai"\nversion = "9.9.9"\n',
+                encoding="utf-8",
+            )
+            receipt = json.loads(
+                (PROJECT_ROOT / "reports/publication_receipt.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            receipt["version"] = "0.5.0"
+            (root / "reports/publication_receipt.json").write_text(
+                json.dumps(receipt), encoding="utf-8"
+            )
+            gates = audit_release_readiness.audit_publication_receipt(root)
+        by_name = {item["name"]: item for item in gates}
+        self.assertEqual(by_name["public_repository"]["status"], "blocked")
+        self.assertEqual(by_name["remote_ci"]["status"], "blocked")
+        self.assertEqual(by_name["fresh_public_clone"]["status"], "blocked")
 
     def test_source_archive_without_git_uses_release_files(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -62,6 +86,10 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertEqual(report["decision"], "LOCAL_RELEASE_READY_PUBLICATION_BLOCKED")
         self.assertTrue(report["local_release_ready"])
         self.assertFalse(report["public_release_verified"])
+        self.assertEqual(
+            {item["name"] for item in report["public_gates"]},
+            {"public_repository", "public_browser_demo", "remote_ci", "fresh_public_clone"},
+        )
         self.assertFalse(report["scientific_scope"]["affinity_claim"])
         self.assertFalse(report["scientific_scope"]["p1_p15_reused_for_tuning"])
 

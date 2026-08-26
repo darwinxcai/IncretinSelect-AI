@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import contextlib
 import csv
 import hashlib
 import io
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
+from incretinselect import __version__
 from incretinselect.product import load_model, predict
 from incretinselect.screen import (
     INPUT_COLUMNS,
@@ -79,11 +82,11 @@ class BatchScreeningTests(unittest.TestCase):
         self.assertEqual(rows[1]["rank"], "")
         self.assertIn("outside_reference_neighborhood", rows[1]["ranking_exclusion_reason"])
         self.assertEqual(rows[2]["error_code"], "invalid_aligned_sequence")
-        self.assertEqual(rows[0]["software_version"], "0.5.0")
+        self.assertEqual(rows[0]["software_version"], __version__)
         self.assertIn("Mixed result", rows[0]["validation_warning"])
         self.assertIn("no overall superiority", rows[0]["validation_warning"])
         self.assertEqual(receipt["counts"]["total_rows"], 3)
-        self.assertEqual(receipt["model"]["software_version"], "0.5.0")
+        self.assertEqual(receipt["model"]["software_version"], __version__)
         self.assertEqual(receipt["model"]["benchmark_context"], self.model.benchmark)
         self.assertFalse(receipt["scientific_boundaries"]["holdout_labels_accessed"])
         self.assertFalse(receipt["scientific_boundaries"]["p1_p15_outcomes_accessed"])
@@ -195,6 +198,115 @@ class BatchScreeningTests(unittest.TestCase):
                     ]
                 ),
                 2,
+            )
+
+    def test_invalid_receipt_targets_never_mutate_existing_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "candidates.csv"
+            output = root / "screened.csv"
+            source.write_bytes(input_csv([("ref", REF_93)]))
+            output.write_text("existing output\n", encoding="utf-8")
+            base_arguments = [
+                str(source),
+                "--objective",
+                "dual",
+                "--output",
+                str(output),
+            ]
+
+            receipt_directory = root / "receipt-directory"
+            receipt_directory.mkdir()
+            error = io.StringIO()
+            with contextlib.redirect_stderr(error):
+                exit_code = main(
+                    base_arguments
+                    + ["--receipt", str(receipt_directory), "--overwrite"]
+                )
+            self.assertEqual(exit_code, 2)
+            self.assertIn("not a regular file", error.getvalue())
+            self.assertNotIn("Traceback", error.getvalue())
+            self.assertEqual(output.read_text(encoding="utf-8"), "existing output\n")
+
+            blocked_parent = root / "not-a-directory"
+            blocked_parent.write_text("file\n", encoding="utf-8")
+            error = io.StringIO()
+            with contextlib.redirect_stderr(error):
+                exit_code = main(
+                    base_arguments
+                    + [
+                        "--receipt",
+                        str(blocked_parent / "receipt.json"),
+                        "--overwrite",
+                    ]
+                )
+            self.assertEqual(exit_code, 2)
+            self.assertIn("parent is not a directory", error.getvalue())
+            self.assertNotIn("Traceback", error.getvalue())
+            self.assertEqual(output.read_text(encoding="utf-8"), "existing output\n")
+
+            receipt_target = root / "receipt-target.json"
+            receipt_target.write_text("existing receipt\n", encoding="utf-8")
+            receipt_link = root / "receipt-link.json"
+            receipt_link.symlink_to(receipt_target)
+            error = io.StringIO()
+            with contextlib.redirect_stderr(error):
+                exit_code = main(
+                    base_arguments
+                    + ["--receipt", str(receipt_link), "--overwrite"]
+                )
+            self.assertEqual(exit_code, 2)
+            self.assertIn("must not be symbolic links", error.getvalue())
+            self.assertNotIn("Traceback", error.getvalue())
+            self.assertEqual(output.read_text(encoding="utf-8"), "existing output\n")
+            self.assertEqual(
+                receipt_target.read_text(encoding="utf-8"), "existing receipt\n"
+            )
+
+    def test_commit_failure_rolls_back_both_existing_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "candidates.csv"
+            output = root / "screened.csv"
+            receipt = root / "receipt.json"
+            source.write_bytes(input_csv([("ref", REF_93)]))
+            output.write_text("existing output\n", encoding="utf-8")
+            receipt.write_text("existing receipt\n", encoding="utf-8")
+            arguments = [
+                str(source),
+                "--objective",
+                "dual",
+                "--output",
+                str(output),
+                "--receipt",
+                str(receipt),
+                "--overwrite",
+            ]
+            real_replace = os.replace
+
+            def fail_receipt_commit(source_path: object, destination_path: object) -> None:
+                if (
+                    Path(destination_path) == receipt
+                    and str(source_path).endswith(".tmp")
+                ):
+                    raise OSError("simulated receipt commit failure")
+                real_replace(source_path, destination_path)
+
+            error = io.StringIO()
+            with (
+                mock.patch("incretinselect.screen.os.replace", fail_receipt_commit),
+                contextlib.redirect_stderr(error),
+            ):
+                exit_code = main(arguments)
+
+            self.assertEqual(exit_code, 2)
+            self.assertIn("simulated receipt commit failure", error.getvalue())
+            self.assertNotIn("Traceback", error.getvalue())
+            self.assertEqual(output.read_text(encoding="utf-8"), "existing output\n")
+            self.assertEqual(receipt.read_text(encoding="utf-8"), "existing receipt\n")
+            self.assertEqual(
+                [path.name for path in root.iterdir() if path.name.startswith(".")],
+                [],
             )
 
     def test_checked_example_regenerates_byte_for_byte(self) -> None:

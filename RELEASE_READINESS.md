@@ -6,14 +6,21 @@ IncretinSelect-AI separates two claims that are easy to blur:
    guarded batch-screening example, zero-install demo, public-bundle hygiene, and
    CI contract are present and internally auditable.
 2. **Public release verified** additionally requires a public repository, a
-   passing GitHub Actions run, and `make release-check` from a separate public
-   clone.
+   clean top-level GitHub Actions success, a deployed browser demo, and
+   `make release-check` from a separate public clone.
 
 Run the local audit without changing the repository:
 
 ```bash
 make release-readiness
 ```
+
+When `reports/publication_receipt.json` is present, this command automatically
+audits its checked-in public evidence. A URL alone is not enough: the repository
+must have a matching source-tree attestation, the clean clone must pass every
+recorded check, the CI workflow itself must conclude successfully, and the demo
+must be recorded as deployed. This prevents green child jobs inside a red
+infrastructure-failed workflow from being mislabeled as a fully verified release.
 
 Write a dated machine-readable receipt:
 
@@ -23,7 +30,8 @@ python scripts/audit_release_readiness.py \
   --json-output reports/release_readiness.json
 ```
 
-After publication, supply inspectable evidence and require all public gates:
+After a clean CI run and Pages deployment, update the publication receipt or
+supply inspectable evidence and require all public gates:
 
 ```bash
 python scripts/audit_release_readiness.py \

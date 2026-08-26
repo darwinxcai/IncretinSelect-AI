@@ -49,6 +49,7 @@ CI_URL_PATTERN = re.compile(
 DEMO_URL_PATTERN = re.compile(
     r"^https://darwinxcai\.github\.io/IncretinSelect-AI/?$", re.IGNORECASE
 )
+MINIMUM_RELEASE_TESTS = 82
 
 
 class ReadinessError(RuntimeError):
@@ -184,7 +185,8 @@ def audit_local(project_root: Path) -> list[dict[str, str]]:
         and static_receipt.get("artifact", {}).get("source_and_demo_bytes_identical") is True
         and static_receipt.get("browser_python_parity", {}).get("applicability_exact") is True
         and static_privacy.get("external_api") is False
-        and static_privacy.get("sequence_upload") is False
+        and static_privacy.get("local_file_import") is True
+        and static_privacy.get("outbound_sequence_transmission") is False
         and static_boundaries.get("holdout_labels_accessed") is False
         and static_boundaries.get("structure_inference_run") is False
     )
@@ -304,6 +306,108 @@ def audit_public(
     ]
 
 
+def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
+    """Audit checked-in public-release evidence without making network calls."""
+
+    receipt_path = project_root / "reports" / "publication_receipt.json"
+    if not receipt_path.is_file():
+        return [
+            gate("public_repository", "blocked", "publication receipt is missing"),
+            gate("public_browser_demo", "blocked", "publication receipt is missing"),
+            gate("remote_ci", "blocked", "publication receipt is missing"),
+            gate("fresh_public_clone", "blocked", "publication receipt is missing"),
+        ]
+
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    public = receipt.get("public_release", {})
+    expected_tests = receipt.get("local_release", {}).get("tests_passed")
+    receipt_version_ok = receipt.get("version") == read_project_version(project_root)
+    test_evidence_current = bool(
+        isinstance(expected_tests, int) and expected_tests >= MINIMUM_RELEASE_TESTS
+    )
+
+    repository_url = public.get("repository_url")
+    repository_ok = bool(
+        isinstance(repository_url, str)
+        and PUBLIC_URL_PATTERN.fullmatch(repository_url)
+        and public.get("source_tree_match") is True
+        and receipt_version_ok
+    )
+
+    demo = public.get("demo", {})
+    demo_url = demo.get("expected_url")
+    demo_status = demo.get("status")
+    demo_ok = bool(
+        isinstance(demo_url, str)
+        and DEMO_URL_PATTERN.fullmatch(demo_url)
+        and demo_status in {"deployed", "passed"}
+    )
+
+    ci = public.get("ci", {})
+    ci_url = ci.get("run_url")
+    ci_conclusion = ci.get("run_api_conclusion")
+    matrix_ok = all(
+        ci.get(key, {}).get("status") == "passed"
+        and ci.get(key, {}).get("tests_passed") == expected_tests
+        for key in ("python_3_10", "python_3_12")
+    ) and test_evidence_current
+    ci_ok = bool(
+        isinstance(ci_url, str)
+        and CI_URL_PATTERN.fullmatch(ci_url)
+        and matrix_ok
+        and ci.get("overall") in {"passed", "success"}
+        and ci_conclusion == "success"
+    )
+
+    clone = public.get("fresh_public_clone", {})
+    clone_checks = clone.get("checks", {})
+    clone_ok = bool(
+        clone.get("status") == "passed"
+        and clone_checks.get("worktree_clean_after_checks") is True
+        and clone_checks.get("tests_passed") == expected_tests
+        and test_evidence_current
+        and clone_checks.get("ruff") == "passed"
+        and clone_checks.get("product_smoke") == "passed"
+        and clone_checks.get("built_distribution") == "passed"
+        and clone_checks.get("static_demo_parity_cases") == 12
+    )
+
+    if ci_ok:
+        ci_evidence = str(ci_url)
+    elif matrix_ok and ci_url:
+        ci_evidence = (
+            f"both Python matrix jobs passed, but the workflow conclusion is "
+            f"{ci_conclusion!r}; clean top-level CI is still required: {ci_url}"
+        )
+    else:
+        ci_evidence = "publication receipt has no successful two-version CI run"
+
+    return [
+        gate(
+            "public_repository",
+            "pass" if repository_ok else "blocked",
+            str(repository_url)
+            if repository_ok
+            else "publication receipt does not verify the intended public source tree",
+        ),
+        gate(
+            "public_browser_demo",
+            "pass" if demo_ok else "blocked",
+            str(demo_url)
+            if demo_ok
+            else f"browser demo status is {demo_status!r}; a deployed demo is required",
+        ),
+        gate("remote_ci", "pass" if ci_ok else "blocked", ci_evidence),
+        gate(
+            "fresh_public_clone",
+            "pass" if clone_ok else "blocked",
+            f"{expected_tests} tests, Ruff, product smoke, distribution, and 12 browser parity cases passed in a clean public clone"
+            if clone_ok
+            else "publication receipt does not attest the complete clean-clone check",
+        ),
+    ]
+
+
 def build_report(
     project_root: Path,
     *,
@@ -314,12 +418,25 @@ def build_report(
     fresh_clone_release_check: bool,
 ) -> dict[str, Any]:
     local_gates = audit_local(project_root)
-    public_gates = audit_public(
+    explicit_public_gates = audit_public(
+        public_repository_url, public_demo_url, ci_run_url, fresh_clone_release_check
+    )
+    receipt_public_gates = audit_publication_receipt(project_root)
+    explicit_inputs = (
         public_repository_url,
         public_demo_url,
         ci_run_url,
         fresh_clone_release_check,
     )
+    public_gates = [
+        explicit if supplied else receipt
+        for explicit, receipt, supplied in zip(
+            explicit_public_gates,
+            receipt_public_gates,
+            explicit_inputs,
+            strict=True,
+        )
+    ]
     local_ready = all(item["status"] == "pass" for item in local_gates)
     public_verified = all(item["status"] == "pass" for item in public_gates)
     if not local_ready:

@@ -42,7 +42,7 @@
         }
       }
     },
-    "software_version": "0.5.0"
+    "software_version": "0.6.0"
   },
   "objective": {
     "definition": "minimize the worse (larger) of predicted GLP-1R and GCGR log10 EC50 (pM)",
@@ -82,7 +82,7 @@
       "ranking_warning"
     ],
     "filename": "screened_dual.csv",
-    "sha256": "5da7d7a81a3c32a4288cc0da4166203bfb1940ed79b12e2af25186733bd07f04"
+    "sha256": "669ace57e3a5c086988a657940681c28c88f78345220144f24fd2edc35b644e6"
   },
   "ranking_gate": {
     "minimum_standard_residue_count": 26,

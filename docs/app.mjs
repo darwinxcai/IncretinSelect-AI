@@ -1,207 +1,127 @@
-export const EXAMPLE_SEQUENCE = "HSQGTFTSDYSKYLDSRAASEFVQWLISH-";
+import {
+  EXAMPLE_SEQUENCE,
+  TIER_COPY,
+  formatNumber,
+  normalizeSequence,
+  predictFromModel,
+  sha256Hex,
+} from "./model.mjs";
+import {
+  MAX_BROWSER_BYTES,
+  buildBatchArtifacts,
+  parseCandidateCsv,
+  parseSingleFasta,
+  renderSingleResultCsv,
+  renderSingleResultJson,
+} from "./io.mjs";
 
-const TIER_COPY = {
-  close_analogue: {
-    label: "Close analogue",
-    className: "close",
-    summary: (
-      "The input has a close aligned-sequence analogue in the 125-peptide reference " +
-      "set. This supports interpolation, but does not validate the estimate."
-    ),
-  },
-  distant_analogue: {
-    label: "Distant analogue",
-    className: "distant",
-    summary: (
-      "The input is not a close analogue of the reference peptides. Treat both " +
-      "receptor estimates as high-risk extrapolations."
-    ),
-  },
-  outside_reference_neighborhood: {
-    label: "Outside reference neighborhood",
-    className: "outside",
-    summary: (
-      "The input is far from every reference peptide. The numeric output is an " +
-      "extrapolation and should not be used to rank experiments."
-    ),
-  },
-};
+// Retain these exports for the Node parity runner and downstream users.
+export {
+  EXAMPLE_SEQUENCE,
+  TIER_COPY,
+  alignedIdentity,
+  formatNumber,
+  normalizeSequence,
+  predictFromModel,
+  sha256Hex,
+} from "./model.mjs";
 
-export function normalizeSequence(value, model) {
-  if (typeof value !== "string") throw new Error("Sequence input must be text.");
-  if (value.includes(">")) {
-    throw new Error("FASTA headers are not accepted. Paste one aligned sequence only.");
-  }
-  const sequence = value.replace(/\s/g, "").toUpperCase();
-  if (!sequence) throw new Error("Sequence input is empty.");
-  const length = model.input_contract.aligned_length;
-  if (sequence.length !== length) {
-    throw new Error(
-      `This model requires exactly ${length} aligned characters; received ` +
-      `${sequence.length}. The demo will not guess an alignment or trim residues.`,
-    );
-  }
-  const alphabet = new Set(model.input_contract.alphabet);
-  const invalid = [...new Set([...sequence].filter((symbol) => !alphabet.has(symbol)))].sort();
-  if (invalid.length) {
-    throw new Error(
-      `Unsupported sequence symbols: ${invalid.join("")}. Use only standard ` +
-      "amino-acid letters and '-' alignment gaps.",
-    );
-  }
-  if ([...sequence].every((symbol) => symbol === "-")) {
-    throw new Error("An all-gap sequence cannot be predicted.");
-  }
-  return sequence;
-}
+const BATCH_TEMPLATE = (
+  "candidate_id,aligned_sequence\n" +
+  `candidate_01,${EXAMPLE_SEQUENCE}\n` +
+  "candidate_02,HSQGTFTSDYSKYLDSRAAAEFVQWLLAGG\n"
+);
 
-export function alignedIdentity(first, second) {
-  if (first.length !== second.length) throw new Error("Aligned sequences have different lengths.");
-  let comparable = 0;
-  let identical = 0;
-  for (let position = 0; position < first.length; position += 1) {
-    const left = first[position];
-    const right = second[position];
-    if (left === "-" && right === "-") continue;
-    comparable += 1;
-    if (left === right) identical += 1;
-  }
-  if (!comparable) throw new Error("Aligned identity is undefined for all-gap sequences.");
-  return identical / comparable;
-}
-
-function direction(selectivityLog10) {
-  const foldRatio = 10 ** selectivityLog10;
-  if (foldRatio >= 3) return "GLP-1R-favoured predicted functional potency";
-  if (foldRatio <= 1 / 3) return "GCGR-favoured predicted functional potency";
-  return "roughly balanced predicted functional potency (within three-fold)";
-}
-
-function applicability(sequence, model) {
-  const references = model.applicability_reference.sequences;
-  const scored = references.map((reference) => ({
-    score: alignedIdentity(sequence, reference.aligned_sequence),
-    peptideId: reference.peptide_id,
-    componentId: reference.component_id,
-  }));
-  const maximum = Math.max(...scored.map((row) => row.score));
-  const nearest = scored
-    .filter((row) => Math.abs(row.score - maximum) <= 1e-12)
-    .sort((left, right) => left.peptideId.localeCompare(right.peptideId));
-  let tier = "outside_reference_neighborhood";
-  if (maximum >= 0.85) tier = "close_analogue";
-  else if (maximum >= 0.70) tier = "distant_analogue";
-  return {
-    tier,
-    nearestAlignedIdentity: maximum,
-    nearestReferenceIds: nearest.map((row) => row.peptideId),
-    nearestComponentIds: [...new Set(nearest.map((row) => row.componentId))].sort(),
-    summary: TIER_COPY[tier].summary,
-  };
-}
-
-export function predictFromModel(value, model) {
-  const sequence = normalizeSequence(value, model);
-  const alphabet = model.input_contract.alphabet;
-  const featureMean = model.model.feature_mean;
-  const coefficients = model.model.coefficients;
-  const values = [...model.model.target_mean];
-  let featureIndex = 0;
-  for (const symbol of sequence) {
-    const active = alphabet.indexOf(symbol);
-    for (let alphabetIndex = 0; alphabetIndex < alphabet.length; alphabetIndex += 1) {
-      const centered = (alphabetIndex === active ? 1 : 0) - featureMean[featureIndex];
-      values[0] += centered * coefficients[featureIndex][0];
-      values[1] += centered * coefficients[featureIndex][1];
-      featureIndex += 1;
-    }
-  }
-  const [gcgrLog10, glp1rLog10] = values;
-  const selectivityLog10 = gcgrLog10 - glp1rLog10;
-  const scope = applicability(sequence, model);
-  const residueCount = [...sequence].filter((symbol) => symbol !== "-").length;
-  const warnings = [
-    (
-      "Research use only: these are sequence-model point estimates of cell-based cAMP " +
-      "EC50 functional potency, not binding affinity, efficacy, safety, or activity in " +
-      "animals or people."
-    ),
-    (
-      "The separate 15-peptide evaluation was mixed: GCGR point error was lower but its " +
-      "dependence-aware interval crossed zero, while pooled GLP-1R error was worse versus " +
-      "the nearest-neighbour comparator."
-    ),
-    (
-      "The model cannot represent Aib, lipidation, amidation, cyclization, stapling, or " +
-      "other noncanonical chemistry. '-' means an alignment gap only."
-    ),
-  ];
-  if (scope.tier !== "close_analogue") warnings.push(scope.summary);
-  if (residueCount < 26) {
-    warnings.push(
-      "The input has fewer residues than any modeled core and should not be used for " +
-      "candidate ranking.",
-    );
-  }
-  return {
-    input: { alignedSequence: sequence, standardResidueCount: residueCount },
-    predictions: {
-      gcgr: { log10Ec50Pm: gcgrLog10, ec50Pm: 10 ** gcgrLog10 },
-      glp1r: { log10Ec50Pm: glp1rLog10, ec50Pm: 10 ** glp1rLog10 },
-      selectivity: {
-        log10Ec50Ratio: selectivityLog10,
-        ec50FoldRatio: 10 ** selectivityLog10,
-        interpretation: direction(selectivityLog10),
-      },
-    },
-    applicability: scope,
-    warnings,
-  };
-}
-
-export async function sha256Hex(bytes) {
-  const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digest)]
-    .map((value) => value.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function number(value) {
-  if (value >= 10000 || value < 0.001) return value.toExponential(3);
-  return value.toFixed(3).replace(/\.?0+$/, "");
+function element(id) {
+  const value = document.getElementById(id);
+  if (!value) throw new Error(`Browser application is missing required element #${id}.`);
+  return value;
 }
 
 function setText(id, value) {
-  document.getElementById(id).textContent = value;
+  element(id).textContent = String(value);
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function showError(error) {
+  const box = element("input-error");
+  box.textContent = errorMessage(error);
+  box.hidden = false;
+}
+
+function clearError() {
+  element("input-error").hidden = true;
+}
+
+function downloadText(filename, text, mimeType) {
+  const blob = new Blob([text], { type: `${mimeType};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.hidden = true;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function updateSequenceCount(sequenceInput) {
+  const normalizedLength = sequenceInput.value.replace(/\s/g, "").length;
+  const count = element("sequence-count");
+  count.textContent = `${normalizedLength} / 30`;
+  count.classList.toggle("bad", normalizedLength !== 30);
+}
+
+export function rankingExclusion(result) {
+  const reasons = [];
+  if (result.applicability.tier !== "close_analogue") {
+    reasons.push(result.applicability.summary);
+  }
+  if (result.input.standardResidueCount < 26) {
+    reasons.push(
+      `The input contains ${result.input.standardResidueCount} standard residues; ` +
+      "candidate ranking requires at least 26.",
+    );
+  }
+  return reasons;
 }
 
 function renderResult(result, model, artifactSha256) {
   const predictions = result.predictions;
   const scope = result.applicability;
   const tier = TIER_COPY[scope.tier];
-  const badge = document.getElementById("applicability-badge");
+  const badge = element("applicability-badge");
   badge.textContent = tier.label;
   badge.className = `badge ${tier.className}`;
   setText("normalized-sequence", result.input.alignedSequence);
-  setText("glp1r-value", `${number(predictions.glp1r.ec50Pm)} pM`);
+  setText("glp1r-value", `${formatNumber(predictions.glp1r.ec50Pm)} pM`);
   setText(
     "glp1r-detail",
-    `${number(predictions.glp1r.ec50Pm / 1000)} nM · ` +
+    `${formatNumber(predictions.glp1r.ec50Pm / 1000)} nM · ` +
       `log10(pM) ${predictions.glp1r.log10Ec50Pm.toFixed(4)}`,
   );
-  setText("gcgr-value", `${number(predictions.gcgr.ec50Pm)} pM`);
+  setText("gcgr-value", `${formatNumber(predictions.gcgr.ec50Pm)} pM`);
   setText(
     "gcgr-detail",
-    `${number(predictions.gcgr.ec50Pm / 1000)} nM · ` +
+    `${formatNumber(predictions.gcgr.ec50Pm / 1000)} nM · ` +
       `log10(pM) ${predictions.gcgr.log10Ec50Pm.toFixed(4)}`,
   );
-  setText("balance-value", `${number(predictions.selectivity.ec50FoldRatio)}-fold`);
+  setText("balance-value", `${formatNumber(predictions.selectivity.ec50FoldRatio)}-fold`);
   setText("balance-detail", predictions.selectivity.interpretation);
   setText("applicability-name", tier.label);
   setText("nearest-identity", `${(scope.nearestAlignedIdentity * 100).toFixed(1)}%`);
   setText("nearest-reference", scope.nearestReferenceIds.join(", "));
   setText("applicability-summary", scope.summary);
-  document.getElementById("ranking-block").hidden = scope.tier === "close_analogue";
+
+  const exclusions = rankingExclusion(result);
+  const rankingBlock = element("ranking-block");
+  rankingBlock.hidden = exclusions.length === 0;
+  setText("ranking-block-reason", exclusions.join(" "));
+
   const metrics = model.benchmark_context.metrics;
   setText("gcgr-error", `${metrics.gcgr.development_oof_geometric_fold_error.toFixed(1)}×`);
   setText("glp1r-error", `${metrics.glp1r.development_oof_geometric_fold_error.toFixed(1)}×`);
@@ -209,15 +129,61 @@ function renderResult(result, model, artifactSha256) {
     "balance-error",
     `${metrics.selectivity.development_oof_geometric_fold_error.toFixed(1)}×`,
   );
-  const list = document.getElementById("warnings");
-  list.replaceChildren(...result.warnings.map((warning) => {
+  const warnings = element("warnings");
+  warnings.replaceChildren(...result.warnings.map((warning) => {
     const item = document.createElement("li");
     item.textContent = warning;
     return item;
   }));
   setText("model-id", `${model.artifact_id} v${model.artifact_version}`);
   setText("model-sha", artifactSha256);
-  document.getElementById("results").hidden = false;
+  element("results").hidden = false;
+}
+
+function renderBatch(artifacts) {
+  const counts = artifacts.counts;
+  setText("batch-total", counts.total_rows);
+  setText("batch-ranked", counts.ranked_rows);
+  setText("batch-excluded", counts.total_rows - counts.ranked_rows);
+  const badge = element("batch-result-status");
+  const labels = {
+    completed: "Completed",
+    completed_with_row_errors: "Completed with row errors",
+    no_rankable_rows: "No rankable rows",
+  };
+  badge.textContent = labels[artifacts.status] ?? artifacts.status;
+  badge.className = `badge ${artifacts.status === "completed" ? "close" : "distant"}`;
+
+  const visibleRows = artifacts.rows.slice(0, 50);
+  const body = element("batch-table-body");
+  body.replaceChildren(...visibleRows.map((row) => {
+    const tableRow = document.createElement("tr");
+    const values = [
+      row.rank || "—",
+      row.candidate_id,
+      row.status.replaceAll("_", " "),
+      row.glp1r_ec50_pm ? formatNumber(Number(row.glp1r_ec50_pm)) : "—",
+      row.gcgr_ec50_pm ? formatNumber(Number(row.gcgr_ec50_pm)) : "—",
+      row.applicability_tier ? row.applicability_tier.replaceAll("_", " ") : "—",
+      row.nearest_aligned_identity
+        ? `${(Number(row.nearest_aligned_identity) * 100).toFixed(1)}%`
+        : "—",
+    ];
+    for (const value of values) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      tableRow.append(cell);
+    }
+    return tableRow;
+  }));
+  setText(
+    "batch-preview-note",
+    artifacts.rows.length > visibleRows.length
+      ? `Showing the first ${visibleRows.length} of ${artifacts.rows.length} rows. ` +
+        "The download contains every row."
+      : `Showing all ${artifacts.rows.length} rows.`,
+  );
+  element("batch-results").hidden = false;
 }
 
 async function loadVerifiedModel() {
@@ -226,13 +192,13 @@ async function loadVerifiedModel() {
     fetch("assets/incretin_ridge_v1.json", { cache: "no-store" }),
   ]);
   if (!manifestResponse.ok || !modelResponse.ok) {
-    throw new Error("Demo assets could not be loaded. Serve the docs directory over HTTP.");
+    throw new Error("Application assets could not be loaded. Serve the docs directory over HTTP.");
   }
   const manifest = await manifestResponse.json();
   const bytes = await modelResponse.arrayBuffer();
   const observed = await sha256Hex(bytes);
   if (observed !== manifest.artifact_sha256) {
-    throw new Error("Frozen model checksum mismatch. Do not use this copy of the demo.");
+    throw new Error("Frozen model checksum mismatch. Do not use this application copy.");
   }
   const model = JSON.parse(new TextDecoder().decode(bytes));
   if (
@@ -247,55 +213,190 @@ async function loadVerifiedModel() {
   return { model, artifactSha256: observed };
 }
 
+function setMode(mode) {
+  const single = mode === "single";
+  element("prediction-form").hidden = !single;
+  element("batch-form").hidden = single;
+  element("single-mode-button").classList.toggle("active", single);
+  element("single-mode-button").setAttribute("aria-pressed", String(single));
+  element("batch-mode-button").classList.toggle("active", !single);
+  element("batch-mode-button").setAttribute("aria-pressed", String(!single));
+  element("results").hidden = true;
+  element("batch-results").hidden = true;
+  clearError();
+}
+
 async function initialize() {
-  const form = document.getElementById("prediction-form");
-  const sequence = document.getElementById("sequence");
-  const count = document.getElementById("sequence-count");
-  const error = document.getElementById("input-error");
-  const button = document.getElementById("predict-button");
-  const state = document.getElementById("model-state");
+  const sequence = element("sequence");
+  const predictButton = element("predict-button");
+  const screenButton = element("screen-button");
+  const modelState = element("model-state");
+  const fastaFile = element("fasta-file");
+  const batchFile = element("batch-file");
   sequence.value = EXAMPLE_SEQUENCE;
-  const updateCount = () => {
-    const normalizedLength = sequence.value.replace(/\s/g, "").length;
-    count.textContent = `${normalizedLength} / 30`;
-    count.classList.toggle("bad", normalizedLength !== 30);
-  };
-  updateCount();
-  sequence.addEventListener("input", updateCount);
-  document.getElementById("example-button").addEventListener("click", () => {
+  updateSequenceCount(sequence);
+  sequence.addEventListener("input", () => updateSequenceCount(sequence));
+  element("single-mode-button").addEventListener("click", () => setMode("single"));
+  element("batch-mode-button").addEventListener("click", () => setMode("batch"));
+  element("example-button").addEventListener("click", () => {
     sequence.value = EXAMPLE_SEQUENCE;
-    updateCount();
-    error.hidden = true;
+    fastaFile.value = "";
+    setText("fasta-status", "Example restored; no file is loaded.");
+    updateSequenceCount(sequence);
+    clearError();
     sequence.focus();
+  });
+  element("template-button").addEventListener("click", () => {
+    downloadText("incretinselect_candidates_template.csv", BATCH_TEMPLATE, "text/csv");
   });
 
   let verified;
   try {
     verified = await loadVerifiedModel();
-    state.textContent = "Verified model ready";
-    state.className = "model-state ready";
-    button.disabled = false;
-  } catch (loadError) {
-    state.textContent = "Model verification failed";
-    state.className = "model-state failed";
-    error.textContent = loadError.message;
-    error.hidden = false;
+    modelState.textContent = "Verified model ready";
+    modelState.className = "model-state ready";
+    predictButton.disabled = false;
+  } catch (error) {
+    modelState.textContent = "Model verification failed";
+    modelState.className = "model-state failed";
+    showError(error);
     return;
   }
 
-  form.addEventListener("submit", (event) => {
+  let singleDownloads = null;
+  let batchText = null;
+  let batchFilename = null;
+  let batchDownloads = null;
+
+  fastaFile.addEventListener("change", async () => {
+    const file = fastaFile.files?.[0];
+    if (!file) return;
+    try {
+      if (file.size > MAX_BROWSER_BYTES) {
+        throw new Error(`File is ${file.size} bytes; the browser limit is ${MAX_BROWSER_BYTES}.`);
+      }
+      const text = await file.text();
+      const trimmed = text.trimStart();
+      const parsed = trimmed.startsWith(">")
+        ? parseSingleFasta(text, verified.model)
+        : { header: file.name, alignedSequence: normalizeSequence(text, verified.model) };
+      sequence.value = parsed.alignedSequence;
+      updateSequenceCount(sequence);
+      setText("fasta-status", `Loaded ${file.name} locally (${parsed.header}).`);
+      clearError();
+    } catch (error) {
+      setText("fasta-status", `Could not load ${file.name}.`);
+      showError(error);
+    }
+  });
+
+  element("prediction-form").addEventListener("submit", (event) => {
     event.preventDefault();
     try {
       const result = predictFromModel(sequence.value, verified.model);
       sequence.value = result.input.alignedSequence;
-      updateCount();
-      error.hidden = true;
+      updateSequenceCount(sequence);
+      singleDownloads = {
+        json: renderSingleResultJson(result, verified.model, verified.artifactSha256),
+        csv: renderSingleResultCsv(result, verified.model, verified.artifactSha256),
+      };
+      clearError();
       renderResult(result, verified.model, verified.artifactSha256);
-      document.getElementById("results").scrollIntoView({ behavior: "smooth" });
-    } catch (predictionError) {
-      document.getElementById("results").hidden = true;
-      error.textContent = predictionError.message;
-      error.hidden = false;
+      element("results").scrollIntoView({ behavior: "smooth" });
+    } catch (error) {
+      singleDownloads = null;
+      element("results").hidden = true;
+      showError(error);
+    }
+  });
+  element("single-json-button").addEventListener("click", () => {
+    if (singleDownloads) {
+      downloadText("incretinselect_prediction.json", singleDownloads.json, "application/json");
+    }
+  });
+  element("single-csv-button").addEventListener("click", () => {
+    if (singleDownloads) {
+      downloadText("incretinselect_prediction.csv", singleDownloads.csv, "text/csv");
+    }
+  });
+
+  const selectedObjective = () => (
+    document.querySelector('input[name="objective"]:checked')?.value ?? ""
+  );
+  const updateBatchButton = () => {
+    screenButton.disabled = !(batchText && selectedObjective());
+  };
+  document.querySelectorAll('input[name="objective"]').forEach((radio) => {
+    radio.addEventListener("change", updateBatchButton);
+  });
+  batchFile.addEventListener("change", async () => {
+    const file = batchFile.files?.[0];
+    batchText = null;
+    batchFilename = null;
+    updateBatchButton();
+    if (!file) return;
+    try {
+      if (file.size > MAX_BROWSER_BYTES) {
+        throw new Error(`File is ${file.size} bytes; the browser limit is ${MAX_BROWSER_BYTES}.`);
+      }
+      const text = await file.text();
+      const records = parseCandidateCsv(text);
+      batchText = text;
+      batchFilename = file.name;
+      setText("batch-status", `Ready: ${file.name} contains ${records.length} candidate rows.`);
+      clearError();
+    } catch (error) {
+      setText("batch-status", `Could not load ${file.name}.`);
+      showError(error);
+    }
+    updateBatchButton();
+  });
+  element("batch-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      if (!batchText || !batchFilename) throw new Error("Select a candidate CSV first.");
+      const objective = selectedObjective();
+      if (!objective) throw new Error("Choose a screening objective.");
+      screenButton.disabled = true;
+      screenButton.textContent = "Screening…";
+      batchDownloads = await buildBatchArtifacts(batchText, objective, verified.model, {
+        artifactSha256: verified.artifactSha256,
+        inputFilename: batchFilename,
+        outputFilename: "incretinselect_screened_candidates.csv",
+      });
+      clearError();
+      renderBatch(batchDownloads);
+      setText(
+        "batch-status",
+        `Completed locally: ${batchDownloads.counts.ranked_rows} of ` +
+        `${batchDownloads.counts.total_rows} rows were eligible for ranking.`,
+      );
+      element("batch-results").scrollIntoView({ behavior: "smooth" });
+    } catch (error) {
+      batchDownloads = null;
+      element("batch-results").hidden = true;
+      showError(error);
+    } finally {
+      screenButton.textContent = "Run batch screen";
+      updateBatchButton();
+    }
+  });
+  element("batch-csv-button").addEventListener("click", () => {
+    if (batchDownloads) {
+      downloadText(
+        "incretinselect_screened_candidates.csv",
+        batchDownloads.csv,
+        "text/csv",
+      );
+    }
+  });
+  element("batch-json-button").addEventListener("click", () => {
+    if (batchDownloads) {
+      downloadText(
+        "incretinselect_screening_receipt.json",
+        batchDownloads.receiptJson,
+        "application/json",
+      );
     }
   });
 }

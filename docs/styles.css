@@ -156,6 +156,102 @@ textarea:focus { outline: 3px solid #b9e0ca; border-color: var(--leaf); }
 .count { white-space: nowrap; font-weight: 800; }
 .count.bad { color: var(--danger); }
 
+.mode-switch {
+  display: inline-flex;
+  gap: 5px;
+  margin: 18px 0 2px;
+  padding: 5px;
+  background: #edf3ef;
+  border-radius: 13px;
+}
+
+.mode-button {
+  margin: 0;
+  padding: 10px 15px;
+  color: #315b47;
+  background: transparent;
+}
+
+.mode-button:hover { color: #173d2c; background: #ffffffa8; }
+.mode-button.active { color: white; background: var(--leaf); }
+
+.file-import {
+  margin-top: 17px;
+  padding: 16px;
+  background: #f6f9f7;
+  border: 1px dashed #9db6a8;
+  border-radius: 12px;
+}
+
+.file-import.prominent { margin-top: 17px; border-style: solid; }
+.file-import label { margin: 0 0 9px; }
+
+input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  color: var(--ink);
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.file-status,
+.fieldset-help {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: .86rem;
+  line-height: 1.45;
+}
+
+.structure-note {
+  margin-top: 18px;
+  padding: 13px 15px;
+  color: #42554c;
+  background: #f3f6f4;
+  border-left: 4px solid #82998d;
+  border-radius: 9px;
+  font-size: .87rem;
+  line-height: 1.48;
+}
+
+fieldset {
+  margin: 18px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+legend { font-weight: 800; }
+
+.objective-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 11px;
+  margin-top: 12px;
+}
+
+.objective-card {
+  display: flex;
+  gap: 10px;
+  align-items: start;
+  margin: 0;
+  padding: 14px;
+  background: #f8faf9;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  cursor: pointer;
+}
+
+.objective-card:has(input:checked) {
+  background: var(--pale);
+  border-color: var(--leaf);
+  box-shadow: 0 0 0 2px #b9e0ca;
+}
+
+.objective-card input { margin-top: 3px; accent-color: var(--leaf); }
+.objective-card span { display: flex; flex-direction: column; gap: 4px; }
+.objective-card small { color: var(--muted); line-height: 1.35; }
+
 .actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
 button {
@@ -173,6 +269,16 @@ button {
 button:hover { background: #1c563b; }
 button:disabled { opacity: .48; cursor: wait; }
 button.secondary { color: #1d4d38; background: #e7f2eb; }
+button.link-button {
+  margin-top: 9px;
+  padding: 0;
+  color: var(--leaf);
+  background: transparent;
+  border-radius: 0;
+  font-size: .86rem;
+  text-decoration: underline;
+}
+button.link-button:hover { color: var(--leaf-dark); background: transparent; }
 
 .error-box,
 .stop-box {
@@ -248,6 +354,52 @@ button.secondary { color: #1d4d38; background: #e7f2eb; }
 .error-grid strong { color: #174a35; font-size: 1.35rem; }
 .error-grid span { margin-top: 4px; color: var(--muted); font-size: .82rem; }
 
+.result-actions { margin-top: 5px; }
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.summary-grid div {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  background: #f5f8f6;
+  border-radius: 11px;
+}
+.summary-grid strong { color: #174a35; font-size: 1.45rem; }
+.summary-grid span { color: var(--muted); font-size: .82rem; }
+
+.table-wrap {
+  overflow: auto;
+  margin-top: 17px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .84rem;
+  white-space: nowrap;
+}
+
+th,
+td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e7ede9;
+}
+
+th { color: #385447; background: #f2f6f3; font-size: .78rem; }
+tbody tr:last-child td { border-bottom: 0; }
+.status-ranked { color: #185136; font-weight: 800; }
+.status-excluded,
+.status-error { color: var(--danger); font-weight: 800; }
+
 .limitations ul { padding-left: 1.25rem; }
 .limitations li { margin: .6rem 0; line-height: 1.5; }
 .fine { color: var(--muted); font-size: .84rem; line-height: 1.5; }
@@ -262,6 +414,10 @@ footer p { margin: .35rem 0; }
   .hero { grid-template-columns: 1fr; padding: 24px; }
   .panel { padding: 21px; }
   .section-heading { flex-direction: column; }
-  .metric-grid, .error-grid, .facts { grid-template-columns: 1fr; }
+  .metric-grid, .error-grid, .facts, .objective-grid, .summary-grid {
+    grid-template-columns: 1fr;
+  }
   .input-meta { flex-direction: column; gap: 0; }
+  .mode-switch { display: flex; }
+  .mode-button { flex: 1; }
 }

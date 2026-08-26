@@ -6,7 +6,9 @@ import argparse
 import csv
 import io
 import json
+import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -15,12 +17,22 @@ from incretinselect.product import ProductError, model_info, predict
 EXAMPLE_SEQUENCE = "HSQGTFTSDYSKYLDSRAASEFVQWLISH-"
 
 
+class OutputError(ValueError):
+    """Raised when a requested output file cannot be written safely."""
+
+
 def _number(value: float) -> str:
     if value == 0:
         return "0"
     if abs(value) >= 10000 or abs(value) < 0.001:
         return f"{value:.4e}"
     return f"{value:.4f}".rstrip("0").rstrip(".")
+
+
+def _safe_csv_text(value: str) -> str:
+    """Prevent valid leading-gap sequences from becoming spreadsheet formulas."""
+
+    return "'" + value if value.startswith(("=", "+", "-", "@")) else value
 
 
 def format_text(result: dict[str, Any]) -> str:
@@ -81,7 +93,7 @@ def _flat_row(result: dict[str, Any]) -> dict[str, Any]:
     predictions = result["predictions"]
     applicability = result["applicability"]
     return {
-        "aligned_sequence": result["input"]["aligned_sequence"],
+        "aligned_sequence": _safe_csv_text(result["input"]["aligned_sequence"]),
         "glp1r_log10_ec50_pm": predictions["glp1r"]["log10_ec50_pm"],
         "glp1r_ec50_pm": predictions["glp1r"]["ec50_pm"],
         "glp1r_ec50_nm": predictions["glp1r"]["ec50_nm"],
@@ -134,12 +146,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Exactly 30 aligned symbols: 20 standard amino acids plus optional '-' gaps.",
     )
     parser.add_argument(
+        "--sequence",
+        dest="sequence_option",
+        help=(
+            "Explicit sequence input. Use this form when the aligned sequence begins "
+            "with '-' so it cannot be mistaken for a command-line option."
+        ),
+    )
+    parser.add_argument(
         "--format",
         choices=("text", "json", "csv"),
         default="text",
         help="Output format (default: text).",
     )
     parser.add_argument("--output", help="Write the result to a file instead of stdout.")
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Explicitly replace an existing --output file.",
+    )
     parser.add_argument(
         "--example",
         action="store_true",
@@ -153,18 +178,55 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _write_output(path: Path, rendered: str, *, overwrite: bool) -> None:
+    """Write one result atomically without silently replacing an existing file."""
+
+    if path.is_symlink():
+        raise OutputError("output path must not be a symbolic link")
+    resolved = path.resolve()
+    if resolved.exists() and not overwrite:
+        raise OutputError(f"Refusing to overwrite existing file: {resolved}")
+    if not resolved.parent.is_dir():
+        raise OutputError(f"Output directory does not exist: {resolved.parent}")
+    file_descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{resolved.name}.", suffix=".tmp", dir=resolved.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(file_descriptor, "w", encoding="utf-8", newline="") as handle:
+            handle.write(rendered)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, resolved)
+    except OSError as exc:
+        raise OutputError(f"Could not write output file {resolved}: {exc}") from exc
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
         if args.model_info:
-            if args.sequence or args.example:
+            if args.sequence or args.sequence_option or args.example:
                 parser.error("--model-info cannot be combined with a prediction input")
             rendered = json.dumps(model_info(), indent=2, sort_keys=True) + "\n"
         else:
-            if args.sequence and args.example:
-                parser.error("Supply a sequence or --example, not both")
-            sequence = EXAMPLE_SEQUENCE if args.example else args.sequence
+            supplied = [
+                args.sequence is not None,
+                args.sequence_option is not None,
+                args.example,
+            ]
+            if sum(supplied) > 1:
+                parser.error("Supply one positional sequence, --sequence, or --example")
+            sequence = (
+                EXAMPLE_SEQUENCE
+                if args.example
+                else args.sequence_option
+                if args.sequence_option is not None
+                else args.sequence
+            )
             if not sequence:
                 parser.error("a 30-column sequence is required (or use --example)")
             result = predict(sequence)
@@ -178,10 +240,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
-    if args.output:
-        Path(args.output).write_text(rendered, encoding="utf-8")
-    else:
-        print(rendered, end="")
+    try:
+        if args.output:
+            _write_output(Path(args.output), rendered, overwrite=args.overwrite)
+        else:
+            print(rendered, end="")
+    except OutputError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     return 0
 
 

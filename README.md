@@ -16,9 +16,10 @@ Incretin-based peptides are hormone-like molecules used and studied for metaboli
 diseases such as diabetes and obesity. Researchers are also exploring versions
 that deliberately act on more than one biological target.
 
-Put simply: if a lab has 100 possible sequences but can test only 10, the eventual
-use case is to help choose those 10. The current project tests whether the
-predictions are dependable enough to move toward that use case.
+The long-term use case is shortlist prioritization when a laboratory cannot test
+every proposed sequence. This release is a benchmarked research prototype, and it
+permits model-based ranking only for candidates that remain close to the reference
+sequence families.
 
 IncretinSelect-AI tests that idea for two cell receptors used in metabolic-drug
 research:
@@ -56,11 +57,14 @@ predict whether a drug is safe or works in people.
 The model does not invent new peptides. It estimates the lab response of a supplied
 sequence so that candidates could eventually be ranked for experimental follow-up.
 
-## Try the zero-install browser demo
+## Use the browser application
 
-The repository now includes a static demo that runs the exact frozen model in a
-web browser. There is no backend, external API, analytics, account, or sequence
-upload. The browser verifies the model checksum before enabling prediction.
+The public [browser application](https://darwinxcai.github.io/IncretinSelect-AI/)
+runs the exact frozen model without installation. It accepts one aligned FASTA or
+text sequence, screens a bounded candidate CSV with an explicit objective, and
+downloads auditable JSON or CSV results. Files stay in the browser; there is no
+backend, external API, analytics service, account, or network transmission of
+sequences. The application verifies the model checksum before enabling prediction.
 
 From a downloaded source archive, run:
 
@@ -68,15 +72,16 @@ From a downloaded source archive, run:
 python -m http.server 8000 --directory docs
 ```
 
-Then open `http://127.0.0.1:8000`. After the public repository exists, the same
-checked demo deploys automatically through GitHub Pages. Browser predictions are
-tested against Python on 12 label-free reference sequences at a tolerance of
-`1e-12`. See [`docs/README.md`](docs/README.md) and the machine-readable
+Then open `http://127.0.0.1:8000`. The same checked application deploys through
+GitHub Pages. Browser predictions are tested against Python on 12 label-free
+reference sequences at a tolerance of `1e-12`, and browser batch screening is
+tested against the Python implementation. See [`docs/README.md`](docs/README.md)
+and the machine-readable
 [`static_demo_verification.json`](reports/static_demo_verification.json).
 
-## Use the finished local Python app
+## Install the research software
 
-Version 0.5 includes a frozen, portable model that works without downloading the
+Version 0.6 includes a frozen, portable model that works without downloading the
 raw experimental workbooks and without calling an external API. After installing
 the repository, you can predict from the terminal or open a local browser app.
 
@@ -111,6 +116,8 @@ For machine-readable output:
 ```bash
 incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format json
 incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format csv --output result.csv
+# Use the explicit option form when an aligned sequence begins with '-'
+incretin-predict --sequence=-SQGTFTSDYSKYLDSRAASEFVQWLISE- --format json
 incretin-predict --model-info
 ```
 

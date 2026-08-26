@@ -1,10 +1,11 @@
 # Publish IncretinSelect-AI to GitHub
 
-The local product and source archive are accepted. Public release has one external
-gate: create `darwinxcai/IncretinSelect-AI`, push the exact tested commit, and let
-GitHub Actions verify the clean public checkout.
+The local product and source archive are accepted, and the public repository now
+exists at `darwinxcai/IncretinSelect-AI`. A clean public clone passed the full
+release check. The remaining public-verification gates are a clean top-level
+GitHub Actions success and a deployed GitHub Pages browser demo.
 
-## Safe one-command path
+## Initial publication path (already completed)
 
 Install and authenticate [GitHub CLI](https://cli.github.com/) once, then run these
 commands from the repository root:
@@ -30,8 +31,8 @@ The script refuses to continue when:
 - the resulting repository is not exactly the requested public repository.
 
 The default target is intentionally fixed to `darwinxcai/IncretinSelect-AI` and
-publication is intentionally public. No repository is created in the default
-dry-run mode.
+publication is intentionally public. Do not run the creation bootstrap again now
+that the repository exists.
 
 Pages activation uses GitHub's repository Pages endpoint with
 `build_type=workflow`, then manually requests the checked `pages.yml` workflow.
@@ -43,6 +44,11 @@ back. Enable **Settings → Pages → GitHub Actions**, then run:
 ```bash
 gh workflow run pages.yml --repo darwinxcai/IncretinSelect-AI
 ```
+
+If GitHub Actions or Pages is degraded, do not dispatch repeated workflows. The
+Pages workflow intentionally cancels superseded runs. Wait for service recovery,
+set **Settings → Pages → Source** to **GitHub Actions**, then request exactly one
+CI run and one Pages run.
 
 ## Required verification after the push
 

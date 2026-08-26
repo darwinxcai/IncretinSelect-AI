@@ -31,8 +31,9 @@ def expected_assets(root: Path) -> tuple[bytes, bytes]:
         "artifact_sha256": digest,
         "artifact_version": "1.0.0",
         "labels_included": False,
+        "local_file_import": True,
+        "outbound_sequence_transmission": False,
         "schema_version": 1,
-        "sequence_upload": False,
         "structure_inference": False,
     }
     rendered_manifest = json.dumps(manifest, indent=2, sort_keys=True).encode() + b"\n"

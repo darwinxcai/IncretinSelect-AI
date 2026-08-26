@@ -238,6 +238,7 @@ def screen_records(
     fitted = model or load_model()
     rows: list[dict[str, str]] = []
     normalized_counts: dict[str, int] = {}
+    normalized_by_input_row: dict[int, str] = {}
     raw_ranking_scores: dict[int, float] = {}
 
     for input_row, record in enumerate(records, start=1):
@@ -277,6 +278,7 @@ def screen_records(
 
         normalized = str(result["input"]["aligned_sequence"])
         normalized_counts[normalized] = normalized_counts.get(normalized, 0) + 1
+        normalized_by_input_row[input_row] = normalized
         predictions = result["predictions"]
         applicability = result["applicability"]
         residue_count = int(result["input"]["standard_residue_count"])
@@ -293,7 +295,7 @@ def screen_records(
             raw_ranking_scores[input_row] = score
         row.update(
             {
-                "aligned_sequence": normalized,
+                "aligned_sequence": _safe_csv_text(normalized),
                 "status": "pending_rank" if eligible else "not_ranked_out_of_scope",
                 "ranking_eligible": "true" if eligible else "false",
                 "ranking_exclusion_reason": "; ".join(exclusion_reasons),
@@ -320,8 +322,8 @@ def screen_records(
         rows.append(row)
 
     for row in rows:
-        normalized = row["aligned_sequence"]
         if row["status"] != "input_error":
+            normalized = normalized_by_input_row[int(row["input_row"])]
             row["duplicate_sequence_count"] = str(normalized_counts[normalized])
 
     eligible_rows = [row for row in rows if row["status"] == "pending_rank"]
@@ -444,10 +446,36 @@ def build_screening(
     return rendered, receipt, exit_code
 
 
-def _atomic_write(path: Path, content: str, *, overwrite: bool) -> None:
-    path = path.resolve()
-    if path.exists() and not overwrite:
-        raise ScreeningError(f"Refusing to overwrite existing file: {path}")
+def _preflight_destination(path: Path, *, overwrite: bool) -> None:
+    """Reject unsafe destinations before either batch artifact is replaced."""
+
+    if path.is_symlink():
+        raise ScreeningError(f"Output path must not be a symbolic link: {path}")
+    if path.exists():
+        if not path.is_file():
+            raise ScreeningError(f"Output path is not a regular file: {path}")
+        if not overwrite:
+            raise ScreeningError(f"Refusing to overwrite existing file: {path}")
+
+    # Do not call mkdir yet: first prove that the nearest existing ancestor of
+    # *both* destinations is a directory. This catches paths beneath a regular
+    # file without touching the other artifact.
+    ancestor = path.parent
+    while not ancestor.exists():
+        if ancestor.is_symlink():
+            raise ScreeningError(
+                f"Output parent must not be a symbolic link: {ancestor}"
+            )
+        if ancestor == ancestor.parent:
+            break
+        ancestor = ancestor.parent
+    if not ancestor.is_dir():
+        raise ScreeningError(f"Output parent is not a directory: {ancestor}")
+
+
+def _stage_text(path: Path, content: str) -> Path:
+    """Write and fsync content beside its destination without replacing it."""
+
     path.parent.mkdir(parents=True, exist_ok=True)
     file_descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
@@ -458,9 +486,91 @@ def _atomic_write(path: Path, content: str, *, overwrite: bool) -> None:
             handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
-        os.replace(temporary, path)
-    finally:
+    except Exception:
         temporary.unlink(missing_ok=True)
+        raise
+    return temporary
+
+
+def _reserve_backup(path: Path) -> Path:
+    """Reserve a collision-safe backup name in the destination directory."""
+
+    file_descriptor, backup_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".bak", dir=path.parent
+    )
+    os.close(file_descriptor)
+    return Path(backup_name)
+
+
+def _atomic_write_pair(
+    output_path: Path,
+    output_content: str,
+    receipt_path: Path,
+    receipt_content: str,
+    *,
+    overwrite: bool,
+) -> None:
+    """Replace the CSV and receipt as one rollback-protected operation.
+
+    Both payloads are staged before either destination changes. Existing files
+    are then moved aside, and any failure while committing either artifact
+    restores the complete previous pair.
+    """
+
+    artifacts = (
+        (output_path, output_content),
+        (receipt_path, receipt_content),
+    )
+    for path, _ in artifacts:
+        _preflight_destination(path, overwrite=overwrite)
+
+    staged: dict[Path, Path] = {}
+    backups: dict[Path, Path] = {}
+    committed: set[Path] = set()
+    try:
+        # A permission error, bad parent, or full disk for the receipt therefore
+        # occurs while the original output is still untouched.
+        for path, content in artifacts:
+            staged[path] = _stage_text(path, content)
+
+        # Recheck after staging to catch destination changes before commit.
+        for path, _ in artifacts:
+            _preflight_destination(path, overwrite=overwrite)
+
+        for path, _ in artifacts:
+            if path.exists():
+                backup = _reserve_backup(path)
+                try:
+                    os.replace(path, backup)
+                except Exception:
+                    backup.unlink(missing_ok=True)
+                    raise
+                backups[path] = backup
+
+        for path, _ in artifacts:
+            os.replace(staged[path], path)
+            staged.pop(path)
+            committed.add(path)
+    except Exception as exc:
+        rollback_errors: list[str] = []
+        for path, _ in reversed(artifacts):
+            try:
+                if path in committed:
+                    path.unlink(missing_ok=True)
+                backup = backups.get(path)
+                if backup is not None and backup.exists():
+                    os.replace(backup, path)
+            except OSError as rollback_exc:
+                rollback_errors.append(f"{path}: {rollback_exc}")
+        if rollback_errors:
+            raise ScreeningError(
+                "Batch artifact write failed and rollback was incomplete: "
+                + "; ".join(rollback_errors)
+            ) from exc
+        raise
+    finally:
+        for temporary in (*staged.values(), *backups.values()):
+            temporary.unlink(missing_ok=True)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -506,16 +616,18 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.output.is_symlink() or args.receipt.is_symlink():
-        print("error: output and receipt paths must not be symbolic links", file=sys.stderr)
-        return 2
-    input_path = args.input_csv.resolve()
-    output_path = args.output.resolve()
-    receipt_path = args.receipt.resolve()
-    if len({input_path, output_path, receipt_path}) != 3:
-        print("error: input, output, and receipt paths must be different", file=sys.stderr)
-        return 2
     try:
+        if args.output.is_symlink() or args.receipt.is_symlink():
+            raise ScreeningError(
+                "output and receipt paths must not be symbolic links"
+            )
+        input_path = args.input_csv.resolve()
+        output_path = args.output.resolve()
+        receipt_path = args.receipt.resolve()
+        if len({input_path, output_path, receipt_path}) != 3:
+            raise ScreeningError(
+                "input, output, and receipt paths must be different"
+            )
         if not input_path.is_file():
             raise ScreeningError(f"Input CSV does not exist: {input_path}")
         if input_path.stat().st_size > MAX_INPUT_BYTES:
@@ -537,13 +649,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             input_filename=input_path.name,
             output_filename=output_path.name,
         )
-        _atomic_write(output_path, rendered, overwrite=args.overwrite)
-        _atomic_write(
+        _atomic_write_pair(
+            output_path,
+            rendered,
             receipt_path,
             json.dumps(receipt, indent=2, sort_keys=True) + "\n",
             overwrite=args.overwrite,
         )
-    except (OSError, ScreeningError, ProductError) as exc:
+    except (OSError, RuntimeError, ScreeningError, ProductError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 

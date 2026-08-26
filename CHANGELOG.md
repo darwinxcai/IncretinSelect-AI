@@ -6,6 +6,38 @@ All notable changes to this research artifact are documented here.
 
 - Complex-prediction pilot and structure-feature benchmark remain future work.
 
+## [0.6.0] - 2026-08-27
+
+### Added
+
+- Added local single-record FASTA/TXT import to the browser application, with
+  strict 30-position alignment validation and no server-side sequence transfer.
+- Added bounded CSV screening in the browser with explicit GLP-1R, GCGR, or dual
+  objectives, conservative applicability gates, row-level error retention, and
+  Python-policy parity tests.
+- Added downloadable single-result JSON/CSV and batch CSV/audit JSON. Downloads
+  bind results to the frozen model checksum and protect spreadsheet users from
+  formula-like sequence text.
+
+### Improved
+
+- Reworked the public application copy and result hierarchy around its practical
+  purpose, required interpretation, privacy boundary, and validation limits.
+- Fixed the short close-analogue edge case so sequences with fewer than 26
+  standard residues are visibly blocked from candidate ranking.
+- Added guarded, atomic output handling for single and batch command-line files,
+  including rollback if a paired batch-artifact commit fails.
+- Added concise occupied-port handling and visible out-of-scope styling to the
+  dependency-free local web interface.
+
+### Scientific boundary
+
+- Structure upload remains intentionally unavailable because the released model
+  has no validated structure-derived features. PDB/mmCIF input would not add a
+  scientifically supported inference in this version.
+- All outputs remain estimates of cell-based cAMP EC50 functional potency—not
+  affinity, efficacy, safety, clinical benefit, or an experimental recommendation.
+
 ## [0.5.0] - 2026-08-26
 
 ### Added

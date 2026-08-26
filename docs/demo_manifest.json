@@ -4,7 +4,8 @@
   "artifact_sha256": "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321",
   "artifact_version": "1.0.0",
   "labels_included": false,
+  "local_file_import": true,
+  "outbound_sequence_transmission": false,
   "schema_version": 1,
-  "sequence_upload": false,
   "structure_inference": false
 }
