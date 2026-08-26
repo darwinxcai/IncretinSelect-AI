@@ -12,7 +12,7 @@
   "project": "IncretinSelect-AI",
   "public_release": {
     "ci": {
-      "overall": "partial",
+      "overall": "matrix_jobs_passed_run_summary_stale",
       "python_3_10": {
         "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/32985053720/job/98229803087",
         "status": "passed",
@@ -20,8 +20,11 @@
       },
       "python_3_12": {
         "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/32985053720/job/98229803335",
-        "status": "queued"
+        "status": "passed",
+        "tests_passed": 74
       },
+      "run_api_conclusion": "startup_failure",
+      "run_summary_note": "Both matrix jobs completed successfully after the run summary had been marked startup_failure.",
       "run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/32985053720"
     },
     "current_public_head": "7a720bf63c74e3325713309b949cdfa1a1ab6c46",
