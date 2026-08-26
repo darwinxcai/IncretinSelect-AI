@@ -1,59 +1,69 @@
 {
   "local_release": {
-    "commit": "ed37c67357e5ef433a8be8a30ce68904d16f0560",
-    "distribution_receipt_sha256": "3b825e46f3f3e7dc12d0ff60c5544cc8903cd6a781a4f5144b8029aac1627f7e",
+    "commit": "f5e6102bbd14643ba0b504d540144636f8bc059b",
+    "distribution_receipt_sha256": "86fc27864d5de39a4271c0bbb5e383549da75319e70aa752780354598879de05",
     "release_check": "passed",
     "ruff": "0.16.4",
+    "static_demo_batch_policy_cases": 5,
     "static_demo_parity_cases": 12,
-    "tests_passed": 74,
-    "tree": "a366f3d1ff8b39d26ce96b06caddb021251ea343",
-    "wheel_sha256": "2be3bf03936ed2c73ec05f8b52952cdb1bbf0c31121587d0d8dfc802f2b7e97b"
+    "tests_passed": 82,
+    "tree": "cf4baf4a2a621e25008811438b91f6fcdcb65869",
+    "wheel_sha256": "00d44248ac2ffbd4d44961d74765c1416c34f864b2ab8a7da29e68079b23bfc8"
   },
   "project": "IncretinSelect-AI",
   "public_release": {
     "ci": {
-      "overall": "matrix_jobs_passed_run_summary_stale",
+      "overall": "success",
       "python_3_10": {
-        "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/32985053720/job/98229803087",
+        "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207/job/98316691269",
         "status": "passed",
-        "tests_passed": 74
+        "tests_passed": 82
       },
       "python_3_12": {
-        "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/32985053720/job/98229803335",
+        "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207/job/98316691093",
         "status": "passed",
-        "tests_passed": 74
+        "tests_passed": 82
       },
-      "run_api_conclusion": "startup_failure",
-      "run_summary_note": "Both matrix jobs completed successfully after the run summary had been marked startup_failure.",
-      "run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/32985053720"
+      "run_api_conclusion": "success",
+      "run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207"
     },
-    "current_public_head": "7a720bf63c74e3325713309b949cdfa1a1ab6c46",
-    "current_public_tree": "3db5222c11898495b6ecda4b0a548b37dbd6c121",
     "demo": {
       "expected_url": "https://darwinxcai.github.io/IncretinSelect-AI/",
-      "latest_run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/32985113233",
-      "status": "not_deployed"
+      "latest_run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931248",
+      "status": "deployed"
     },
     "fresh_public_clone": {
       "checks": {
+        "browser_batch_policy_cases": 5,
         "built_distribution": "passed",
         "product_smoke": "passed",
         "ruff": "passed",
         "static_demo_parity_cases": 12,
-        "tests_passed": 74,
+        "tests_passed": 82,
         "worktree_clean_after_checks": true
       },
-      "head": "7a720bf63c74e3325713309b949cdfa1a1ab6c46",
+      "head": "f5e6102bbd14643ba0b504d540144636f8bc059b",
       "status": "passed",
-      "tree": "3db5222c11898495b6ecda4b0a548b37dbd6c121"
+      "tree": "cf4baf4a2a621e25008811438b91f6fcdcb65869"
     },
-    "publication_commit": "883d955ffe1a07857e404eb01591bb60b5251a67",
+    "live_product_check": {
+      "batch_export_buttons": "passed",
+      "batch_screen": "passed: 3 retained rows; 1 ranked; 2 excluded or invalid",
+      "fasta_import": "passed",
+      "frozen_model_state": "verified model ready",
+      "single_csv_download": "passed",
+      "single_json_download": "passed",
+      "single_prediction": "passed"
+    },
+    "publication_commit": "1079ce4496f276495b7ba348521edac3837c377c",
     "repository_url": "https://github.com/darwinxcai/IncretinSelect-AI",
     "source_tree_match": true,
-    "verification_trigger_commit": "c18d3664091e95d69c90d7390ae37356d6bed672",
-    "verified_on": "2026-08-26"
+    "verification_trigger_commit": "f5e6102bbd14643ba0b504d540144636f8bc059b",
+    "verified_on": "2026-08-27",
+    "verified_source_commit": "f5e6102bbd14643ba0b504d540144636f8bc059b",
+    "verified_source_tree": "cf4baf4a2a621e25008811438b91f6fcdcb65869"
   },
-  "published_on": "2026-08-26",
+  "published_on": "2026-08-27",
   "schema_version": 1,
   "scientific_boundaries": {
     "affinity_claim": false,
@@ -62,5 +72,5 @@
     "p1_p15_reused_for_tuning": false,
     "structure_inference_claim": false
   },
-  "version": "0.5.0"
+  "version": "0.6.0"
 }

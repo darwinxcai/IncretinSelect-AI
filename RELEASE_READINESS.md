@@ -9,6 +9,12 @@ IncretinSelect-AI separates two claims that are easy to blur:
    clean top-level GitHub Actions success, a deployed browser demo, and
    `make release-check` from a separate public clone.
 
+Version 0.6.0 satisfies both claims. The checked receipt records the exact public
+source commit, successful Python 3.10/3.12 CI jobs, deployed browser application,
+and separate clean-clone verification. Older failed workflow rows remain immutable
+GitHub history; the verified run is
+<https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207>.
+
 Run the local audit without changing the repository:
 
 ```bash

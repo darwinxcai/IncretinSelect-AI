@@ -1,9 +1,9 @@
 # Publish IncretinSelect-AI to GitHub
 
-The local product and source archive are accepted, and the public repository now
-exists at `darwinxcai/IncretinSelect-AI`. A clean public clone passed the full
-release check. The remaining public-verification gates are a clean top-level
-GitHub Actions success and a deployed GitHub Pages browser demo.
+Version 0.6.0 is publicly released and verified. The repository, clean two-version
+GitHub Actions run, deployed Pages application, and separate public-clone release
+check are recorded in `reports/publication_receipt.json`. The instructions below
+are retained for auditability and future release maintenance.
 
 ## Initial publication path (already completed)
 
@@ -50,7 +50,15 @@ Pages workflow intentionally cancels superseded runs. Wait for service recovery,
 set **Settings → Pages → Source** to **GitHub Actions**, then request exactly one
 CI run and one Pages run.
 
-## Required verification after the push
+## Verification completed for v0.6.0
+
+- Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
+- CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207>
+- Browser deployment: <https://darwinxcai.github.io/IncretinSelect-AI/>
+- Pages run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931248>
+- Verified source: `f5e6102bbd14643ba0b504d540144636f8bc059b`
+
+## Required verification after each future push
 
 1. Open the printed public URL.
 2. Confirm both CI matrix jobs pass on Python 3.10 and 3.12.

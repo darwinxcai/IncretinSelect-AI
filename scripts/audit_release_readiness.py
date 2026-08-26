@@ -341,6 +341,7 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
         isinstance(demo_url, str)
         and DEMO_URL_PATTERN.fullmatch(demo_url)
         and demo_status in {"deployed", "passed"}
+        and receipt_version_ok
     )
 
     ci = public.get("ci", {})
@@ -357,6 +358,7 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
         and matrix_ok
         and ci.get("overall") in {"passed", "success"}
         and ci_conclusion == "success"
+        and receipt_version_ok
     )
 
     clone = public.get("fresh_public_clone", {})
@@ -370,6 +372,7 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
         and clone_checks.get("product_smoke") == "passed"
         and clone_checks.get("built_distribution") == "passed"
         and clone_checks.get("static_demo_parity_cases") == 12
+        and receipt_version_ok
     )
 
     if ci_ok:

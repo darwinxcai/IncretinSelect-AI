@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-08-26",
-  "decision": "LOCAL_RELEASE_READY_PUBLICATION_BLOCKED",
+  "as_of": "2026-08-27",
+  "decision": "PUBLIC_RELEASE_VERIFIED",
   "local_gates": [
     {
       "evidence": "all required release files present",
@@ -8,7 +8,7 @@
       "status": "pass"
     },
     {
-      "evidence": "pyproject=0.5.0; citation=0.5.0; changelog entry=True",
+      "evidence": "pyproject=0.6.0; citation=0.6.0; changelog entry=True",
       "name": "version_alignment",
       "status": "pass"
     },
@@ -42,27 +42,27 @@
   "project": "IncretinSelect-AI",
   "public_gates": [
     {
-      "evidence": "no verified public darwinxcai/IncretinSelect-AI URL supplied",
+      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI",
       "name": "public_repository",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "no verified darwinxcai.github.io/IncretinSelect-AI demo URL supplied",
+      "evidence": "https://darwinxcai.github.io/IncretinSelect-AI/",
       "name": "public_browser_demo",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "no verified GitHub Actions run URL supplied",
+      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207",
       "name": "remote_ci",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "fresh public-clone release check not yet attested",
+      "evidence": "82 tests, Ruff, product smoke, distribution, and 12 browser parity cases passed in a clean public clone",
       "name": "fresh_public_clone",
-      "status": "blocked"
+      "status": "pass"
     }
   ],
-  "public_release_verified": false,
+  "public_release_verified": true,
   "schema_version": 1,
   "scientific_scope": {
     "affinity_claim": false,
@@ -71,5 +71,5 @@
     "p1_p15_reused_for_tuning": false,
     "structure_inference_claim": false
   },
-  "version": "0.5.0"
+  "version": "0.6.0"
 }

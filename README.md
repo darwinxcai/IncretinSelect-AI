@@ -1,5 +1,12 @@
 # IncretinSelect-AI
 
+[![CI](https://github.com/darwinxcai/IncretinSelect-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/darwinxcai/IncretinSelect-AI/actions/workflows/ci.yml)
+[![Browser application](https://img.shields.io/badge/browser%20application-open-0b6b53)](https://darwinxcai.github.io/IncretinSelect-AI/)
+[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.12-345995)](https://github.com/darwinxcai/IncretinSelect-AI/actions)
+
+**[Open the browser application](https://darwinxcai.github.io/IncretinSelect-AI/)**
+· **[Inspect the release evidence](reports/release_readiness.json)**
+
 **Can a peptide's amino-acid sequence help researchers choose which incretin
 candidates are worth testing in the lab? This project builds and honestly tests a
 machine-learning tool for that decision.**
@@ -81,7 +88,7 @@ and the machine-readable
 
 ## Install the research software
 
-Version 0.6 includes a frozen, portable model that works without downloading the
+Version 0.6.0 includes a frozen, portable model that works without downloading the
 raw experimental workbooks and without calling an external API. After installing
 the repository, you can predict from the terminal or open a local browser app.
 

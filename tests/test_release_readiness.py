@@ -77,15 +77,15 @@ class ReleaseReadinessTests(unittest.TestCase):
     def test_report_preserves_scientific_boundaries(self) -> None:
         report = audit_release_readiness.build_report(
             PROJECT_ROOT,
-            as_of="2026-08-26",
+            as_of="2026-08-27",
             public_repository_url=None,
             public_demo_url=None,
             ci_run_url=None,
             fresh_clone_release_check=False,
         )
-        self.assertEqual(report["decision"], "LOCAL_RELEASE_READY_PUBLICATION_BLOCKED")
+        self.assertEqual(report["decision"], "PUBLIC_RELEASE_VERIFIED")
         self.assertTrue(report["local_release_ready"])
-        self.assertFalse(report["public_release_verified"])
+        self.assertTrue(report["public_release_verified"])
         self.assertEqual(
             {item["name"] for item in report["public_gates"]},
             {"public_repository", "public_browser_demo", "remote_ci", "fresh_public_clone"},

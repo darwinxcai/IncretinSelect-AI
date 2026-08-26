@@ -1,10 +1,25 @@
 # Status
 
-**Updated:** 2026-08-26
-**Decision:** continue the public product release. The locked P1–P15 external
-score is complete and mixed, the local application is functional, and further
-modeling is not on the release-critical path. Publish and independently verify
-the exact tested source before beginning a complex-prediction pilot.
+**Updated:** 2026-08-27
+**Decision:** **PUBLIC RELEASE VERIFIED.** Version 0.6.0 is a usable, independently
+inspectable research-software release. The repository, two-version CI matrix,
+built wheel, clean public clone, and GitHub Pages application all pass. The locked
+P1–P15 external result remains mixed, so the product is presented as a guarded
+sequence-based research screen—not as a validated drug-selection system.
+
+## Current public product
+
+- Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
+- Browser application: <https://darwinxcai.github.io/IncretinSelect-AI/>
+- Verified source commit: `f5e6102bbd14643ba0b504d540144636f8bc059b`
+- Clean CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207>
+- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931248>
+- Verification: 82 tests on Python 3.10 and 3.12, Ruff 0.16.4, 12 single-
+  prediction browser/Python parity cases, 5 batch-policy parity cases, and an
+  isolated built-wheel installation check.
+- Live workflow: aligned FASTA/text import, bounded CSV batch screening, explicit
+  GLP-1R/GCGR/dual objectives, visible applicability exclusions, and downloadable
+  JSON/CSV/audit outputs. Imported sequences stay in the browser.
 
 ## Complete
 
@@ -31,6 +46,13 @@ the exact tested source before beginning a complex-prediction pilot.
       before inference, sends no sequences to a server, and matches Python on 12
       label-free references within `1e-12`. A guarded Pages workflow deploys it
       only after the parity and privacy checks pass.
+- [x] Shipped the v0.6.0 browser workflow with one-sequence FASTA/text import,
+      bounded candidate CSV import, explicit screening objectives, auditable
+      downloads, and prominent out-of-scope handling. Structure upload is omitted
+      because this model has no validated structure features.
+- [x] Published the repository and verified a clean CI run, successful Pages
+      deployment, direct live use, downloads, and an independent fresh-clone
+      release check.
 - [x] Pinned primary source files, repository commit, licenses, assay mappings,
       and SHA-256 checksums.
 - [x] Validated 125 training records and the T1=GCGR / T2=GLP-1R mapping.
@@ -89,17 +111,15 @@ was predeclared for this secondary endpoint. Full results are in
 
 ## Next
 
-- [ ] Authenticate GitHub CLI and run
-      `python scripts/bootstrap_github.py --execute` to create and push the exact
-      clean commit to public `darwinxcai/IncretinSelect-AI`, enable Pages, and
-      request the verified browser-demo deployment.
-- [ ] Push the exact tested release commit and require the two-version GitHub
-      Actions matrix, built-wheel check, browser parity check, and Pages
-      deployment to pass.
-- [ ] Clone the public repository into a fresh directory, run `make release-check`,
-      and record the public URL and CI run before any structure benchmark begins.
-- [ ] Only after publication, lock structural-pilot inputs, noncanonical-residue
-      policy, predictor version, seed plan, and noise threshold.
+- [ ] Collect user feedback on alignment errors, CSV exclusions, and downloaded
+      receipts before adding more modeling complexity.
+- [ ] Consider automatic alignment only after its failure modes and mapping into
+      the frozen 30-position model contract can be tested explicitly.
+- [ ] Add structure input only if a preregistered structure-aware pilot beats this
+      sequence baseline beyond seed noise; a file picker alone would not add
+      scientific value.
+- [ ] Keep P1–P15 closed to tuning and preserve the EC50-not-affinity boundary in
+      every future release.
 
-No peptide–GPCR prediction, structural-feature result, new prospective experiment,
-or external model-win claim is currently made.
+No peptide–GPCR structure prediction, structural-feature result, new prospective
+experiment, or overall external model-win claim is currently made.
