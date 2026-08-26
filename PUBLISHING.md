@@ -53,10 +53,10 @@ CI run and one Pages run.
 ## Verification completed for v0.6.0
 
 - Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
-- CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207>
+- CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760548>
 - Browser deployment: <https://darwinxcai.github.io/IncretinSelect-AI/>
-- Pages run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931248>
-- Verified source: `f5e6102bbd14643ba0b504d540144636f8bc059b`
+- Pages run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760488>
+- Verified source: `19c70897e1df03900f0a4ef787c774da62f11bf0`
 
 ## Required verification after each future push
 

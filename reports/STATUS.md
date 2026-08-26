@@ -11,9 +11,9 @@ sequence-based research screen—not as a validated drug-selection system.
 
 - Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
 - Browser application: <https://darwinxcai.github.io/IncretinSelect-AI/>
-- Verified source commit: `f5e6102bbd14643ba0b504d540144636f8bc059b`
-- Clean CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207>
-- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931248>
+- Verified source commit: `19c70897e1df03900f0a4ef787c774da62f11bf0`
+- Clean CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760548>
+- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760488>
 - Verification: 82 tests on Python 3.10 and 3.12, Ruff 0.16.4, 12 single-
   prediction browser/Python parity cases, 5 batch-policy parity cases, and an
   isolated built-wheel installation check.

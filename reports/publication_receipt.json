@@ -1,13 +1,13 @@
 {
   "local_release": {
-    "commit": "f5e6102bbd14643ba0b504d540144636f8bc059b",
+    "commit": "19c70897e1df03900f0a4ef787c774da62f11bf0",
     "distribution_receipt_sha256": "86fc27864d5de39a4271c0bbb5e383549da75319e70aa752780354598879de05",
     "release_check": "passed",
     "ruff": "0.16.4",
     "static_demo_batch_policy_cases": 5,
     "static_demo_parity_cases": 12,
     "tests_passed": 82,
-    "tree": "cf4baf4a2a621e25008811438b91f6fcdcb65869",
+    "tree": "892c03df62b343955e88fdea6ad795e039a7a78f",
     "wheel_sha256": "00d44248ac2ffbd4d44961d74765c1416c34f864b2ab8a7da29e68079b23bfc8"
   },
   "project": "IncretinSelect-AI",
@@ -15,21 +15,21 @@
     "ci": {
       "overall": "success",
       "python_3_10": {
-        "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207/job/98316691269",
+        "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760548/job/98329979415",
         "status": "passed",
         "tests_passed": 82
       },
       "python_3_12": {
-        "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207/job/98316691093",
+        "job_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760548/job/98329979137",
         "status": "passed",
         "tests_passed": 82
       },
       "run_api_conclusion": "success",
-      "run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931207"
+      "run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760548"
     },
     "demo": {
       "expected_url": "https://darwinxcai.github.io/IncretinSelect-AI/",
-      "latest_run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33010931248",
+      "latest_run_url": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760488",
       "status": "deployed"
     },
     "fresh_public_clone": {
@@ -42,9 +42,9 @@
         "tests_passed": 82,
         "worktree_clean_after_checks": true
       },
-      "head": "f5e6102bbd14643ba0b504d540144636f8bc059b",
+      "head": "19c70897e1df03900f0a4ef787c774da62f11bf0",
       "status": "passed",
-      "tree": "cf4baf4a2a621e25008811438b91f6fcdcb65869"
+      "tree": "892c03df62b343955e88fdea6ad795e039a7a78f"
     },
     "live_product_check": {
       "batch_export_buttons": "passed",
@@ -58,10 +58,10 @@
     "publication_commit": "1079ce4496f276495b7ba348521edac3837c377c",
     "repository_url": "https://github.com/darwinxcai/IncretinSelect-AI",
     "source_tree_match": true,
-    "verification_trigger_commit": "f5e6102bbd14643ba0b504d540144636f8bc059b",
+    "verification_trigger_commit": "19c70897e1df03900f0a4ef787c774da62f11bf0",
     "verified_on": "2026-08-27",
-    "verified_source_commit": "f5e6102bbd14643ba0b504d540144636f8bc059b",
-    "verified_source_tree": "cf4baf4a2a621e25008811438b91f6fcdcb65869"
+    "verified_source_commit": "19c70897e1df03900f0a4ef787c774da62f11bf0",
+    "verified_source_tree": "892c03df62b343955e88fdea6ad795e039a7a78f"
   },
   "published_on": "2026-08-27",
   "schema_version": 1,
