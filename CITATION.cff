@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Cai
     given-names: Darwin
-version: 0.6.0
+version: 0.7.0
 date-released: 2026-08-27
 license: MIT
 keywords:

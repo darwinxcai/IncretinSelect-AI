@@ -19,6 +19,7 @@ from typing import Any
 
 import numpy as np
 
+from incretinselect import __version__
 from incretinselect.clustering import aligned_identity
 from incretinselect.sequence_model import DEFAULT_ALPHABET, encode_aligned_sequences
 
@@ -36,7 +37,7 @@ class ProductError(ValueError):
 
 @dataclass(frozen=True)
 class PortableModel:
-    """Validated frozen coefficients plus label-free applicability references."""
+    """Validated frozen coefficients plus applicability references without outcomes."""
 
     artifact_id: str
     artifact_version: str
@@ -65,7 +66,10 @@ def _artifact_bytes(path: str | Path | None = None) -> bytes:
 def load_model(path: str | Path | None = None) -> PortableModel:
     """Load and validate the bundled frozen inference artifact."""
 
-    raw = _artifact_bytes(path)
+    try:
+        raw = _artifact_bytes(path)
+    except OSError as exc:
+        raise ProductError(f"Could not read the model artifact: {exc}") from exc
     sha256 = hashlib.sha256(raw).hexdigest()
     if path is None and sha256 != EXPECTED_DEFAULT_ARTIFACT_SHA256:
         raise ProductError(
@@ -76,21 +80,34 @@ def load_model(path: str | Path | None = None) -> PortableModel:
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ProductError("The model artifact is not valid UTF-8 JSON") from exc
 
+    if not isinstance(payload, dict):
+        raise ProductError("The model artifact root must be a JSON object")
+
     if payload.get("schema_version") != 1:
         raise ProductError("Only portable model schema version 1 is supported")
     if payload.get("artifact_id") != "incretinselect_aligned_ridge_v1":
         raise ProductError("Unexpected model artifact ID")
 
     contract = payload.get("input_contract", {})
+    if not isinstance(contract, dict):
+        raise ProductError("The model input contract must be a JSON object")
     alphabet = str(contract.get("alphabet", ""))
-    aligned_length = int(contract.get("aligned_length", 0))
+    try:
+        aligned_length = int(contract.get("aligned_length", 0))
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ProductError("The model aligned length must be an integer") from exc
     if alphabet != DEFAULT_ALPHABET or aligned_length != MODEL_INPUT_LENGTH:
         raise ProductError("The model input contract does not match this software")
 
     model = payload.get("model", {})
-    feature_mean = np.asarray(model.get("feature_mean"), dtype=float)
-    target_mean = np.asarray(model.get("target_mean"), dtype=float)
-    coefficients = np.asarray(model.get("coefficients"), dtype=float)
+    if not isinstance(model, dict):
+        raise ProductError("The model parameters must be a JSON object")
+    try:
+        feature_mean = np.asarray(model.get("feature_mean"), dtype=float)
+        target_mean = np.asarray(model.get("target_mean"), dtype=float)
+        coefficients = np.asarray(model.get("coefficients"), dtype=float)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ProductError("Model arrays must contain numeric values") from exc
     feature_count = aligned_length * len(alphabet)
     if feature_mean.shape != (feature_count,):
         raise ProductError("Model feature mean has the wrong shape")
@@ -105,9 +122,20 @@ def load_model(path: str | Path | None = None) -> PortableModel:
     ):
         raise ProductError("Model arrays contain non-finite values")
 
-    references_raw = payload.get("applicability_reference", {}).get("sequences", [])
+    applicability_reference = payload.get("applicability_reference", {})
+    if not isinstance(applicability_reference, dict):
+        raise ProductError("The applicability reference must be a JSON object")
+    if applicability_reference.get("labels_included") is not False:
+        raise ProductError(
+            "The applicability reference must declare labels_included=false"
+        )
+    references_raw = applicability_reference.get("sequences", [])
+    if not isinstance(references_raw, list):
+        raise ProductError("Model applicability sequences must be a JSON array")
     references: list[dict[str, str]] = []
     for row in references_raw:
+        if not isinstance(row, dict):
+            raise ProductError("Model applicability references are malformed")
         reference = {
             "peptide_id": str(row.get("peptide_id", "")),
             "component_id": str(row.get("component_id", "")),
@@ -122,11 +150,21 @@ def load_model(path: str | Path | None = None) -> PortableModel:
             raise ProductError("Model applicability references are malformed")
         references.append(reference)
     if len(references) != 125 or len({row["peptide_id"] for row in references}) != 125:
-        raise ProductError("Model artifact must contain 125 unique label-free references")
+        raise ProductError(
+            "Model artifact must contain 125 unique references without activity outcomes"
+        )
 
-    selected_alpha = float(model.get("selected_alpha", math.nan))
+    try:
+        selected_alpha = float(model.get("selected_alpha", math.nan))
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ProductError("Model ridge strength must be numeric") from exc
     if not math.isfinite(selected_alpha) or selected_alpha <= 0:
         raise ProductError("Model ridge strength must be positive and finite")
+
+    benchmark = payload.get("benchmark_context", {})
+    provenance = payload.get("provenance", {})
+    if not isinstance(benchmark, dict) or not isinstance(provenance, dict):
+        raise ProductError("Model benchmark context and provenance must be JSON objects")
 
     return PortableModel(
         artifact_id=str(payload["artifact_id"]),
@@ -139,8 +177,8 @@ def load_model(path: str | Path | None = None) -> PortableModel:
         target_mean=target_mean,
         coefficients=coefficients,
         references=tuple(references),
-        benchmark=dict(payload.get("benchmark_context", {})),
-        provenance=dict(payload.get("provenance", {})),
+        benchmark=dict(benchmark),
+        provenance=dict(provenance),
     )
 
 
@@ -189,33 +227,46 @@ def _applicability(sequence: str, model: PortableModel) -> dict[str, Any]:
         for score, peptide_id, component_id in scored
         if abs(score - maximum) <= 1e-12
     )
-    if maximum >= 0.85:
+    exact_reference_match = maximum >= 1.0 - 1e-12
+    if exact_reference_match:
         tier = "close_analogue"
+        evidence_state = "training_reference_match"
         summary = (
-            "The input has a close aligned-sequence analogue in the 125-peptide "
-            "reference set. This supports interpolation, but does not validate the estimate."
+            "The input matches a training reference exactly. This is an in-sample model "
+            "estimate and does not demonstrate predictive accuracy on a new peptide."
+        )
+    elif maximum >= 0.85:
+        tier = "close_analogue"
+        evidence_state = "local_analogue_mixed_evidence"
+        summary = (
+            "The input meets the 0.85 local-analog software gate. This threshold "
+            "defined benchmark sequence components; it was not calibrated to prediction "
+            "error. Transfer among 15 published local analogs was mixed."
         )
     elif maximum >= 0.70:
         tier = "distant_analogue"
+        evidence_state = "outside_ranking_scope"
         summary = (
-            "The input is not a close analogue of the reference peptides. Treat both "
-            "receptor estimates as high-risk extrapolations."
+            "The input falls below the 0.85 identity gate. Its numeric estimates are "
+            "shown for inspection but are outside the supported ranking scope."
         )
     else:
         tier = "outside_reference_neighborhood"
+        evidence_state = "far_outside_ranking_scope"
         summary = (
-            "The input is far from every reference peptide. The numeric output is an "
-            "extrapolation and should not be used to rank experiments."
+            "The input is far from every reference peptide. Its numeric estimates are "
+            "extrapolations and should not be used to rank experiments."
         )
     return {
         "tier": tier,
+        "evidence_state": evidence_state,
+        "exact_reference_match": exact_reference_match,
         "nearest_aligned_identity": maximum,
         "nearest_reference_ids": [peptide_id for peptide_id, _ in nearest],
         "nearest_component_ids": sorted({component_id for _, component_id in nearest}),
         "threshold_note": (
-            "The 0.85 boundary was the benchmark's sequence-family threshold. The 0.70 "
-            "lower display boundary is a conservative interface heuristic. Neither is a "
-            "calibrated probability-of-correctness cutoff."
+            "The 0.85 threshold defines sequence-identity components in the benchmark; "
+            "0.70 is an interface heuristic. Neither is calibrated to prediction error."
         ),
         "summary": summary,
     }
@@ -224,10 +275,97 @@ def _applicability(sequence: str, model: PortableModel) -> dict[str, Any]:
 def _direction(selectivity_log10: float) -> str:
     fold_ratio = 10.0**selectivity_log10
     if fold_ratio >= 3.0:
-        return "GLP-1R-favoured predicted functional potency"
+        return "Lower predicted EC50 at GLP-1R"
     if fold_ratio <= 1.0 / 3.0:
-        return "GCGR-favoured predicted functional potency"
-    return "roughly balanced predicted functional potency (within three-fold)"
+        return "Lower predicted EC50 at GCGR"
+    return "Predicted EC50 values within three-fold"
+
+
+def _predict_log10_values(sequence: str, model: PortableModel) -> np.ndarray:
+    """Return GCGR and GLP-1R log10 EC50 values for one validated alignment."""
+
+    features = encode_aligned_sequences(
+        [sequence],
+        alphabet=model.alphabet,
+        expected_length=model.aligned_length,
+    )
+    values = (features - model.feature_mean) @ model.coefficients + model.target_mean
+    return values[0]
+
+
+def _nearest_reference_comparison(
+    sequence: str,
+    values: np.ndarray,
+    applicability: dict[str, Any],
+    model: PortableModel,
+) -> dict[str, Any]:
+    """Exactly decompose the linear-model contrast to one nearest reference.
+
+    The coefficients make this an algebraic explanation of the model output. It
+    is not a causal estimate of what an experimental substitution will do.
+    """
+
+    reference_id = str(applicability["nearest_reference_ids"][0])
+    reference = next(row for row in model.references if row["peptide_id"] == reference_id)
+    reference_sequence = reference["aligned_sequence"]
+    reference_values = _predict_log10_values(reference_sequence, model)
+    alphabet_index = {symbol: index for index, symbol in enumerate(model.alphabet)}
+    width = len(model.alphabet)
+    changes: list[dict[str, Any]] = []
+    contribution_sum = np.zeros(2, dtype=float)
+    for position, (reference_symbol, query_symbol) in enumerate(
+        zip(reference_sequence, sequence, strict=True),
+        start=1,
+    ):
+        if reference_symbol == query_symbol:
+            continue
+        query_index = (position - 1) * width + alphabet_index[query_symbol]
+        reference_index = (position - 1) * width + alphabet_index[reference_symbol]
+        contribution = model.coefficients[query_index] - model.coefficients[reference_index]
+        contribution_sum += contribution
+        gcgr_delta, glp1r_delta = map(float, contribution)
+        changes.append(
+            {
+                "alignment_position": position,
+                "reference_symbol": reference_symbol,
+                "query_symbol": query_symbol,
+                "gcgr_delta_log10_ec50_pm": gcgr_delta,
+                "glp1r_delta_log10_ec50_pm": glp1r_delta,
+                "selectivity_delta_log10_ratio": gcgr_delta - glp1r_delta,
+            }
+        )
+
+    delta = np.asarray(values, dtype=float) - reference_values
+    residual = delta - contribution_sum
+    gcgr_delta, glp1r_delta = map(float, delta)
+    return {
+        "reference_id": reference_id,
+        "reference_component_id": reference["component_id"],
+        "reference_aligned_sequence": reference_sequence,
+        "nearest_reference_tie_count": len(applicability["nearest_reference_ids"]),
+        "changed_position_count": len(changes),
+        "reference_prediction": {
+            "gcgr_log10_ec50_pm": float(reference_values[0]),
+            "glp1r_log10_ec50_pm": float(reference_values[1]),
+        },
+        "query_minus_reference": {
+            "gcgr_delta_log10_ec50_pm": gcgr_delta,
+            "glp1r_delta_log10_ec50_pm": glp1r_delta,
+            "selectivity_delta_log10_ratio": gcgr_delta - glp1r_delta,
+            "gcgr_ec50_fold_ratio": 10.0**gcgr_delta,
+            "glp1r_ec50_fold_ratio": 10.0**glp1r_delta,
+        },
+        "position_contributions": changes,
+        "decomposition_max_abs_residual_log10": float(np.max(np.abs(residual))),
+        "interpretation": (
+            "Positive deltas mean the query has a higher predicted EC50 than the "
+            "reference; negative deltas mean a lower predicted EC50."
+        ),
+        "scientific_boundary": (
+            "This is an exact decomposition of the fitted linear model, not a causal "
+            "substitution effect or experimental validation."
+        ),
+    }
 
 
 def predict(sequence: str, model: PortableModel | None = None) -> dict[str, Any]:
@@ -235,46 +373,62 @@ def predict(sequence: str, model: PortableModel | None = None) -> dict[str, Any]
 
     fitted = model or load_model()
     normalized = normalize_aligned_sequence(sequence)
-    features = encode_aligned_sequences(
-        [normalized],
-        alphabet=fitted.alphabet,
-        expected_length=fitted.aligned_length,
-    )
-    values = (features - fitted.feature_mean) @ fitted.coefficients + fitted.target_mean
-    gcgr_log10, glp1r_log10 = map(float, values[0])
+    values = _predict_log10_values(normalized, fitted)
+    gcgr_log10, glp1r_log10 = map(float, values)
     gcgr_pm = 10.0**gcgr_log10
     glp1r_pm = 10.0**glp1r_log10
     selectivity = gcgr_log10 - glp1r_log10
     applicability = _applicability(normalized, fitted)
+    comparison = _nearest_reference_comparison(
+        normalized,
+        values,
+        applicability,
+        fitted,
+    )
+
+    residue_count = sum(symbol != "-" for symbol in normalized)
+    ranking_exclusions: list[str] = []
+    if applicability["tier"] != "close_analogue":
+        ranking_exclusions.append(str(applicability["summary"]))
+    if residue_count < 26:
+        ranking_exclusions.append(
+            f"The input contains {residue_count} standard residues; exploratory ranking "
+            "requires at least 26."
+        )
+    ranking_support = {
+        "enabled": not ranking_exclusions,
+        "identity_gate": 0.85,
+        "minimum_standard_residue_count": 26,
+        "exclusion_reasons": ranking_exclusions,
+        "boundary": (
+            "Passing these software gates does not establish prediction accuracy or "
+            "experimental priority."
+        ),
+    }
 
     warnings = [
         (
-            "Research use only: these are sequence-model point estimates of cell-based "
-            "cAMP EC50 functional potency, not binding affinity, efficacy, safety, or "
-            "activity in animals or people."
+            "Estimates apply to the source study's cell-based cAMP assay and do not "
+            "measure binding affinity, maximal assay response, safety, or in vivo activity."
         ),
         (
-            "The separate 15-peptide evaluation was mixed: the GCGR point error was lower "
-            "but its dependence-aware interval crossed zero, while pooled GLP-1R error "
-            "was worse versus the nearest-neighbour comparator."
+            "The locked retrospective P1–P15 external evaluation was mixed: ridge had "
+            "lower GCGR point error, but its dependence-aware interval crossed zero, "
+            "and higher pooled GLP-1R error than 1-NN."
         ),
         (
             "The model cannot represent Aib, lipidation, amidation, cyclization, stapling, "
             "or other noncanonical chemistry. '-' means an alignment gap only."
         ),
     ]
-    if applicability["tier"] != "close_analogue":
+    warnings.extend(ranking_exclusions)
+    if applicability["exact_reference_match"]:
         warnings.append(str(applicability["summary"]))
-    residue_count = sum(symbol != "-" for symbol in normalized)
-    if residue_count < 26:
-        warnings.append(
-            "The input has fewer residues than any modeled 30-column core; this is outside "
-            "the training length range and should not be used for candidate ranking."
-        )
 
     return {
         "schema_version": 1,
         "model": {
+            "software_version": __version__,
             "artifact_id": fitted.artifact_id,
             "artifact_version": fitted.artifact_version,
             "artifact_sha256": fitted.sha256,
@@ -311,6 +465,8 @@ def predict(sequence: str, model: PortableModel | None = None) -> dict[str, Any]
             },
         },
         "applicability": applicability,
+        "exploratory_ranking": ranking_support,
+        "nearest_reference_comparison": comparison,
         "benchmark_context": fitted.benchmark,
         "warnings": warnings,
     }

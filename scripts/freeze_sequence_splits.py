@@ -73,7 +73,7 @@ pair whose aligned identity meets the threshold. Connected components remain
 intact. Components are placed, largest first, into the currently smallest of
 three folds. The selected threshold is the **lowest** candidate that produces at
 least nine components and a largest/smallest fold-size ratio no greater than
-1.10. Lower thresholds are more conservative against analogue leakage, so this
+1.10. Lower thresholds are more conservative against analog leakage, so this
 rule selects the most conservative candidate that remains evaluable.
 
 Identity is exact character agreement over alignment columns where at least one

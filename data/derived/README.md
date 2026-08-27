@@ -17,8 +17,8 @@ Checked-in release artifacts:
   peptide–GPCR seed panel, including receptor and peptide entity chains.
 - `cpu_sequence_model_figure_source.csv`: 250 receptor-specific OOF plotting rows
   plus three whole-component bootstrap comparison rows used by the release figure.
-- `external_predictions_locked.csv`: 15 label-independent final-model predictions
-  committed before the outcome-scoring command.
+- `external_predictions_locked.csv`: 15 final-model predictions generated without
+  P1–P15 outcome access and committed before the outcome-scoring command.
 - `external_dependency_groups.csv`: frozen external-only, nearest-donor proxy, and
   combined development/external dependence assignments.
 - `external_evaluation_records.csv`: 45 auditable peptide-endpoint observations

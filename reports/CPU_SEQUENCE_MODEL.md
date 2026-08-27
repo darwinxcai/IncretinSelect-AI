@@ -10,14 +10,14 @@ this model's fitting, tuning, feature selection, or development-CV metrics.
 
 The model is a multi-output ridge regression over a fixed 630-column encoding:
 one indicator for each of 20 standard residues plus alignment gap at each of 30
-positions. It predicts GCGR and GLP-1R log10(pM) jointly with one shared ridge
+positions. It predicts GCGR and GLP-1R log10(EC50 / 1 pM) jointly with one shared ridge
 strength; selectivity is their predicted difference, not a separately optimized
 target.
 
 For every outer test fold, ridge strength is selected using leave-one-sequence-
 component-out validation on that outer fold's training records only. Each component
 gets equal total weight in every fit and equal weight in the inner objective. This
-prevents the 40-, 34-, and 16-member analogue families from dominating model
+prevents the 40-, 34-, and 16-member analog series from dominating model
 selection simply because they contain more variants. Preprocessing and the final
 fit are repeated inside each outer split.
 
@@ -30,11 +30,11 @@ within each of the 17 frozen sequence components and then averages components.
 
 | Model | Endpoint | Pooled MAE | Component-macro MAE | RMSE | Spearman rho | R2 |
 |:---|:---|---:|---:|---:|---:|---:|
-| tied 1-NN | GCGR log10 EC50 (pM) | 0.769 | 0.638 | 1.119 | 0.671 | 0.440 |
-| tied 1-NN | GLP-1R log10 EC50 (pM) | 1.178 | 1.080 | 1.468 | 0.464 | 0.016 |
+| tied 1-NN | GCGR log10(EC50 / 1 pM) | 0.769 | 0.638 | 1.119 | 0.671 | 0.440 |
+| tied 1-NN | GLP-1R log10(EC50 / 1 pM) | 1.178 | 1.080 | 1.468 | 0.464 | 0.016 |
 | tied 1-NN | selectivity log10 ratio | 1.095 | 0.895 | 1.328 | 0.576 | 0.162 |
-| component-weighted ridge | GCGR log10 EC50 (pM) | 0.627 | 0.612 | 0.846 | 0.740 | 0.680 |
-| component-weighted ridge | GLP-1R log10 EC50 (pM) | 1.070 | 1.189 | 1.375 | 0.576 | 0.136 |
+| component-weighted ridge | GCGR log10(EC50 / 1 pM) | 0.627 | 0.612 | 0.846 | 0.740 | 0.680 |
+| component-weighted ridge | GLP-1R log10(EC50 / 1 pM) | 1.070 | 1.189 | 1.375 | 0.576 | 0.136 |
 | component-weighted ridge | selectivity log10 ratio | 1.136 | 1.017 | 1.425 | 0.538 | 0.034 |
 
 ### Paired comparison with tied 1-NN
@@ -45,8 +45,8 @@ the 17 whole sequence components with seed 20260820.
 
 | Endpoint | Ridge MAE | 1-NN MAE | Delta | Component-bootstrap 95% interval |
 |:---|---:|---:|---:|:---|
-| GCGR log10 EC50 (pM) | 0.627 | 0.769 | -0.142 | [-0.779, 0.182] |
-| GLP-1R log10 EC50 (pM) | 1.070 | 1.178 | -0.108 | [-0.727, 0.249] |
+| GCGR log10(EC50 / 1 pM) | 0.627 | 0.769 | -0.142 | [-0.779, 0.182] |
+| GLP-1R log10(EC50 / 1 pM) | 1.070 | 1.178 | -0.108 | [-0.727, 0.249] |
 | selectivity log10 ratio | 1.136 | 1.095 | 0.041 | [-0.139, 0.229] |
 
 The ridge model lowers pooled MAE for both receptor potencies, but not for the
@@ -78,9 +78,9 @@ report. The candidate grid and feature contract are versioned in
 Fold variability remains substantial, as expected when entire sequence families
 are held out. EC50 is cell-based functional potency—not affinity, Kd, efficacy, or
 a structural score. This is an exploratory development-CV comparison. P1–P15 was
-prospective in the source study; for this retrospective project it is a one-shot
-local-analogue external evaluation. Its label-independent predictions and scoring
-policy were subsequently locked and scored once; the mixed result is reported in
+prospective in the source study; this repository uses it as a locked retrospective
+local-analog external evaluation. Predictions were generated without P1–P15 outcome
+access and then scored once under the locked policy; the mixed result is reported in
 `reports/EXTERNAL_EVALUATION.md`.
 
 ## Reproduce

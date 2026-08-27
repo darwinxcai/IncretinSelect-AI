@@ -155,7 +155,7 @@ def _plot(source_rows: list[dict[str, object]], png: str | Path, svg: str | Path
     )
     figure.patch.set_facecolor("white")
     figure.suptitle(
-        "One-shot local-analogue evaluation: transfer is mixed, not a model win",
+        "Locked local-analog evaluation: transfer is mixed",
         x=0.06,
         ha="left",
         fontsize=15,

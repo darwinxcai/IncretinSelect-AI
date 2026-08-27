@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "incretinselect-ai"
-version = "0.6.0"
-description = "Local research tool for sequence-based incretin functional-potency estimation"
+version = "0.7.0"
+description = "Reproducible ridge benchmark and browser/CLI tool for incretin cAMP EC50 estimation"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{name = "Darwin Cai"}]
 license = {file = "LICENSE"}
-keywords = ["GPCR", "incretin", "peptide", "machine learning", "drug discovery"]
+keywords = ["GPCR", "incretin", "peptide", "machine learning", "bioinformatics"]
 dependencies = ["numpy>=1.24,<3"]
 
 [project.optional-dependencies]
@@ -30,7 +30,7 @@ incretin-web = "incretinselect.web:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-incretinselect = ["assets/*.json"]
+incretinselect = ["assets/*.json", "web_assets/*.html", "web_assets/*.css", "web_assets/*.mjs", "web_assets/*.json"]
 
 [tool.ruff]
 line-length = 100

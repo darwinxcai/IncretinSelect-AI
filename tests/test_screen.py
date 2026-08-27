@@ -15,8 +15,10 @@ from incretinselect import __version__
 from incretinselect.product import load_model, predict
 from incretinselect.screen import (
     INPUT_COLUMNS,
+    MAX_CANDIDATES,
     OBJECTIVES,
     ScreeningError,
+    _atomic_write_pair,
     build_screening,
     main,
     screen_records,
@@ -62,6 +64,11 @@ class BatchScreeningTests(unittest.TestCase):
                 rows, counts = screen_records(records, objective, model=self.model)
                 self.assertEqual(counts["ranked_rows"], 1)
                 self.assertAlmostEqual(float(rows[0]["ranking_score"]), expected_score, places=11)
+                self.assertEqual(rows[0]["score_delta_from_first_log10"], "0")
+                self.assertEqual(rows[0]["score_fold_ratio_from_first"], "1")
+                self.assertEqual(
+                    rows[0]["within_one_development_mae_of_first"], "true"
+                )
 
     def test_valid_invalid_and_out_of_scope_rows_all_remain_auditable(self) -> None:
         raw = input_csv(
@@ -83,6 +90,8 @@ class BatchScreeningTests(unittest.TestCase):
         self.assertIn("outside_reference_neighborhood", rows[1]["ranking_exclusion_reason"])
         self.assertEqual(rows[2]["error_code"], "invalid_aligned_sequence")
         self.assertEqual(rows[0]["software_version"], __version__)
+        self.assertEqual(rows[0]["applicability_evidence_state"], "training_reference_match")
+        self.assertEqual(rows[0]["exact_reference_match"], "true")
         self.assertIn("Mixed result", rows[0]["validation_warning"])
         self.assertIn("no overall superiority", rows[0]["validation_warning"])
         self.assertEqual(receipt["counts"]["total_rows"], 3)
@@ -91,6 +100,8 @@ class BatchScreeningTests(unittest.TestCase):
         self.assertFalse(receipt["scientific_boundaries"]["holdout_labels_accessed"])
         self.assertFalse(receipt["scientific_boundaries"]["p1_p15_outcomes_accessed"])
         self.assertFalse(receipt["scientific_boundaries"]["structure_inference_run"])
+        self.assertIn("not an individual confidence interval", receipt["ranking_context"]["interpretation"])
+        self.assertIn("not a calibrated", receipt["ranking_gate"]["scientific_boundary"])
 
     def test_duplicate_sequences_tie_but_duplicate_ids_are_fatal(self) -> None:
         raw = input_csv([("copy_a", REF_93), ("copy_b", REF_93), ("other", REF_11)])
@@ -108,6 +119,20 @@ class BatchScreeningTests(unittest.TestCase):
                 "dual",
                 model=self.model,
             )
+
+        with self.assertRaises(ScreeningError) as raised:
+            build_screening(
+                input_csv([("duplicate\nid", REF_93), ("duplicate\nid", REF_11)]),
+                "dual",
+                model=self.model,
+            )
+        self.assertNotIn("\n", str(raised.exception))
+        self.assertIn(r"\u000a", str(raised.exception))
+
+    def test_candidate_row_limit_is_enforced_during_parsing(self) -> None:
+        rows = ((f"candidate_{index}", REF_93) for index in range(MAX_CANDIDATES + 1))
+        with self.assertRaisesRegex(ScreeningError, "more than 10000 rows"):
+            build_screening(input_csv(list(rows)), "dual", model=self.model)
 
     def test_utf8_bom_is_accepted_and_schema_is_strict(self) -> None:
         rendered, _, exit_code = build_screening(
@@ -308,6 +333,92 @@ class BatchScreeningTests(unittest.TestCase):
                 [path.name for path in root.iterdir() if path.name.startswith(".")],
                 [],
             )
+
+    def test_keyboard_interrupt_rolls_back_both_existing_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "screened.csv"
+            receipt = root / "receipt.json"
+            output.write_text("existing output\n", encoding="utf-8")
+            receipt.write_text("existing receipt\n", encoding="utf-8")
+            real_replace = os.replace
+
+            def interrupt_receipt_commit(
+                source_path: object,
+                destination_path: object,
+            ) -> None:
+                if (
+                    Path(destination_path) == receipt
+                    and str(source_path).endswith(".tmp")
+                ):
+                    raise KeyboardInterrupt
+                real_replace(source_path, destination_path)
+
+            with (
+                mock.patch("incretinselect.screen.os.replace", interrupt_receipt_commit),
+                self.assertRaises(KeyboardInterrupt),
+            ):
+                _atomic_write_pair(
+                    output,
+                    "new output\n",
+                    receipt,
+                    "new receipt\n",
+                    overwrite=True,
+                )
+
+            self.assertEqual(output.read_text(encoding="utf-8"), "existing output\n")
+            self.assertEqual(receipt.read_text(encoding="utf-8"), "existing receipt\n")
+            self.assertEqual(
+                [path.name for path in root.iterdir() if path.name.startswith(".")],
+                [],
+            )
+
+    def test_failed_restore_preserves_original_backup(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "screened.csv"
+            receipt = root / "receipt.json"
+            output.write_text("existing output\n", encoding="utf-8")
+            receipt.write_text("existing receipt\n", encoding="utf-8")
+            real_replace = os.replace
+
+            def fail_commit_and_output_restore(
+                source_path: object,
+                destination_path: object,
+            ) -> None:
+                source = Path(source_path)
+                destination = Path(destination_path)
+                if destination == receipt and source.suffix == ".tmp":
+                    raise OSError("simulated receipt commit failure")
+                if destination == output and source.suffix == ".bak":
+                    raise OSError("simulated output restore failure")
+                real_replace(source, destination)
+
+            with (
+                mock.patch(
+                    "incretinselect.screen.os.replace",
+                    fail_commit_and_output_restore,
+                ),
+                self.assertRaises(ScreeningError) as raised,
+            ):
+                _atomic_write_pair(
+                    output,
+                    "new output\n",
+                    receipt,
+                    "new receipt\n",
+                    overwrite=True,
+                )
+
+            backup_paths = sorted(root.glob(".screened.csv.*.bak"))
+            self.assertEqual(len(backup_paths), 1)
+            self.assertEqual(
+                backup_paths[0].read_text(encoding="utf-8"),
+                "existing output\n",
+            )
+            self.assertIn(str(backup_paths[0]), str(raised.exception))
+            self.assertEqual(receipt.read_text(encoding="utf-8"), "existing receipt\n")
+            self.assertFalse(output.exists())
+            self.assertEqual(list(root.glob("*.tmp")), [])
 
     def test_checked_example_regenerates_byte_for_byte(self) -> None:
         example = PROJECT_ROOT / "examples" / "candidate_screening"

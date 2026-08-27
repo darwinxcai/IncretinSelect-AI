@@ -1,9 +1,8 @@
 """Guarded batch screening for the frozen IncretinSelect research model.
 
-The screening interface is intentionally conservative. It keeps every input row
-visible, but only assigns ranks to close analogues within the modeled residue-count
-range. A user must also state the receptor objective explicitly; there is no
-catch-all "best peptide" score.
+The interface keeps every input row visible but ranks only local analogs that meet
+the residue-count gate. A user must also state the receptor objective explicitly;
+there is no catch-all "best peptide" score.
 """
 
 from __future__ import annotations
@@ -16,6 +15,7 @@ import json
 import math
 import os
 import re
+import stat
 import sys
 import tempfile
 from collections import Counter
@@ -34,7 +34,7 @@ CANDIDATE_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
 
 ENDPOINT_WARNING = (
     "Cell-based cAMP EC50 functional-potency estimate; not binding affinity, "
-    "efficacy, safety, or drug validation."
+    "maximal assay response, safety, or drug validation."
 )
 RANKING_WARNING = (
     "Exploratory model ordering for experiment planning; not an experimental "
@@ -43,17 +43,17 @@ RANKING_WARNING = (
 
 OBJECTIVES: dict[str, dict[str, str]] = {
     "glp1r": {
-        "definition": "minimize predicted GLP-1R log10 EC50 (pM)",
+        "definition": "minimize predicted GLP-1R log10(EC50 / 1 pM)",
         "score": "glp1r_log10_ec50_pm",
     },
     "gcgr": {
-        "definition": "minimize predicted GCGR log10 EC50 (pM)",
+        "definition": "minimize predicted GCGR log10(EC50 / 1 pM)",
         "score": "gcgr_log10_ec50_pm",
     },
     "dual": {
         "definition": (
-            "minimize the worse (larger) of predicted GLP-1R and GCGR "
-            "log10 EC50 (pM)"
+            "minimize the larger of predicted GLP-1R and GCGR "
+            "log10(EC50 / 1 pM) values"
         ),
         "score": "max_receptor_log10_ec50_pm",
     },
@@ -72,12 +72,19 @@ OUTPUT_COLUMNS = (
     "ranking_exclusion_reason",
     "rank",
     "ranking_score",
+    "score_delta_from_first_log10",
+    "score_fold_ratio_from_first",
+    "development_mae_context_log10",
+    "within_one_development_mae_of_first",
+    "ranking_context",
     "glp1r_log10_ec50_pm",
     "glp1r_ec50_pm",
     "gcgr_log10_ec50_pm",
     "gcgr_ec50_pm",
     "selectivity_log10_gcgr_over_glp1r",
     "applicability_tier",
+    "applicability_evidence_state",
+    "exact_reference_match",
     "nearest_aligned_identity",
     "nearest_reference_ids",
     "standard_residue_count",
@@ -98,6 +105,36 @@ class ScreeningError(ValueError):
 
 def _sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
+
+
+def _read_regular_file_bounded(path: Path, maximum_bytes: int) -> bytes:
+    """Read at most one byte beyond the limit from an opened regular file."""
+
+    flags = os.O_RDONLY
+    flags |= getattr(os, "O_BINARY", 0)
+    flags |= getattr(os, "O_NONBLOCK", 0)
+    flags |= getattr(os, "O_NOFOLLOW", 0)
+    file_descriptor: int | None = os.open(path, flags)
+    try:
+        metadata = os.fstat(file_descriptor)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise ScreeningError(f"Input CSV is not a regular file: {path}")
+        if metadata.st_size > maximum_bytes:
+            raise ScreeningError(
+                f"Input CSV is {metadata.st_size} bytes; "
+                f"the safety limit is {maximum_bytes}"
+            )
+        with os.fdopen(file_descriptor, "rb") as handle:
+            file_descriptor = None
+            raw = handle.read(maximum_bytes + 1)
+    finally:
+        if file_descriptor is not None:
+            os.close(file_descriptor)
+    if len(raw) > maximum_bytes:
+        raise ScreeningError(
+            f"Input CSV exceeds the {maximum_bytes}-byte safety limit"
+        )
+    return raw
 
 
 def _number(value: float) -> str:
@@ -184,6 +221,11 @@ def _read_candidates(raw: bytes) -> list[dict[str, str]]:
         reader.fieldnames = list(fieldnames)
         records = []
         for row_number, row in enumerate(reader, start=1):
+            if row_number > MAX_CANDIDATES:
+                raise ScreeningError(
+                    f"Input CSV has more than {MAX_CANDIDATES} rows; "
+                    f"the safety limit is {MAX_CANDIDATES}"
+                )
             if None in row:
                 raise ScreeningError(
                     f"Candidate row {row_number} has more than {len(INPUT_COLUMNS)} fields"
@@ -209,7 +251,7 @@ def _read_candidates(raw: bytes) -> list[dict[str, str]]:
         candidate_id for candidate_id, count in Counter(nonblank_ids).items() if count > 1
     )
     if duplicates:
-        preview = ", ".join(duplicates[:5])
+        preview = ", ".join(_safe_csv_text(value) for value in duplicates[:5])
         suffix = "" if len(duplicates) <= 5 else f" (+{len(duplicates) - 5} more)"
         raise ScreeningError(f"Candidate IDs must be unique; duplicates: {preview}{suffix}")
     return records
@@ -223,6 +265,39 @@ def _ranking_score(result: dict[str, Any], objective: str) -> float:
     if objective == "gcgr":
         return gcgr
     return max(glp1r, gcgr)
+
+
+def _development_mae_context(
+    model: PortableModel, objective: str
+) -> tuple[float, str, str]:
+    """Return population-level error context for an ordering objective.
+
+    The dual score has not been benchmarked as its own endpoint. Its context is
+    therefore the larger of the two receptor-specific development OOF MAEs, used
+    only as a conservative descriptive reference.
+    """
+
+    metrics = model.benchmark.get("metrics", {})
+    if objective in {"glp1r", "gcgr"}:
+        value = float(metrics[objective]["development_oof_mae_log10"])
+        source = f"{objective}_development_oof_mae_log10"
+        note = (
+            "Population-level development out-of-fold MAE for this receptor; "
+            "not an individual confidence interval or significance threshold."
+        )
+        return value, source, note
+
+    value = max(
+        float(metrics["glp1r"]["development_oof_mae_log10"]),
+        float(metrics["gcgr"]["development_oof_mae_log10"]),
+    )
+    return (
+        value,
+        "larger_receptor_development_oof_mae_log10",
+        "Conservative descriptive reference for the dual max-receptor score; the "
+        "dual objective was not benchmarked as a separate endpoint. This is not an "
+        "individual confidence interval or significance threshold.",
+    )
 
 
 def screen_records(
@@ -312,6 +387,12 @@ def screen_records(
                     float(predictions["selectivity"]["log10_ec50_ratio"])
                 ),
                 "applicability_tier": str(applicability["tier"]),
+                "applicability_evidence_state": str(
+                    applicability["evidence_state"]
+                ),
+                "exact_reference_match": (
+                    "true" if applicability["exact_reference_match"] else "false"
+                ),
                 "nearest_aligned_identity": _number(
                     float(applicability["nearest_aligned_identity"])
                 ),
@@ -333,6 +414,12 @@ def screen_records(
             int(row["input_row"]),
         )
     )
+    mae_context, _, _ = _development_mae_context(fitted, objective)
+    best_score = (
+        raw_ranking_scores[int(eligible_rows[0]["input_row"])]
+        if eligible_rows
+        else None
+    )
     rank = 0
     previous_score: float | None = None
     for row in eligible_rows:
@@ -347,6 +434,19 @@ def screen_records(
             previous_score = score
         row["rank"] = str(rank)
         row["status"] = "ranked"
+        delta = score - best_score if best_score is not None else 0.0
+        within_context = delta <= mae_context + RANKING_TIE_TOLERANCE
+        row["score_delta_from_first_log10"] = _number(delta)
+        row["score_fold_ratio_from_first"] = _number(10**delta)
+        row["development_mae_context_log10"] = _number(mae_context)
+        row["within_one_development_mae_of_first"] = (
+            "true" if within_context else "false"
+        )
+        row["ranking_context"] = (
+            "within_one_development_mae_of_first"
+            if within_context
+            else "more_than_one_development_mae_from_first"
+        )
 
     remainder = [row for row in rows if row["status"] != "ranked"]
     remainder.sort(key=lambda row: int(row["input_row"]))
@@ -359,6 +459,9 @@ def screen_records(
         "ranked_rows": len(eligible_rows),
         "out_of_scope_rows": sum(
             row["status"] == "not_ranked_out_of_scope" for row in rows
+        ),
+        "within_one_development_mae_of_first_rows": sum(
+            row["within_one_development_mae_of_first"] == "true" for row in rows
         ),
     }
     return ordered, counts
@@ -385,6 +488,7 @@ def build_screening(
     fitted = model or load_model()
     records = _read_candidates(raw_input)
     rows, counts = screen_records(records, objective, model=fitted)
+    mae_context, mae_source, mae_note = _development_mae_context(fitted, objective)
     rendered = _render_csv(rows)
     rendered_bytes = rendered.encode("utf-8")
     if counts["ranking_eligible_rows"] == 0:
@@ -421,10 +525,20 @@ def build_screening(
         "ranking_gate": {
             "required_applicability_tier": "close_analogue",
             "minimum_standard_residue_count": MIN_RANKING_RESIDUES,
+            "scientific_boundary": (
+                "This software gate enables exploratory ordering; it is not a "
+                "calibrated accuracy or validation threshold."
+            ),
             "tie_policy": (
                 "dense rank when scores are equal within absolute tolerance "
                 f"{RANKING_TIE_TOLERANCE:g}; input order breaks display ties"
             ),
+        },
+        "ranking_context": {
+            "development_mae_log10": mae_context,
+            "source": mae_source,
+            "interpretation": mae_note,
+            "row_field": "score_delta_from_first_log10",
         },
         "counts": counts,
         "model": {
@@ -486,7 +600,7 @@ def _stage_text(path: Path, content: str) -> Path:
             handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
-    except Exception:
+    except BaseException:
         temporary.unlink(missing_ok=True)
         raise
     return temporary
@@ -526,6 +640,7 @@ def _atomic_write_pair(
 
     staged: dict[Path, Path] = {}
     backups: dict[Path, Path] = {}
+    preserved_backups: set[Path] = set()
     committed: set[Path] = set()
     try:
         # A permission error, bad parent, or full disk for the receipt therefore
@@ -542,7 +657,7 @@ def _atomic_write_pair(
                 backup = _reserve_backup(path)
                 try:
                     os.replace(path, backup)
-                except Exception:
+                except BaseException:
                     backup.unlink(missing_ok=True)
                     raise
                 backups[path] = backup
@@ -551,7 +666,7 @@ def _atomic_write_pair(
             os.replace(staged[path], path)
             staged.pop(path)
             committed.add(path)
-    except Exception as exc:
+    except BaseException as exc:
         rollback_errors: list[str] = []
         for path, _ in reversed(artifacts):
             try:
@@ -561,7 +676,14 @@ def _atomic_write_pair(
                 if backup is not None and backup.exists():
                     os.replace(backup, path)
             except OSError as rollback_exc:
-                rollback_errors.append(f"{path}: {rollback_exc}")
+                backup = backups.get(path)
+                if backup is not None and backup.exists():
+                    preserved_backups.add(backup)
+                    rollback_errors.append(
+                        f"{path}: {rollback_exc}; original preserved at {backup}"
+                    )
+                else:
+                    rollback_errors.append(f"{path}: {rollback_exc}")
         if rollback_errors:
             raise ScreeningError(
                 "Batch artifact write failed and rollback was incomplete: "
@@ -569,16 +691,19 @@ def _atomic_write_pair(
             ) from exc
         raise
     finally:
-        for temporary in (*staged.values(), *backups.values()):
+        for temporary in staged.values():
             temporary.unlink(missing_ok=True)
+        for backup in backups.values():
+            if backup not in preserved_backups:
+                backup.unlink(missing_ok=True)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="incretin-screen",
         description=(
-            "Screen a CSV of already-aligned 30-column incretin-like peptides. "
-            "Only close analogues in the modeled residue-count range receive ranks."
+            "Compare a CSV of aligned 30-position incretin-like peptides. Only rows "
+            "meeting the 0.85 identity and 26-residue software gates are ranked."
         ),
         epilog=(
             "Required CSV columns: candidate_id,aligned_sequence\n"
@@ -595,8 +720,8 @@ def build_parser() -> argparse.ArgumentParser:
         choices=tuple(OBJECTIVES),
         required=True,
         help=(
-            "Required experimental objective: lower GLP-1R EC50, lower GCGR EC50, "
-            "or a dual heuristic minimizing the worse receptor estimate."
+            "Required ranking objective: minimize predicted GLP-1R EC50, predicted "
+            "GCGR EC50, or the larger of the two predicted EC50 values."
         ),
     )
     parser.add_argument("--output", type=Path, required=True, help="Output screening CSV.")
@@ -611,6 +736,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Explicitly replace existing output and receipt files.",
     )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return parser
 
 
@@ -628,13 +754,6 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise ScreeningError(
                 "input, output, and receipt paths must be different"
             )
-        if not input_path.is_file():
-            raise ScreeningError(f"Input CSV does not exist: {input_path}")
-        if input_path.stat().st_size > MAX_INPUT_BYTES:
-            raise ScreeningError(
-                f"Input CSV is {input_path.stat().st_size} bytes; "
-                f"the safety limit is {MAX_INPUT_BYTES}"
-            )
         if not args.overwrite:
             existing = [path for path in (output_path, receipt_path) if path.exists()]
             if existing:
@@ -642,7 +761,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "Refusing to overwrite existing file(s): "
                     + ", ".join(str(path) for path in existing)
                 )
-        raw = input_path.read_bytes()
+        raw = _read_regular_file_bounded(input_path, MAX_INPUT_BYTES)
         rendered, receipt, exit_code = build_screening(
             raw,
             args.objective,

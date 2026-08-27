@@ -7,11 +7,11 @@
     "prediction_schema_version": 1,
     "screening_objective": "dual",
     "screening_out_of_scope_rows": 1,
-    "screening_output_sha256": "669ace57e3a5c086988a657940681c28c88f78345220144f24fd2edc35b644e6",
+    "screening_output_sha256": "f8b5a861015f3323801213df537bebed5590e6485cee90c5d87f3a6284170655",
     "screening_ranked_rows": 3,
     "screening_rows": 4,
-    "software_version": "0.6.0",
-    "web_smoke": "ok: rendered 7616 bytes with incretinselect_aligned_ridge_v1 v1.0.0"
+    "software_version": "0.7.0",
+    "web_smoke": "ok: verified browser application v0.7.0 with model eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321"
   },
   "python": "3.12.13",
   "scientific_boundaries": {
@@ -21,19 +21,34 @@
     "structure_inference_run": false
   },
   "status": "passed",
-  "verification_scope": "built wheel installed and exercised outside source tree",
+  "verification_scope": "built wheel installed and exercised in a temporary environment outside the source tree; dependency metadata checked and runtime NumPy supplied by the verification environment",
   "wheel": {
-    "filename": "incretinselect_ai-0.6.0-py3-none-any.whl",
-    "member_count": 21,
+    "filename": "incretinselect_ai-0.7.0-py3-none-any.whl",
+    "member_count": 27,
     "required_runtime_files": [
       "incretinselect/__init__.py",
+      "incretinselect/activity.py",
+      "incretinselect/baseline.py",
       "incretinselect/cli.py",
+      "incretinselect/clustering.py",
+      "incretinselect/external_evaluation.py",
+      "incretinselect/holdout.py",
       "incretinselect/product.py",
       "incretinselect/screen.py",
+      "incretinselect/sequence_model.py",
+      "incretinselect/sources.py",
+      "incretinselect/structures.py",
+      "incretinselect/training.py",
       "incretinselect/web.py",
-      "incretinselect/assets/incretin_ridge_v1.json"
+      "incretinselect/assets/incretin_ridge_v1.json",
+      "incretinselect/web_assets/index.html",
+      "incretinselect/web_assets/styles.css",
+      "incretinselect/web_assets/app.mjs",
+      "incretinselect/web_assets/model.mjs",
+      "incretinselect/web_assets/io.mjs",
+      "incretinselect/web_assets/demo_manifest.json"
     ],
-    "sha256": "00d44248ac2ffbd4d44961d74765c1416c34f864b2ab8a7da29e68079b23bfc8",
+    "sha256": "75eeac0128e6ebc8291d2e654554f8478c8085195e6d2954d5d69f6da0d392f0",
     "source_date_epoch": "946684800"
   }
 }

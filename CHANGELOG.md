@@ -6,6 +6,49 @@ All notable changes to this research artifact are documented here.
 
 - Complex-prediction pilot and structure-feature benchmark remain future work.
 
+## [0.7.0] - 2026-08-27
+
+### Added
+
+- Exact nearest-reference attribution for the additive ridge model, including
+  position-level contributions and an explicit noncausal interpretation boundary.
+- Markdown reports for single predictions and a file/stdin input path for the
+  command-line interface.
+- Batch score distance from the first result, fold ratio, and development-MAE
+  context. These population-level summaries are not individual confidence
+  intervals or significance tests.
+- Cross-runtime contract tests spanning 601 single-position variants, tied nearest
+  references, applicability evidence states, and canonical CSV safety fields.
+
+### Improved
+
+- The installed `incretin-web` command now serves the same verified application as
+  GitHub Pages, including FASTA import, CSV screening, attribution, and downloads.
+- Browser and Python CSV parsing, field order, warnings, version metadata, and
+  spreadsheet-safe exports now follow one tested contract. Browser receipts hash
+  the original uploaded bytes and reject malformed UTF-8.
+- Input changes invalidate prior results and downloads. File-loading and screening
+  revisions prevent an older asynchronous task from replacing newer input state.
+- Model loading validates the full artifact structure against an immutable expected
+  checksum and returns concise product errors for malformed custom artifacts.
+- Sequence-file reads are byte-bounded, reject nonregular files, and cannot overwrite
+  their own input. Paired batch writes preserve the original backup even if rollback
+  itself fails. Release evidence is bound to a deterministic source-payload hash.
+- Pages deployment follows successful CI for the exact commit, and workflow
+  dependencies are pinned to immutable commit SHAs. Pages write permissions are
+  available only to the deployment job.
+- Public documentation and interface copy were shortened and standardized for
+  scientific clarity.
+
+### Scientific boundaries
+
+- The 0.85 identity rule is described as a software gate inherited from benchmark
+  grouping, not as calibrated evidence of prediction accuracy.
+- Structure upload remains unavailable because this release has no validated
+  structure-derived inputs.
+- Outputs remain point estimates of cell-based cAMP EC50, not binding affinity,
+  maximal assay response, safety, in vivo activity, or experimental validation.
+
 ## [0.6.0] - 2026-08-27
 
 ### Added
@@ -23,7 +66,7 @@ All notable changes to this research artifact are documented here.
 
 - Reworked the public application copy and result hierarchy around its practical
   purpose, required interpretation, privacy boundary, and validation limits.
-- Fixed the short close-analogue edge case so sequences with fewer than 26
+- Fixed the short local-analog edge case so sequences with fewer than 26
   standard residues are visibly blocked from candidate ranking.
 - Added guarded, atomic output handling for single and batch command-line files,
   including rollback if a paired batch-artifact commit fails.
@@ -46,7 +89,7 @@ All notable changes to this research artifact are documented here.
   dual objectives; applicability and residue-count rank gates; visible row-level
   errors and exclusions; dense ties; overwrite protection; per-file atomic
   replacement; and a checksum-bound machine-readable receipt.
-- Added a deterministic, label-free four-row screening example and installed-wheel
+- Added a deterministic four-row screening example without assay outcomes and installed-wheel
   verification of the batch command. The example deliberately excludes P1–P15
   sequences and outcomes and demonstrates software behavior, not model accuracy.
 - Added an offline distribution verifier that builds the wheel, checks required
@@ -57,7 +100,7 @@ All notable changes to this research artifact are documented here.
   public target, clean-tree and branch checks, release re-verification, authenticated
   creation/push, and post-creation URL and visibility verification.
 - Added a machine-readable release-readiness audit that independently gates local
-  package evidence and public CV-verification evidence.
+  package evidence and public-release verification evidence.
 - Added a zero-install static browser demo with checksum verification, no external
   runtime service, browser/Python numerical parity tests, and a guarded GitHub
   Pages deployment workflow.
@@ -65,10 +108,10 @@ All notable changes to this research artifact are documented here.
 ### Scientific boundary
 
 - Batch ranks are exploratory model orderings for review, not experimental
-  recommendations. Only close analogues with at least 26 standard residues are
+  recommendations. Only local analogs with at least 26 standard residues are
   ranked; every other row stays visible with a reason.
 - The batch example contains no assay outcomes or P1–P15 sequences. Its exact
-  development references prove software behavior rather than predictive accuracy.
+  development references exercise software behavior rather than predictive accuracy.
 
 ## [0.4.0] - 2026-08-20
 
@@ -78,7 +121,8 @@ All notable changes to this research artifact are documented here.
 - A dependency-free `incretin-web` local browser interface bound to loopback.
 - A frozen, versioned ridge artifact that runs without raw source workbooks and
   reproduces all 15 predictions committed before external scoring.
-- Label-free nearest-reference identity, applicability warnings, model checksum,
+- Nearest-reference identity from references stored without activity outcomes,
+  applicability warnings, model checksum,
   benchmark error context, product guide, and offline smoke test.
 
 ### Scientific boundary
@@ -104,12 +148,13 @@ All notable changes to this research artifact are documented here.
   model report and out-of-fold prediction artifacts.
 - A checked-in, 10/10-resolved RCSB structure seed manifest after correcting
   deposited entity aliases for 6X18, 7FIY, and 8YW4.
-- A label-independent, all-development final-model fit and committed P1–P15
+- An all-development final-model fit completed without P1–P15 outcomes and a committed
+  P1–P15
   prediction lock with protocol, implementation, input, and dependency hashes.
-- A one-shot, censor-aware external evaluation that aggregates triplicates at the
+- A locked retrospective, censor-aware external evaluation that aggregates triplicates at the
   peptide level, preserves one-sided bounds, and retains all four predeclared
   models (ridge plus three comparators) and all endpoints.
-- Label-free dependence groupings, four-component descriptive resampling,
+- Outcome-independent sequence-dependence groupings, four-component descriptive resampling,
   leave-one-component-out checks, and sensitivity summaries that do not treat 45
   replicate cells or 15 related designs as independent evidence.
 - A 45-row endpoint-level audit table, machine-readable metrics and scoring
@@ -129,15 +174,16 @@ All notable changes to this research artifact are documented here.
 - A historical parser read public P1–P15 outcomes for integrity and censoring
   audits; only the separate post-lock scorer used them for prediction-error
   metrics. This is command-local isolation for a retrospective, unblinded local-
-  analogue evaluation—not a virgin-label or newly prospective experiment.
+  analog evaluation—not a blinded evaluation on previously unseen outcomes or a
+  newly prospective experiment.
 
 ## [0.2.0] - 2026-08-20
 
 ### Added
 
-- Checksum-verified P1–P15 prospective holdout parser with censor preservation.
+- Checksum-verified P1–P15 published-design parser with censor preservation.
 - Training-only identity-threshold audit and deterministic 42/42/41 outer folds.
-- Tied 1-nearest-neighbour and training-fold median CPU baselines.
+- Tied 1-nearest-neighbor and training-fold median CPU baselines.
 - Machine-readable out-of-fold predictions, metric tables, and JSON reports.
 - Release documentation, citation metadata, data-license attribution, and CI.
 

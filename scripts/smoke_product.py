@@ -8,7 +8,7 @@ import math
 from incretinselect.cli import EXAMPLE_SEQUENCE, format_csv, format_text
 from incretinselect.product import predict
 from incretinselect.screen import build_screening
-from incretinselect.web import render_page
+from incretinselect.web import render_page, verify_web_assets
 
 
 def main() -> int:
@@ -21,16 +21,16 @@ def main() -> int:
         raise RuntimeError("Bundled model does not reproduce the locked P1 GCGR estimate")
     if abs(glp1r - 1.012508198632634) > 1e-12:
         raise RuntimeError("Bundled model does not reproduce the locked P1 GLP-1R estimate")
-    if "not binding affinity" not in format_text(result):
+    if "do not measure binding affinity" not in format_text(result):
         raise RuntimeError("Terminal output lost the required endpoint warning")
     if EXAMPLE_SEQUENCE not in format_csv(result):
         raise RuntimeError("CSV output lost the input sequence")
-    page = render_page(sequence=EXAMPLE_SEQUENCE, result=result)
+    page = render_page()
     if (
-        "Sequence-only functional-potency estimate" not in page
-        or result["model"]["artifact_sha256"] not in page
+        "Candidate screen" not in page
+        or verify_web_assets()["artifact_sha256"] != result["model"]["artifact_sha256"]
     ):
-        raise RuntimeError("Local web interface did not render a complete result")
+        raise RuntimeError("Installed web interface does not match the verified browser app")
     screening_input = (
         "candidate_id,aligned_sequence\n"
         "demo_ref_93,HSQGTFTSDYSKYLDSRAASEFVQWLISE-\n"
@@ -42,7 +42,7 @@ def main() -> int:
         "dual",
     )
     if screening_exit != 0 or screening_receipt["counts"]["ranked_rows"] != 2:
-        raise RuntimeError("Guarded batch screening did not rank the label-free demo rows")
+        raise RuntimeError("Guarded batch screening did not rank the outcome-free demo rows")
     if screening_receipt["counts"]["out_of_scope_rows"] != 1:
         raise RuntimeError("Guarded batch screening did not retain the out-of-scope row")
     if "not binding affinity" not in screening_csv:

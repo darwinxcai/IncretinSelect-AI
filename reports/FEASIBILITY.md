@@ -10,7 +10,7 @@ Test whether reproducibly extracted features from AI-predicted peptide–recepto
 complexes improve leakage-resistant prediction of cAMP EC50 at human GCGR and
 GLP-1R beyond sequence-only baselines.
 
-The useful result is an honest estimate of incremental predictive value. A null
+The useful result is an estimate of incremental predictive value. A null
 result—predicted structural features add no held-out signal—would still be a valid
 benchmark if the evaluation and uncertainty analysis are rigorous.
 
@@ -71,12 +71,12 @@ assay, held-cluster incremental-value test and its error analysis.
 ## Source-study prospective designs
 
 The source paper's P1–P15 designs were checksum-pinned and parser-validated for a
-one-shot external evaluation. Right-censored replicate measurements remained
+locked retrospective external evaluation. Right-censored replicate measurements remained
 censored during scoring.
-There are no exact training-sequence overlaps, but the designs are close analogues:
+There are no exact training-sequence overlaps, but the designs are close analogs:
 3/15 are one mutation and 12/15 are three mutations from the nearest training
-sequence. They were prospective in the source study but are public-label,
-retrospective external evaluation data here; they test local-analogue transfer and
+sequence. They were prospective in the source study, but their outcomes are public;
+this repository evaluates them retrospectively to test local-analog transfer and
 do not replace cluster-held-out evaluation. See `reports/HOLDOUT_AUDIT.md`.
 
 ## Completed CPU sequence analysis
@@ -109,7 +109,7 @@ secondary exploratory signal without predeclared component uncertainty. See
 1. **Data audit and baseline**
    - Validate the pinned workbook. **Complete.**
    - Define sequence clusters before splitting. **Complete.**
-   - Run the nearest-neighbour floor. **Complete.**
+   - Run the nearest-neighbor floor. **Complete.**
    - Add one stronger, regularized sequence-only model using identical outer folds.
      **Complete.**
 2. **Prediction feasibility pilot**
@@ -122,7 +122,7 @@ secondary exploratory signal without predeclared component uncertainty. See
 3. **Small variant pilot**
    - Select 12–20 peptides spanning sequence clusters and both receptors' potency
      ranges without looking at the eventual test folds.
-   - Extract a preregistered, compact structural feature set.
+   - Extract a prespecified, compact structural feature set.
 4. **Go/no-go**
    - Proceed to all 125 variants only if features are reproducible across seeds and
      compute cost is compatible with a November deliverable.
@@ -148,7 +148,7 @@ secondary exploratory signal without predeclared component uncertainty. See
 |---|---|---|
 | Only 125 labeled peptides | High variance and overfitting | Small models, nested cluster-held-out CV, paired uncertainty |
 | Similar analog series | Random splits inflate performance | Cluster/family split before model fitting |
-| Prospective assay bounds | Ordinary regression can misread censored labels | Preserve one-sided bounds; report exact-only and constraint-aware metrics |
+| Censored assay bounds | Ordinary regression can misread censored labels | Preserve one-sided bounds; report exact-only and constraint-aware metrics |
 | EC50 is not affinity | Structural-binding claims can be overstated | Frame endpoint as functional potency throughout |
 | Amidation and noncanonical chemistry | Sequence/structure inputs may be incomplete | Track modifications; native anchors first; sensitivity analyses |
 | Structure predictor cost | Full 125 x 2 x models x seeds may be large | 12–20 peptide pilot and one primary predictor before scaling |

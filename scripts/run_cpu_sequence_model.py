@@ -216,14 +216,14 @@ this model's fitting, tuning, feature selection, or development-CV metrics.
 
 The model is a multi-output ridge regression over a fixed 630-column encoding:
 one indicator for each of 20 standard residues plus alignment gap at each of 30
-positions. It predicts GCGR and GLP-1R log10(pM) jointly with one shared ridge
+positions. It predicts GCGR and GLP-1R log10(EC50 / 1 pM) jointly with one shared ridge
 strength; selectivity is their predicted difference, not a separately optimized
 target.
 
 For every outer test fold, ridge strength is selected using leave-one-sequence-
 component-out validation on that outer fold's training records only. Each component
 gets equal total weight in every fit and equal weight in the inner objective. This
-prevents the 40-, 34-, and 16-member analogue families from dominating model
+prevents the 40-, 34-, and 16-member analog series from dominating model
 selection simply because they contain more variants. Preprocessing and the final
 fit are repeated inside each outer split.
 
@@ -273,8 +273,9 @@ report. The candidate grid and feature contract are versioned in
 Fold variability remains substantial, as expected when entire sequence families
 are held out. EC50 is cell-based functional potency—not affinity, Kd, efficacy, or
 a structural score. This is an exploratory development-CV comparison. P1–P15 was
-prospective in the source study; for this retrospective project it is a one-shot
-local-analogue external evaluation. Its label-independent predictions and scoring
+prospective in the source study; this repository uses it as a locked retrospective
+local-analog external evaluation. Its predictions were generated without outcome
+access, and its scoring
 policy were subsequently locked and scored once; the mixed result is reported in
 `reports/EXTERNAL_EVALUATION.md`.
 

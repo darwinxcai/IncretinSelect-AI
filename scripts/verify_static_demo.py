@@ -50,7 +50,9 @@ def main() -> int:
     if manifest.get("artifact_sha256") != model.sha256:
         raise RuntimeError("Static demo manifest has the wrong artifact checksum")
     if manifest.get("labels_included") is not False:
-        raise RuntimeError("Static demo manifest does not preserve the label-free boundary")
+        raise RuntimeError(
+            "Static demo manifest does not preserve the activity-outcome omission boundary"
+        )
     if manifest.get("local_file_import") is not True:
         raise RuntimeError("Static demo manifest does not declare local file import")
     if manifest.get("outbound_sequence_transmission") is not False:
@@ -114,6 +116,23 @@ def main() -> int:
             != python["applicability"]["nearest_reference_ids"]
         ):
             raise RuntimeError("Browser nearest references differ from Python")
+        browser_comparison = browser["nearestReferenceComparison"]
+        python_comparison = python["nearest_reference_comparison"]
+        if (
+            browser_comparison["referenceId"] != python_comparison["reference_id"]
+            or browser_comparison["changedPositionCount"]
+            != python_comparison["changed_position_count"]
+        ):
+            raise RuntimeError("Browser nearest-reference comparison differs from Python")
+        for endpoint in ("gcgr", "glp1r"):
+            browser_delta = browser_comparison["queryMinusReference"][
+                f"{endpoint}DeltaLog10Ec50Pm"
+            ]
+            python_delta = python_comparison["query_minus_reference"][
+                f"{endpoint}_delta_log10_ec50_pm"
+            ]
+            if not math.isclose(browser_delta, python_delta, rel_tol=1e-12, abs_tol=1e-12):
+                raise RuntimeError("Browser model-attribution delta differs from Python")
     if maximum_delta > 1e-12:
         raise RuntimeError(f"Browser/Python maximum prediction delta is {maximum_delta}")
 
@@ -162,9 +181,11 @@ def main() -> int:
         "nearest_reference_ids",
         "standard_residue_count",
         "duplicate_sequence_count",
+        "software_version",
         "artifact_id",
         "artifact_version",
         "artifact_sha256",
+        "validation_warning",
     )
     numeric_batch_fields = (
         "ranking_score",
@@ -229,7 +250,7 @@ def main() -> int:
             "batch_maximum_relative_numeric_delta": batch_maximum_relative_delta,
             "cases": len(sequences),
             "maximum_absolute_log10_delta": maximum_delta,
-            "reference_source": "label-free model applicability references",
+            "reference_source": "model applicability references stored without outcomes",
             "tolerance": 1e-12,
         },
         "browser_validation": {
@@ -243,6 +264,8 @@ def main() -> int:
             "short_close_analogue_do_not_rank_warning": True,
             "single_result_csv_download": True,
             "single_result_json_download": True,
+            "single_result_markdown_download": True,
+            "nearest_reference_model_attribution": True,
             "wrong_length_rejected": True,
         },
         "privacy": {

@@ -12,7 +12,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from incretinselect.product import load_model, predict
-from incretinselect.screen import screen_records
+from incretinselect.screen import OUTPUT_COLUMNS, screen_records
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DOCS = PROJECT_ROOT / "docs"
@@ -76,6 +76,24 @@ class StaticDemoTests(unittest.TestCase):
                 browser["applicability"]["nearestReferenceIds"],
                 python["applicability"]["nearest_reference_ids"],
             )
+            browser_comparison = browser["nearestReferenceComparison"]
+            python_comparison = python["nearest_reference_comparison"]
+            self.assertEqual(
+                browser_comparison["referenceId"],
+                python_comparison["reference_id"],
+            )
+            self.assertEqual(
+                browser_comparison["changedPositionCount"],
+                python_comparison["changed_position_count"],
+            )
+            for endpoint in ("gcgr", "glp1r"):
+                browser_delta = browser_comparison["queryMinusReference"][
+                    f"{endpoint}DeltaLog10Ec50Pm"
+                ]
+                python_delta = python_comparison["query_minus_reference"][
+                    f"{endpoint}_delta_log10_ec50_pm"
+                ]
+                self.assertAlmostEqual(browser_delta, python_delta, places=12)
         self.assertLessEqual(maximum_delta, 1e-12)
 
     @unittest.skipUnless(shutil.which("node"), "Node is required for browser validation")
@@ -150,15 +168,24 @@ class StaticDemoTests(unittest.TestCase):
             "ranking_exclusion_reason",
             "rank",
             "applicability_tier",
+            "applicability_evidence_state",
+            "exact_reference_match",
             "nearest_reference_ids",
             "standard_residue_count",
             "duplicate_sequence_count",
+            "software_version",
             "artifact_id",
             "artifact_version",
             "artifact_sha256",
+            "validation_warning",
+            "within_one_development_mae_of_first",
+            "ranking_context",
         )
         numeric_fields = (
             "ranking_score",
+            "score_delta_from_first_log10",
+            "score_fold_ratio_from_first",
+            "development_mae_context_log10",
             "glp1r_log10_ec50_pm",
             "glp1r_ec50_pm",
             "gcgr_log10_ec50_pm",
@@ -197,6 +224,10 @@ class StaticDemoTests(unittest.TestCase):
         self.assertEqual(short_row["status"], "not_ranked_out_of_scope")
         self.assertIn("below 26", short_row["ranking_exclusion_reason"])
 
+        io_source = (DOCS / "io.mjs").read_text(encoding="utf-8")
+        for column in OUTPUT_COLUMNS:
+            self.assertIn(f'"{column}"', io_source)
+
     def test_static_page_has_no_remote_runtime_dependency(self) -> None:
         combined = "\n".join(
             (DOCS / name).read_text(encoding="utf-8")
@@ -207,8 +238,8 @@ class StaticDemoTests(unittest.TestCase):
         single_spaced = " ".join(combined.split())
         self.assertIn("no backend, account, analytics service", single_spaced)
         self.assertIn("network transmission of sequences", single_spaced)
-        self.assertIn("not an affinity or drug-success predictor", single_spaced)
-        self.assertIn("Why there is no structure upload", single_spaced)
+        self.assertIn("Outputs do not measure binding affinity", single_spaced)
+        self.assertIn("Structure files are not supported", single_spaced)
         self.assertIn("candidate_id,aligned_sequence", single_spaced)
         self.assertIn("Download JSON", single_spaced)
         self.assertIn("Download screened CSV", single_spaced)

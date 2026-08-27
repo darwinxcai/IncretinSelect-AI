@@ -17,11 +17,26 @@ from pathlib import Path
 
 REQUIRED_WHEEL_MEMBERS = (
     "incretinselect/__init__.py",
+    "incretinselect/activity.py",
+    "incretinselect/baseline.py",
     "incretinselect/cli.py",
+    "incretinselect/clustering.py",
+    "incretinselect/external_evaluation.py",
+    "incretinselect/holdout.py",
     "incretinselect/product.py",
     "incretinselect/screen.py",
+    "incretinselect/sequence_model.py",
+    "incretinselect/sources.py",
+    "incretinselect/structures.py",
+    "incretinselect/training.py",
     "incretinselect/web.py",
     "incretinselect/assets/incretin_ridge_v1.json",
+    "incretinselect/web_assets/index.html",
+    "incretinselect/web_assets/styles.css",
+    "incretinselect/web_assets/app.mjs",
+    "incretinselect/web_assets/model.mjs",
+    "incretinselect/web_assets/io.mjs",
+    "incretinselect/web_assets/demo_manifest.json",
 )
 
 
@@ -69,13 +84,18 @@ def sha256(path: Path) -> str:
 def verify_wheel_members(wheel: Path) -> int:
     with zipfile.ZipFile(wheel) as archive:
         members = set(archive.namelist())
-    missing = [member for member in REQUIRED_WHEEL_MEMBERS if member not in members]
-    if missing:
-        raise RuntimeError(f"Wheel is missing required runtime files: {missing}")
-    metadata = [member for member in members if member.endswith(".dist-info/METADATA")]
-    entry_points = [member for member in members if member.endswith(".dist-info/entry_points.txt")]
-    if len(metadata) != 1 or len(entry_points) != 1:
-        raise RuntimeError("Wheel must contain one METADATA file and one entry_points.txt")
+        missing = [member for member in REQUIRED_WHEEL_MEMBERS if member not in members]
+        if missing:
+            raise RuntimeError(f"Wheel is missing required runtime files: {missing}")
+        metadata = [member for member in members if member.endswith(".dist-info/METADATA")]
+        entry_points = [
+            member for member in members if member.endswith(".dist-info/entry_points.txt")
+        ]
+        if len(metadata) != 1 or len(entry_points) != 1:
+            raise RuntimeError("Wheel must contain one METADATA file and one entry_points.txt")
+        metadata_text = archive.read(metadata[0]).decode("utf-8")
+        if "Requires-Dist: numpy" not in metadata_text:
+            raise RuntimeError("Wheel metadata is missing the NumPy runtime dependency")
     return len(members)
 
 
@@ -137,12 +157,34 @@ def main() -> int:
             env=clean_env,
         )
 
-        predict = executable(environment, "incretin-predict")
-        screen = executable(environment, "incretin-screen")
-        web = executable(environment, "incretin-web")
-        for entry_point in (predict, screen, web):
+        entry_points = {
+            name: executable(environment, name)
+            for name in (
+                "incretin-validate",
+                "incretin-structures",
+                "incretin-fetch",
+                "incretin-predict",
+                "incretin-screen",
+                "incretin-web",
+            )
+        }
+        for entry_point in entry_points.values():
             if not entry_point.is_file():
                 raise RuntimeError(f"Installed entry point is missing: {entry_point.name}")
+        for name in ("incretin-validate", "incretin-structures", "incretin-fetch"):
+            run([str(entry_points[name]), "--help"], cwd=temp, env=clean_env)
+
+        predict = entry_points["incretin-predict"]
+        screen = entry_points["incretin-screen"]
+        web = entry_points["incretin-web"]
+        if run([str(predict), "--version"], cwd=temp, env=clean_env).strip() != (
+            "incretin-predict 0.7.0"
+        ):
+            raise RuntimeError("Installed prediction command reports the wrong version")
+        if run([str(screen), "--version"], cwd=temp, env=clean_env).strip() != (
+            "incretin-screen 0.7.0"
+        ):
+            raise RuntimeError("Installed screening command reports the wrong version")
 
         prediction = json.loads(
             run(
@@ -154,7 +196,7 @@ def main() -> int:
         if prediction.get("schema_version") != 1:
             raise RuntimeError("Installed CLI returned an unexpected schema version")
         warnings = prediction.get("warnings", [])
-        if not any("not binding affinity" in warning for warning in warnings):
+        if not any("do not measure binding affinity" in warning for warning in warnings):
             raise RuntimeError("Installed CLI lost the required EC50 endpoint warning")
         artifact_sha256 = prediction.get("model", {}).get("artifact_sha256", "")
         if len(artifact_sha256) != 64:
@@ -171,7 +213,7 @@ def main() -> int:
         if len(rows) != 1 or not rows[0].get("aligned_sequence"):
             raise RuntimeError("Installed CLI did not create a complete one-row CSV")
 
-        # Label-free development references plus an artificial out-of-scope row.
+        # Development references stored without outcomes plus an artificial out-of-scope row.
         # This verifies product behavior without reading P1-P15 outcomes.
         screening_input = temp / "screening_candidates.csv"
         screening_output = temp / "screening_output.csv"
@@ -226,12 +268,16 @@ def main() -> int:
             raise RuntimeError("Installed screening CSV lost the mixed validation warning")
 
         web_output = run([str(web), "--smoke-test"], cwd=temp, env=clean_env).strip()
-        if not web_output.startswith("ok: rendered"):
+        if not web_output.startswith("ok: verified browser application"):
             raise RuntimeError("Installed browser entry point did not pass its smoke test")
 
         receipt = {
             "status": "passed",
-            "verification_scope": "built wheel installed and exercised outside source tree",
+            "verification_scope": (
+                "built wheel installed and exercised in a temporary environment outside "
+                "the source tree; dependency metadata checked and runtime NumPy supplied "
+                "by the verification environment"
+            ),
             "python": sys.version.split()[0],
             "wheel": {
                 "filename": wheel.name,
@@ -266,7 +312,7 @@ def main() -> int:
         args.json_output.parent.mkdir(parents=True, exist_ok=True)
         args.json_output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
     print(
-        "distribution verification passed: wheel contents, isolated install, "
+        "distribution verification passed: wheel contents, temporary install, "
         "JSON/CSV prediction, guarded batch screening, and web smoke test"
     )
     return 0

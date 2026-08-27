@@ -3,16 +3,18 @@ import csv
 import hashlib
 import io
 import json
+import os
 import socket
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from incretinselect.cli import EXAMPLE_SEQUENCE, format_csv, format_text
+from incretinselect.cli import EXAMPLE_SEQUENCE, format_csv, format_markdown, format_text
 from incretinselect.cli import main as cli_main
 from incretinselect.product import ProductError, load_model, model_info, predict
+from incretinselect.web import WEB_ASSETS, render_page, verify_web_assets
 from incretinselect.web import main as web_main
-from incretinselect.web import render_page
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -48,6 +50,25 @@ class ProductTests(unittest.TestCase):
                 set(row), {"peptide_id", "component_id", "aligned_sequence"}
             )
 
+    def test_malformed_custom_artifacts_fail_with_product_errors(self) -> None:
+        source = PROJECT_ROOT / "src/incretinselect/assets/incretin_ridge_v1.json"
+        original = json.loads(source.read_text(encoding="utf-8"))
+        mutations = (
+            lambda value: value["input_contract"].update(aligned_length="not-an-integer"),
+            lambda value: value["model"].update(feature_mean=["not-a-number"]),
+            lambda value: value["applicability_reference"].update(labels_included=True),
+            lambda value: value["applicability_reference"].update(sequences=[None]),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            artifact = Path(directory) / "model.json"
+            for index, mutate in enumerate(mutations):
+                with self.subTest(case=index):
+                    payload = json.loads(json.dumps(original))
+                    mutate(payload)
+                    artifact.write_text(json.dumps(payload), encoding="utf-8")
+                    with self.assertRaises(ProductError):
+                        load_model(artifact)
+
     def test_p1_golden_prediction_matches_pre_score_lock(self) -> None:
         result = predict(EXAMPLE_SEQUENCE, self.model)
         self.assertAlmostEqual(
@@ -62,6 +83,44 @@ class ProductTests(unittest.TestCase):
         )
         self.assertEqual(result["applicability"]["tier"], "close_analogue")
         self.assertEqual(result["applicability"]["nearest_reference_ids"], ["seq_pep93"])
+
+    def test_nearest_reference_comparison_exactly_decomposes_linear_model(self) -> None:
+        result = predict(EXAMPLE_SEQUENCE, self.model)
+        comparison = result["nearest_reference_comparison"]
+        self.assertEqual(comparison["reference_id"], "seq_pep93")
+        self.assertEqual(comparison["changed_position_count"], 1)
+        self.assertLess(comparison["decomposition_max_abs_residual_log10"], 1e-12)
+
+        reference_result = predict(comparison["reference_aligned_sequence"], self.model)
+        delta = comparison["query_minus_reference"]
+        for endpoint in ("gcgr", "glp1r"):
+            observed = (
+                result["predictions"][endpoint]["log10_ec50_pm"]
+                - reference_result["predictions"][endpoint]["log10_ec50_pm"]
+            )
+            self.assertAlmostEqual(
+                observed,
+                delta[f"{endpoint}_delta_log10_ec50_pm"],
+                places=12,
+            )
+            contribution_sum = sum(
+                row[f"{endpoint}_delta_log10_ec50_pm"]
+                for row in comparison["position_contributions"]
+            )
+            self.assertAlmostEqual(observed, contribution_sum, places=12)
+
+        identical = reference_result["nearest_reference_comparison"]
+        self.assertEqual(identical["changed_position_count"], 0)
+        self.assertEqual(identical["position_contributions"], [])
+        self.assertAlmostEqual(
+            identical["query_minus_reference"]["gcgr_delta_log10_ec50_pm"],
+            0.0,
+            places=12,
+        )
+
+        report = format_markdown(result)
+        self.assertIn("Nearest-reference model comparison", report)
+        self.assertIn("not a causal substitution effect", report)
 
     def test_all_locked_external_predictions_are_reproduced(self) -> None:
         with (PROJECT_ROOT / "data/derived/external_predictions_locked.csv").open(
@@ -104,37 +163,55 @@ class ProductTests(unittest.TestCase):
         result = predict(EXAMPLE_SEQUENCE, self.model)
         text = format_text(result)
         self.assertIn("cell-based cAMP EC50", text)
-        self.assertIn("not binding affinity", text)
+        self.assertIn("do not measure binding affinity", text)
         self.assertIn("Artifact SHA-256", text)
 
         csv_rows = list(csv.DictReader(io.StringIO(format_csv(result))))
         self.assertEqual(len(csv_rows), 1)
         self.assertEqual(csv_rows[0]["aligned_sequence"], EXAMPLE_SEQUENCE)
-        self.assertIn("not affinity", csv_rows[0]["endpoint_warning"])
+        self.assertIn("not binding affinity", csv_rows[0]["endpoint_warning"])
 
-        page = render_page(sequence=EXAMPLE_SEQUENCE, result=result)
-        self.assertIn("Sequence-only functional-potency estimate", page)
-        self.assertIn("does not mean tighter binding", page)
-        self.assertIn(self.model.sha256, page)
+        page = render_page()
+        self.assertIn("cell-based cAMP EC50", page)
+        self.assertIn("Outputs do not measure binding affinity", page)
+        self.assertEqual(verify_web_assets()["artifact_sha256"], self.model.sha256)
 
-    def test_web_marks_non_rankable_predictions_with_prominent_stop_box(self) -> None:
+    def test_human_and_csv_exports_preserve_ranking_guardrails(self) -> None:
         outside = predict("A" * 30, self.model)
-        self.assertNotEqual(outside["applicability"]["tier"], "close_analogue")
-        outside_page = render_page(result=outside)
-        self.assertIn('class="tier tier-danger"', outside_page)
-        self.assertIn('data-ranking-supported="false"', outside_page)
-        self.assertIn("Do not use this output to rank experiments.", outside_page)
+        outside_csv = next(csv.DictReader(io.StringIO(format_csv(outside))))
+        self.assertEqual(outside_csv["exploratory_ranking_enabled"], "false")
+        self.assertIn("should not be used to rank", outside_csv["exploratory_ranking_exclusion_reason"])
+        self.assertEqual(outside_csv["software_version"], "0.7.0")
+        self.assertIn("no overall superiority", outside_csv["validation_warning"])
+        outside_report = format_markdown(outside)
+        self.assertIn("Do not use this output to rank experiments", outside_report)
+        self.assertIn(outside["applicability"]["summary"], outside_report)
 
-        short_close_sequence = "----TFTSDYSKYLDSRAASEFVQWLISE-"
-        short_close = predict(short_close_sequence, self.model)
-        self.assertEqual(short_close["applicability"]["tier"], "close_analogue")
-        self.assertLess(short_close["input"]["standard_residue_count"], 26)
-        short_page = render_page(result=short_close)
-        self.assertIn('data-ranking-supported="false"', short_page)
-        self.assertIn("fewer than 26 standard residues", short_page)
+        short = predict("----TFTSDYSKYLDSRAASEFVQWLISE-", self.model)
+        self.assertEqual(short["applicability"]["tier"], "close_analogue")
+        self.assertFalse(short["exploratory_ranking"]["enabled"])
+        short_report = format_markdown(short)
+        self.assertIn("requires at least 26", short_report)
 
-        supported_page = render_page(result=predict(EXAMPLE_SEQUENCE, self.model))
-        self.assertNotIn('data-ranking-supported="false"', supported_page)
+    def test_installed_web_app_matches_the_public_browser_interface(self) -> None:
+        page = render_page()
+        self.assertEqual(page, (PROJECT_ROOT / "docs/index.html").read_text(encoding="utf-8"))
+        self.assertIn("Candidate screen", page)
+        self.assertIn("Download screened CSV", page)
+        self.assertIn("Nearest-reference model comparison", page)
+        self.assertEqual(
+            set(WEB_ASSETS),
+            {
+                "/",
+                "/index.html",
+                "/styles.css",
+                "/app.mjs",
+                "/model.mjs",
+                "/io.mjs",
+                "/demo_manifest.json",
+                "/assets/incretin_ridge_v1.json",
+            },
+        )
 
     def test_leading_gap_sequence_has_explicit_cli_path_and_safe_csv(self) -> None:
         sequence = next(
@@ -150,6 +227,89 @@ class ProductTests(unittest.TestCase):
 
         csv_row = next(csv.DictReader(io.StringIO(format_csv(predict(sequence, self.model)))))
         self.assertEqual(csv_row["aligned_sequence"], "'" + sequence)
+
+    def test_cli_reads_one_fasta_file_or_standard_input(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fasta = Path(directory) / "candidate.fasta"
+            fasta.write_text(
+                f">candidate\n{EXAMPLE_SEQUENCE[:15]}\n{EXAMPLE_SEQUENCE[15:]}\n",
+                encoding="utf-8",
+            )
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                exit_code = cli_main(
+                    ["--sequence-file", str(fasta), "--format", "json"]
+                )
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(
+                json.loads(stdout.getvalue())["input"]["aligned_sequence"],
+                EXAMPLE_SEQUENCE,
+            )
+
+        fake_stdin = mock.Mock()
+        fake_stdin.buffer = io.BytesIO((EXAMPLE_SEQUENCE + "\n").encode())
+        stdout = io.StringIO()
+        with mock.patch("sys.stdin", fake_stdin), contextlib.redirect_stdout(stdout):
+            exit_code = cli_main(["--sequence-file", "-", "--format", "json"])
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(
+            json.loads(stdout.getvalue())["input"]["aligned_sequence"],
+            EXAMPLE_SEQUENCE,
+        )
+
+    def test_sequence_file_is_bounded_and_cannot_be_its_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fasta = root / "candidate.fasta"
+            original = f">candidate\n{EXAMPLE_SEQUENCE}\n"
+            fasta.write_text(original, encoding="utf-8")
+
+            for output in (fasta, root / "candidate-hardlink.fasta"):
+                if output != fasta:
+                    try:
+                        os.link(fasta, output)
+                    except OSError:
+                        continue
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    exit_code = cli_main(
+                        [
+                            "--sequence-file",
+                            str(fasta),
+                            "--format",
+                            "json",
+                            "--output",
+                            str(output),
+                            "--overwrite",
+                        ]
+                    )
+                self.assertEqual(exit_code, 2)
+                self.assertIn("must refer to different files", stderr.getvalue())
+                self.assertEqual(fasta.read_text(encoding="utf-8"), original)
+
+            oversized = root / "oversized.txt"
+            oversized.write_bytes(b"A" * 65_537)
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                exit_code = cli_main(["--sequence-file", str(oversized)])
+            self.assertEqual(exit_code, 2)
+            self.assertIn("65536-byte safety limit", stderr.getvalue())
+            self.assertNotIn("Traceback", stderr.getvalue())
+
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                exit_code = cli_main(["--sequence-file", str(root)])
+            self.assertEqual(exit_code, 2)
+            self.assertNotIn("Traceback", stderr.getvalue())
+
+            if hasattr(os, "mkfifo"):
+                fifo = root / "sequence.fifo"
+                os.mkfifo(fifo)
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    exit_code = cli_main(["--sequence-file", str(fifo)])
+                self.assertEqual(exit_code, 2)
+                self.assertIn("regular file", stderr.getvalue())
 
     def test_cli_output_is_guarded_and_filesystem_errors_are_concise(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -188,12 +348,6 @@ class ProductTests(unittest.TestCase):
             self.assertEqual(exit_code, 2)
             self.assertIn("Output directory does not exist", stderr.getvalue())
             self.assertNotIn("Traceback", stderr.getvalue())
-
-    def test_html_escapes_rejected_input(self) -> None:
-        page = render_page(sequence="<script>alert(1)</script>", error="bad <input>")
-        self.assertNotIn("<script>alert(1)</script>", page)
-        self.assertIn("&lt;script&gt;", page)
-        self.assertIn("bad &lt;input&gt;", page)
 
     def test_web_occupied_port_returns_concise_actionable_error(self) -> None:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as occupied:

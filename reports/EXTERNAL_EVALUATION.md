@@ -1,20 +1,20 @@
-# One-shot P1--P15 external evaluation
+# Locked retrospective P1–P15 external evaluation
 
 **Status:** completed once from the prediction-lock commit
-`7feed50339e6695859efdddcd92efd7197c7d1d3`. The label-freeze command accepted no
-receptor-outcome inputs and read only the P1--P15 sequence cells. Those predictions
+`7feed50339e6695859efdddcd92efd7197c7d1d3`. The prediction-freeze command accepted no
+receptor-outcome inputs and read only the P1–P15 sequence cells. Those predictions
 were committed before this separate scoring command read the receptor outcomes.
 The public labels were historically parsed for integrity audits, so this is
-command-local isolation—not blinded or virgin-label evaluation. The model was not
+command-local isolation—not a blinded evaluation on previously unseen outcomes. The model was not
 refit, recalibrated, or selected after this result.
 
 ## What was tested
 
 The final component-balanced ridge model was trained on all 125 development
 peptides after selecting alpha=10.0000 by the locked
-leave-one-development-component-out rule. P1--P15 are nearby designed analogues
+leave-one-development-component-out rule. P1–P15 are nearby designed analogs
 (not a distant-family panel), and their labels are public; this is a retrospective
-one-shot external evaluation, not a blinded prospective experiment.
+locked retrospective external evaluation, not a blinded prospective experiment.
 
 The endpoint is cAMP EC50 functional potency in pM—not binding affinity, Kd,
 efficacy, or clinical performance. Three assay replicates were collapsed to one
@@ -82,7 +82,7 @@ point estimates cannot establish a selectivity advantage.
 
 Delta is challenger loss minus comparator loss; negative favors the challenger.
 The headline descriptive interval uses 10,000 paired resamples of the four frozen
-P1--P15 sequence components at aligned identity 0.85. A sampled component retains
+P1–P15 sequence components at aligned identity 0.85. A sampled component retains
 all member peptides, and the same seed and component draws are used for every model
 comparison. This is not an inferential confidence interval. Four components are
 too few for a significance or superiority claim, regardless of interval position.
@@ -121,7 +121,7 @@ constraint loss. No censored threshold is treated as an exact outcome.
 
 ## Interpretation boundary
 
-This result tests whether a simple sequence model transfers to 15 local analogues
+This result tests whether a simple sequence model transfers to 15 local analogs
 designed from the same source dataset. It does not establish distant sequence-family
 generalization, structure-aware causality, receptor binding affinity, or superiority
 to the source paper's CNN—or even model superiority within this four-component

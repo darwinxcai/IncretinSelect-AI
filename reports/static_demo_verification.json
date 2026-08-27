@@ -13,7 +13,7 @@
     "batch_policy_exact": true,
     "cases": 12,
     "maximum_absolute_log10_delta": 7.993605777301127e-15,
-    "reference_source": "label-free model applicability references",
+    "reference_source": "model applicability references stored without outcomes",
     "tolerance": 1e-12
   },
   "browser_validation": {
@@ -22,11 +22,13 @@
     "batch_download_audit_receipt": true,
     "fasta_local_import": true,
     "fasta_paste_rejected": true,
+    "nearest_reference_model_attribution": true,
     "noncanonical_symbols_rejected": true,
     "outside_neighborhood_do_not_rank_warning": true,
     "short_close_analogue_do_not_rank_warning": true,
     "single_result_csv_download": true,
     "single_result_json_download": true,
+    "single_result_markdown_download": true,
     "wrong_length_rejected": true
   },
   "privacy": {

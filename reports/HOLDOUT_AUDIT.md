@@ -1,7 +1,7 @@
-# Published P1–P15 external-set audit
+# Published P1–P15 external-evaluation audit
 
 **Frozen:** 2026-08-20
-**Decision:** validated and scored once as an evaluation-only local-analogue set;
+**Decision:** validated and scored once as a locked retrospective local-analog set;
 not evidence of distant sequence-family generalization. It was prospective in
 the source study, but its labels are public and this project uses it retrospectively.
 
@@ -39,14 +39,15 @@ Against the 125 aligned training sequences:
 
 This set was experimentally prospective in the source study, but it was created by
 optimizing from the training set and lies close to it. It is suitable for testing
-prediction on nearby designed analogues. It must not replace cluster-held-out
+prediction on nearby designed analogs. It must not replace cluster-held-out
 cross-validation for claims about new peptide families.
 
 ## Evaluation policy
 
 The public P1–P15 labels had already been parsed for checksum, overlap, and
 censoring integrity checks, so this was not a blinded holdout. They remained
-excluded from model development. Label-independent predictions, dependency
+excluded from model development. Predictions generated without P1–P15 outcomes,
+dependency
 groups, protocol, and implementation hashes were committed before a separate
 scoring command read the receptor outcomes exactly once. The evaluation aggregates
 replicates at peptide level, retains one-sided censoring constraints, and reports
@@ -60,9 +61,9 @@ unfavorable and weighting-sensitive. It does not support external superiority.
 
 ## Novelty boundary checked on 2026-08-20
 
-- Puszkarska *et al.* already performed sequence-only modelling and prospective
+- Puszkarska *et al.* already performed sequence-only modeling and prospective
   design on this exact system. Reproducing their CNN or optimizing more sequences
-  is not a new flagship contribution.
+  is not an independent contribution.
 - Wong *et al.* (2025), DOI
   [10.3389/fbinf.2025.1687617](https://doi.org/10.3389/fbinf.2025.1687617),
   already reported ML-guided triple-agonist sequence optimization.
@@ -78,8 +79,8 @@ over sequence baselines for same-assay human GCGR/GLP-1R functional potency.
 
 ## Next bounded task
 
-The CPU sequence benchmark and one-shot external evaluation are complete. No GPU
-inference has run. The next bounded task is the preregistered complex-prediction
+The CPU sequence benchmark and locked retrospective external evaluation are complete. No GPU
+inference has run. The next bounded task is the prespecified complex-prediction
 pilot: native GLP-1–GLP-1R and glucagon–GCGR anchors, at least three seeds, and
 predeclared geometry/stability measures before any structure-derived feature is
 added to the development benchmark. P1–P15 outcomes will not be reused to choose

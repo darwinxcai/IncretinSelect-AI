@@ -1,9 +1,9 @@
 # Candidate-screening example
 
-This example shows the batch product behavior without using assay outcomes or
-P1–P15 sequences. The first three rows are anonymized development sequences from
-the model artifact's label-free applicability list. The all-alanine row is an
-artificial guardrail case, not a biological negative control.
+This example exercises the batch-screening workflow without assay outcomes. The
+first three rows are training-set reference sequences stored in the model artifact
+without their activity measurements. The all-alanine row demonstrates out-of-scope
+handling and is not a biological negative control.
 
 Run:
 
@@ -15,11 +15,15 @@ incretin-screen examples/candidate_screening/candidates.csv \
   --overwrite
 ```
 
-The three development references receive an exploratory rank. The artificial row
-keeps its numeric extrapolation but has a blank rank and an explicit
-`outside_reference_neighborhood` reason. No row disappears silently.
+The three reference rows meet the ranking gates. The artificial row retains its
+numeric extrapolation but receives no rank because it is
+`outside_reference_neighborhood`. Every input row remains in the output with an
+explicit status or exclusion reason.
 
-`dual` minimizes the less favorable (larger) of the two predicted receptor log10
-EC50 values. It is a transparent comparison rule, not proof of dual agonism. The
-development references were used to fit the model, so this example verifies
-software behavior only; it is not a predictive-accuracy evaluation.
+The `dual` objective ranks candidates by the larger, less favorable of their two
+predicted log10(EC50 / 1 pM) values; lower scores rank first. This is a comparison
+rule for predicted potency at both receptors, not evidence of dual agonism. Because
+the three reference sequences were used to fit the model, this example tests
+software behavior only and provides no estimate of predictive accuracy. It does not
+use sequences or outcome labels from the locked retrospective P1–P15 external
+evaluation.

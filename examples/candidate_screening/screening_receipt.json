@@ -5,7 +5,8 @@
     "ranked_rows": 3,
     "ranking_eligible_rows": 3,
     "total_rows": 4,
-    "valid_prediction_rows": 4
+    "valid_prediction_rows": 4,
+    "within_one_development_mae_of_first_rows": 2
   },
   "exit_code": 0,
   "input": {
@@ -42,10 +43,10 @@
         }
       }
     },
-    "software_version": "0.6.0"
+    "software_version": "0.7.0"
   },
   "objective": {
-    "definition": "minimize the worse (larger) of predicted GLP-1R and GCGR log10 EC50 (pM)",
+    "definition": "minimize the larger of predicted GLP-1R and GCGR log10(EC50 / 1 pM) values",
     "direction": "lower score ranks first",
     "name": "dual"
   },
@@ -63,12 +64,19 @@
       "ranking_exclusion_reason",
       "rank",
       "ranking_score",
+      "score_delta_from_first_log10",
+      "score_fold_ratio_from_first",
+      "development_mae_context_log10",
+      "within_one_development_mae_of_first",
+      "ranking_context",
       "glp1r_log10_ec50_pm",
       "glp1r_ec50_pm",
       "gcgr_log10_ec50_pm",
       "gcgr_ec50_pm",
       "selectivity_log10_gcgr_over_glp1r",
       "applicability_tier",
+      "applicability_evidence_state",
+      "exact_reference_match",
       "nearest_aligned_identity",
       "nearest_reference_ids",
       "standard_residue_count",
@@ -82,11 +90,18 @@
       "ranking_warning"
     ],
     "filename": "screened_dual.csv",
-    "sha256": "669ace57e3a5c086988a657940681c28c88f78345220144f24fd2edc35b644e6"
+    "sha256": "f8b5a861015f3323801213df537bebed5590e6485cee90c5d87f3a6284170655"
+  },
+  "ranking_context": {
+    "development_mae_log10": 1.0695780120593172,
+    "interpretation": "Conservative descriptive reference for the dual max-receptor score; the dual objective was not benchmarked as a separate endpoint. This is not an individual confidence interval or significance threshold.",
+    "row_field": "score_delta_from_first_log10",
+    "source": "larger_receptor_development_oof_mae_log10"
   },
   "ranking_gate": {
     "minimum_standard_residue_count": 26,
     "required_applicability_tier": "close_analogue",
+    "scientific_boundary": "This software gate enables exploratory ordering; it is not a calibrated accuracy or validation threshold.",
     "tie_policy": "dense rank when scores are equal within absolute tolerance 1e-12; input order breaks display ties"
   },
   "schema_version": 1,

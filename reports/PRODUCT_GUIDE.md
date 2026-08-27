@@ -1,151 +1,117 @@
-# IncretinSelect-AI local product guide
+# IncretinSelect-AI product guide
 
-## Objective
+## Scope
 
-The app answers a narrow research question:
+IncretinSelect-AI estimates cell-based cAMP EC50 at GLP-1R and GCGR for an
+incretin-like peptide represented in the source study's 30-position alignment. It
+also reports the predicted EC50 ratio between receptors, similarity to the model's
+reference sequences, and evidence needed to interpret the result.
 
-> For an incretin-like peptide represented in the model's 30-position alignment,
-> what cell-based cAMP EC50 values does the frozen sequence model estimate for
-> GLP-1R and GCGR, and how similar is that sequence to the model's references?
+The application is intended for exploratory comparison of compatible sequences.
+Its outputs do not measure binding affinity, maximal assay response, safety, in vivo
+activity, or clinical benefit. A passing software gate does not establish prediction
+accuracy or experimental priority.
 
-This could support early hypothesis formation when a scientist has several
-compatible sequence variants and wants to compare their predicted receptor
-balance before deciding what to test. It is not evidence that a peptide binds,
-activates either receptor, is a good drug, or is safe.
+## Run the application
 
-## Install and run
-
-Python 3.10 or newer is required. No GPU, web API, or raw experimental workbook
-is required for inference.
+Python 3.10 or newer is required for the installed package. Inference does not
+require a GPU, raw experimental workbook, or external model service.
 
 ```bash
 python -m venv .venv
 . .venv/bin/activate
-python -m pip install -e .
+python -m pip install .
 
 incretin-predict --example
-incretin-screen examples/candidate_screening/candidates.csv \
-  --objective dual --output screened.csv --receipt screening_receipt.json
 incretin-web --open
 ```
 
-The web app is served only on `127.0.0.1`; submitted sequences are processed by
-the local Python process and are not sent to another service.
+`incretin-web` serves the same browser application and model artifact deployed on
+[GitHub Pages](https://darwinxcai.github.io/IncretinSelect-AI/), rather than a
+separate local interface. It binds to `127.0.0.1` by default and processes imported
+files in the browser. The hosted application likewise has no sequence-processing
+backend, analytics service, or external API. Both routes verify the model checksum
+before enabling prediction.
 
-## Zero-install browser route
-
-The static demo in `docs/` runs the same frozen coefficients directly in a modern
-browser. It has no backend, external API, CDN, analytics, or outbound sequence
-transmission. The browser hashes the copied model before enabling inference, and
-CI compares its numerical output with the Python package on 12 label-free model
-references.
+To serve the checked-out `docs/` directory directly:
 
 ```bash
 python -m http.server 8000 --directory docs
 ```
 
-Open `http://127.0.0.1:8000`. The public GitHub Pages workflow deploys only after
-the model-copy, privacy, and browser/Python parity checks pass. The browser route
-has the same 30-position input contract and scientific limitations as the Python
-CLI; it is a more accessible interface, not a stronger model.
-
 ## Input contract
 
-The model does not accept an arbitrary raw peptide. It accepts exactly 30 aligned
-characters drawn from:
+Single-sequence input must contain exactly 30 aligned characters drawn from:
 
 ```text
 -ACDEFGHIKLMNPQRSTVWY
 ```
 
-Lowercase and whitespace are normalized. The software rejects FASTA headers,
-wrong lengths, ambiguous residues, and noncanonical symbols. It never pads,
-truncates, or auto-aligns the sequence.
+Lowercase and whitespace are normalized. The software rejects wrong lengths,
+ambiguous residues, and noncanonical symbols; it does not pad, truncate, or infer an
+alignment. FASTA import accepts one record. A raw sequence must first be mapped to
+the source study's alignment and reviewed by the user.
 
-Example input:
+The `-` symbol denotes an alignment gap. It does not encode a linker, cleavage, or
+chemical modification. The model cannot represent Aib, lipidation, amidation,
+cyclization, stapling, D-amino acids, or other noncanonical chemistry. Structure
+files are unsupported because the released model uses sequence features only.
 
-```text
-positions  123456789012345678901234567890
-sequence   HSQGTFTSDYSKYLDSRAASEFVQWLISH-
-```
+## Single-sequence results
 
-Why this matters: the source study used a curated 30-column alignment. Some long
-constructs included terminal linker residues that were absent from that aligned
-model input, while some shorter cores needed internal or terminal gaps. Silently
-taking the first 30 residues would therefore be scientifically wrong. A raw
-sequence must first be mapped into the same alignment and checked by the user.
-
-`-` is an alignment gap. It does not encode a cleavage, linker, or chemical
-modification. The model cannot represent Aib, lipidation, amidation, cyclization,
-stapling, D-amino acids, or other noncanonical chemistry.
-
-## Read the output
-
-For each receptor, the app reports the same point estimate in three forms:
-
-- `log10 EC50 (pM)`, which is the scale learned by the model;
-- EC50 in pM;
-- EC50 in nM.
-
-Lower EC50 means that less peptide is predicted to be needed for half of the
-measured maximum cAMP response in the assay. EC50 combines properties of the
-ligand, receptor, expression system, and signaling assay. It is not a dissociation
-constant or binding affinity, and it is not maximum efficacy.
-
-The balance is defined as:
+For each receptor, the application reports predicted EC50 on three scales:
+log10(EC50 / 1 pM), pM, and nM. Lower EC50 indicates greater functional potency in
+the source cell assay. The potency ratio is defined as:
 
 ```text
 log10(GCGR EC50 / GLP-1R EC50)
 ```
 
-- A positive value means GLP-1R is predicted to have the lower EC50.
-- A negative value means GCGR is predicted to have the lower EC50.
-- Zero means equal predicted EC50 values.
+A positive value indicates lower predicted EC50 at GLP-1R; a negative value
+indicates lower predicted EC50 at GCGR. The interface describes ratios within
+three-fold as roughly balanced, but this is descriptive wording rather than a
+validated decision threshold or evidence of dual agonism.
 
-The interface calls values within three-fold “roughly balanced.” That wording is
-descriptive and is not a validated experimental decision threshold. Potency at two
-receptors also does not prove dual agonism because maximum response is not modeled.
+Each result has one of four evidence states:
 
-## Applicability and uncertainty
+- `training_reference_match`: the input exactly matches a training reference, so
+  the estimate is in-sample and does not test prediction on a new peptide;
+- `local_analogue_mixed_evidence`: nearest-reference identity is at least 0.85 but
+  below 1.00; the sequence passes the local-analog gate, but retrospective transfer
+  among 15 published local analogs was mixed;
+- `outside_ranking_scope`: identity is at least 0.70 but below 0.85, so the numeric
+  estimate is displayed but not eligible for ranking; or
+- `far_outside_ranking_scope`: identity is below 0.70 and the estimate is a distant
+  extrapolation that should not be used to order experiments.
 
-The app compares the query with 125 label-free aligned reference sequences. The
-nearest identity is used only as a transparent applicability check:
+The 0.85 threshold defined sequence-identity components in the development
+benchmark. The application reuses it as a ranking gate; it was not calibrated to
+prediction error or confidence. Ranking also requires at least 26 standard
+residues in the aligned input.
 
-- at least 0.85: `close_analogue`;
-- 0.70 to below 0.85: `distant_analogue`;
-- below 0.70: `outside_reference_neighborhood`.
+### Nearest-reference attribution
 
-The 0.85 value was the benchmark's sequence-family boundary. The 0.70 lower display
-boundary is a conservative interface heuristic rather than a benchmark-selected
-cutoff. Neither is a calibrated confidence probability, and a close analogue can
-still receive a poor prediction.
+The ridge model is linear and additive. For the selected nearest reference, the
+application reports the query-minus-reference prediction difference and decomposes
+it across changed positions. If references tie, it applies a fixed selection rule
+and reports the tie count.
 
-Development cross-validation produced mean absolute errors of approximately:
+These contributions explain the fitted model's arithmetic. They are not causal
+mutation effects, experimental measurements, or evidence that a substitution will
+produce the same change in the laboratory. The stored reference panel contains 125
+aligned sequences with their per-reference activity outcomes omitted.
 
-| Output | MAE in log10 units | Geometric fold error |
-|:---|---:|---:|
-| GCGR EC50 | 0.63 | 4.2-fold |
-| GLP-1R EC50 | 1.07 | 11.7-fold |
-| EC50 balance | 1.14 | 13.7-fold |
-
-These are population-level summaries, not confidence intervals for a new query.
-On 15 separately scored published designs, the GCGR point error was lower but its
-dependence-aware interval crossed zero, while pooled GLP-1R error was worse versus
-the nearest-sequence comparator. The release therefore reports no overall external
-superiority.
-
-## Structured use
+Single results can be downloaded as JSON, CSV, or a concise Markdown report. The
+command line exposes the same formats:
 
 ```bash
 incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format json
 incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format csv --output result.csv
+incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format markdown --output result.md
 incretin-predict --model-info
 ```
 
-JSON retains warnings, applicability details, benchmark context, version, and
-checksum. CSV gives one flat row for a workflow or spreadsheet.
-
-## Compare a candidate shortlist
+## Candidate-table screening
 
 `incretin-screen` accepts a UTF-8 CSV with exactly two columns:
 
@@ -154,30 +120,53 @@ candidate_id,aligned_sequence
 variant_a,HSQGTFTSDYSKYLDSRAASEFVQWLISE-
 ```
 
-The user must choose one objective. `glp1r` and `gcgr` sort by the corresponding
-predicted log10 EC50. `dual` sorts by the larger (less favorable) of the two
-receptor log10 EC50 values. Lower is first for every objective. There is no
-selectivity-only ranking because a sequence predicted weak at both receptors can
-still look balanced, and receptor balance was the weakest development comparison.
+The `glp1r` and `gcgr` objectives minimize the corresponding predicted
+log10(EC50 / 1 pM). The `dual` objective minimizes the larger, less favorable of the
+two receptor scores. Lower scores rank first. The dual score was not benchmarked as
+a separate endpoint.
 
-Ranking has two hard safety gates: the applicability tier must be
-`close_analogue`, and the aligned input must contain at least 26 standard
-residues. Valid rows outside either gate keep their numeric extrapolation but have
-a blank rank and a specific exclusion reason. Malformed rows also remain in the
-file as `input_error`; a partial run returns exit code 1. Duplicate candidate IDs
-are fatal, while duplicate sequences receive the same dense rank.
+Only rows meeting the 0.85 identity and 26-residue gates are ranked. Invalid
+and out-of-scope rows remain in the output with a status and reason. Duplicate IDs
+stop the run; duplicate sequences remain visible and receive the same dense rank.
 
-The output JSON receipt records SHA-256 checksums for the exact input and CSV,
-the objective definition, row-state counts, ranking rule, model checksum, and
-false values for P1–P15 outcome access and structure inference. Output files are
-each written through a per-file atomic replace and are not replaced unless
-`--overwrite` is supplied.
+For each ordered row, the output includes its score distance from the top-ranked row in
+log10 units and as an EC50 fold ratio. It also marks whether that distance is within
+one development out-of-fold MAE of the top score. For a receptor-specific
+objective, the context is that receptor's development MAE. For `dual`, it is the
+larger receptor-specific MAE because the max-receptor score has no separate
+benchmark. This comparison is population-level descriptive context—not an
+individual confidence interval, significance threshold, or equivalence test.
 
-The checked example in `examples/candidate_screening/` uses only three label-free
-development references and one artificial out-of-scope row. The reference rows
-are in-sample, so the example verifies the software contract rather than model
-accuracy. A shortlist rank remains exploratory model ordering for human review,
-not an experimental recommendation or evidence of dual agonism.
+```bash
+incretin-screen examples/candidate_screening/candidates.csv \
+  --objective dual \
+  --output screened.csv \
+  --receipt screening_receipt.json
+```
+
+The Python CLI accepts at most 10,000 rows or 10 MB; the browser accepts 500 rows or
+2 MB. The receipt records SHA-256 hashes of the original input bytes and generated
+output bytes, linking each result to the exact files used. It also records the
+objective, ranking gates, score context, row counts, software and model versions,
+and scientific boundaries.
+
+## Validation context
+
+Development cross-validation produced the following population-level mean absolute
+errors:
+
+| Endpoint | MAE, log10 units | Geometric fold error |
+|:---|---:|---:|
+| GCGR EC50 | 0.63 | 4.2-fold |
+| GLP-1R EC50 | 1.07 | 11.7-fold |
+| GCGR/GLP-1R EC50 ratio | 1.14 | 13.7-fold |
+
+These values summarize the benchmark population; they are not uncertainty intervals
+for individual predictions. In the locked retrospective P1–P15 external evaluation,
+ridge had lower GCGR point error but higher pooled GLP-1R error than 1-NN, and the
+results did not support overall model superiority. See
+[`EXTERNAL_EVALUATION.md`](EXTERNAL_EVALUATION.md) for censoring rules and
+dependence analyses.
 
 ## Verification and provenance
 
@@ -188,21 +177,10 @@ make static-demo
 make release-check
 ```
 
-The release check builds the wheel without contacting an external model or data
-service, verifies that the bundled model and entry points are present, installs
-the wheel into a temporary environment, and runs JSON, single-prediction CSV,
-guarded batch-screening, and local-browser smoke tests from outside the source
-tree. Its receipt is written to
-`reports/distribution_verification.json`.
-
-The checked-in artifact is `incretinselect_aligned_ridge_v1` version `1.0.0`.
-It contains the frozen transformed ridge parameters and 125 label-free reference
-alignments, but no per-reference activity labels. The build receipt records the
-source checksums, selected ridge strength, and artifact checksum in
-`reports/product_model_receipt.json`.
-
-The artifact reproduces all P1–P15 ridge estimates in the prediction file that was
-committed before external outcome scoring. Its training data and aligned reference
-sequences derive from Puszkarska *et al.*, *Nature Chemistry* (2024),
-DOI `10.1038/s41557-024-01532-x`, under CC BY 4.0. Original project code is MIT
-licensed; see `DATA_LICENSE.md` for the data boundary.
+The release check builds and installs the wheel outside the source tree, verifies
+the packaged browser application and model, and exercises CLI, browser, export, and
+batch contracts. The model artifact is `incretinselect_aligned_ridge_v1` version
+`1.0.0`; software and model versions are reported separately. Its training data
+derive from Puszkarska *et al.*, *Nature Chemistry* (2024), DOI
+`10.1038/s41557-024-01532-x`, under CC BY 4.0. Project code is MIT-licensed; see
+[`DATA_LICENSE.md`](../DATA_LICENSE.md) for the data boundary.

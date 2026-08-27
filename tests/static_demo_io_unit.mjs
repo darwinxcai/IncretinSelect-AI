@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import {
   MAX_BROWSER_BYTES,
   MAX_BROWSER_ROWS,
   buildBatchArtifacts,
   buildSingleResultDocument,
+  decodeUtf8Bytes,
   parseCandidateCsv,
   parseSingleFasta,
   renderScreeningCsv,
   renderSingleResultCsv,
   renderSingleResultJson,
+  renderSingleResultMarkdown,
   screenCandidates,
   spreadsheetSafeText,
 } from "../docs/io.mjs";
@@ -55,7 +58,6 @@ assert.equal(quotedRecords[1].candidateId, 'candidate_"quoted');
 
 for (const invalid of [
   "",
-  "aligned_sequence,candidate_id\n",
   "candidate_id,aligned_sequence,extra\na,b,c\n",
   "candidate_id,aligned_sequence\n",
   `candidate_id,aligned_sequence\na,${ref93}\na,${ref11}\n`,
@@ -65,6 +67,20 @@ for (const invalid of [
 ]) {
   assert.throws(() => parseCandidateCsv(invalid));
 }
+const flexibleCsv = (
+  " aligned_sequence , candidate_id \n" +
+  `\n${ref93},first\n` +
+  `${ref11}\n` +
+  "\n"
+);
+const flexibleRecords = parseCandidateCsv(flexibleCsv);
+assert.equal(flexibleRecords.length, 2);
+assert.deepEqual(flexibleRecords[0], { candidateId: "first", alignedSequence: ref93 });
+assert.deepEqual(flexibleRecords[1], { candidateId: "", alignedSequence: ref11 });
+assert.throws(
+  () => decodeUtf8Bytes(new Uint8Array([0xc3, 0x28]), "candidate.csv"),
+  /valid UTF-8/,
+);
 const tooManyRows = [
   "candidate_id,aligned_sequence",
   ...Array.from({ length: MAX_BROWSER_ROWS + 1 }, (_, index) => `c${index},${ref93}`),
@@ -98,6 +114,15 @@ assert.equal(screening.exitCode, 1);
 const copies = screening.rows.filter((row) => row.candidate_id.startsWith("copy_"));
 assert.deepEqual(new Set(copies.map((row) => row.rank)), new Set(["1"]));
 assert.deepEqual(new Set(copies.map((row) => row.duplicate_sequence_count)), new Set(["2"]));
+assert.deepEqual(
+  new Set(copies.map((row) => row.applicability_evidence_state)),
+  new Set(["training_reference_match"]),
+);
+assert.deepEqual(new Set(copies.map((row) => row.exact_reference_match)), new Set(["true"]));
+assert.deepEqual(
+  new Set(copies.map((row) => row.within_one_development_mae_of_first)),
+  new Set(["true"]),
+);
 assert.ok(screening.rows.some((row) => row.status === "not_ranked_out_of_scope"));
 assert.ok(screening.rows.some((row) => row.error_code === "invalid_aligned_sequence"));
 assert.ok(screening.rows.some((row) => row.error_code === "invalid_candidate_id"));
@@ -118,7 +143,9 @@ assert.equal(document.input.aligned_sequence, ref93);
 assert.equal(document.model.artifact_sha256, sha256);
 assert.equal(document.predictions.gcgr.endpoint, "cAMP accumulation EC50");
 assert.equal(document.applicability.tier, "close_analogue");
-assert.ok(document.warnings.some((warning) => warning.includes("not binding affinity")));
+assert.equal(document.nearest_reference_comparison.reference_id, "seq_pep93");
+assert.equal(document.nearest_reference_comparison.changed_position_count, 0);
+assert.ok(document.warnings.some((warning) => warning.includes("do not measure binding affinity")));
 const singleJson = renderSingleResultJson(prediction, model, sha256);
 assert.equal(JSON.parse(singleJson).input.aligned_sequence, ref93);
 assert.ok(singleJson.endsWith("\n"));
@@ -127,6 +154,10 @@ assert.match(singleCsv, /^aligned_sequence,glp1r_log10_ec50_pm/);
 assert.match(singleCsv, new RegExp(ref93));
 assert.doesNotMatch(singleCsv, /,'-[0-9]/);
 assert.ok(singleCsv.endsWith("\n"));
+const singleMarkdown = renderSingleResultMarkdown(prediction, model, sha256);
+assert.match(singleMarkdown, /Nearest-reference model comparison/);
+assert.match(singleMarkdown, /not a causal substitution effect/);
+assert.ok(singleMarkdown.endsWith("\n"));
 
 const batchInput = (
   "candidate_id,aligned_sequence\n" +
@@ -147,5 +178,30 @@ assert.equal(artifacts.receipt.counts.total_rows, 3);
 assert.equal(artifacts.receipt.scientific_boundaries.structure_inference_run, false);
 assert.equal(artifacts.receipt.scientific_boundaries.holdout_labels_accessed, false);
 assert.equal(JSON.parse(artifacts.receiptJson).objective.name, "glp1r");
+const rawBatchBytes = new TextEncoder().encode(batchInput);
+const byteBoundArtifacts = await buildBatchArtifacts(batchInput, "glp1r", model, {
+  artifactSha256: sha256,
+  inputBytes: rawBatchBytes,
+});
+assert.equal(byteBoundArtifacts.receipt.input.sha256, artifacts.receipt.input.sha256);
+const bomBatchBytes = new Uint8Array([
+  0xef, 0xbb, 0xbf, ...new TextEncoder().encode(batchInput),
+]);
+const bomArtifacts = await buildBatchArtifacts(batchInput, "glp1r", model, {
+  artifactSha256: sha256,
+  inputBytes: bomBatchBytes,
+});
+assert.equal(
+  bomArtifacts.receipt.input.sha256,
+  createHash("sha256").update(bomBatchBytes).digest("hex"),
+);
+assert.notEqual(bomArtifacts.receipt.input.sha256, artifacts.receipt.input.sha256);
+await assert.rejects(
+  buildBatchArtifacts(batchInput, "glp1r", model, {
+    artifactSha256: sha256,
+    inputBytes: new TextEncoder().encode(`${batchInput}\n`),
+  }),
+  /do not match/,
+);
 
 process.stdout.write("static demo I/O unit checks passed\n");
