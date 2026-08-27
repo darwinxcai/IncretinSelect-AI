@@ -1,9 +1,13 @@
 {
   "installed_product": {
+    "citation_and_license_notices": "passed",
     "csv_rows": 1,
     "ec50_warning_present": true,
     "model_artifact_id": "incretinselect_aligned_ridge_v1",
     "model_artifact_sha256": "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321",
+    "packaged_activity_schema": "passed",
+    "packaged_source_manifest": "passed",
+    "packaged_structure_seed_count": 10,
     "prediction_schema_version": 1,
     "screening_objective": "dual",
     "screening_out_of_scope_rows": 1,
@@ -20,11 +24,28 @@
     "p1_p15_outcomes_accessed": false,
     "structure_inference_run": false
   },
+  "source_distribution": {
+    "build_input": "git-tracked allowlist only",
+    "byte_deterministic": true,
+    "complete_research_tree": true,
+    "filename": "incretinselect_ai-0.7.0.tar.gz",
+    "forbidden_research_files_included": false,
+    "member_count": 169,
+    "product_smoke": "passed",
+    "rebuilt_wheel_byte_identical": true,
+    "rebuilt_wheel_sha256": "53a037164f5f0c1af5230dc4732bffab29e9a092183bf7fbe214de9ec9f611eb",
+    "resource_sync": "passed",
+    "source_date_epoch": "946684800",
+    "static_demo_sync": "passed",
+    "tests": "passed",
+    "tracked_file_count": 139,
+    "untracked_files_included": false
+  },
   "status": "passed",
   "verification_scope": "built wheel installed and exercised in a temporary environment outside the source tree; dependency metadata checked and runtime NumPy supplied by the verification environment",
   "wheel": {
     "filename": "incretinselect_ai-0.7.0-py3-none-any.whl",
-    "member_count": 27,
+    "member_count": 34,
     "required_runtime_files": [
       "incretinselect/__init__.py",
       "incretinselect/activity.py",
@@ -41,6 +62,12 @@
       "incretinselect/training.py",
       "incretinselect/web.py",
       "incretinselect/assets/incretin_ridge_v1.json",
+      "incretinselect/notices/CITATION.cff",
+      "incretinselect/notices/DATA_LICENSE.md",
+      "incretinselect/notices/LICENSE",
+      "incretinselect/resources/activity_schema.json",
+      "incretinselect/resources/sources.json",
+      "incretinselect/resources/structure_targets.csv",
       "incretinselect/web_assets/index.html",
       "incretinselect/web_assets/styles.css",
       "incretinselect/web_assets/app.mjs",
@@ -48,7 +75,7 @@
       "incretinselect/web_assets/io.mjs",
       "incretinselect/web_assets/demo_manifest.json"
     ],
-    "sha256": "75eeac0128e6ebc8291d2e654554f8478c8085195e6d2954d5d69f6da0d392f0",
+    "sha256": "53a037164f5f0c1af5230dc4732bffab29e9a092183bf7fbe214de9ec9f611eb",
     "source_date_epoch": "946684800"
   }
 }

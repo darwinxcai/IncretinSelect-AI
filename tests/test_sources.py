@@ -1,10 +1,12 @@
 import hashlib
+import io
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
-from incretinselect.sources import load_source_manifest, verify_checksum
+from incretinselect.sources import load_source_manifest, main, verify_checksum
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -16,6 +18,23 @@ class SourceManifestTests(unittest.TestCase):
         self.assertIn("puszkarska_2024_training", source_ids)
         self.assertIn("puszkarska_2024_prospective_holdout", source_ids)
         self.assertIn("rcsb_structure_panel", source_ids)
+
+    def test_packaged_manifest_and_listing_are_complete(self) -> None:
+        packaged = load_source_manifest()
+        checked_in = load_source_manifest(PROJECT_ROOT / "data/manifests/sources.json")
+        self.assertEqual(packaged, checked_in)
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main(["--list-sources"]), 0)
+        self.assertEqual(
+            output.getvalue().splitlines(),
+            [source["id"] for source in packaged["sources"]],
+        )
+        for notice in ("CITATION.cff", "DATA_LICENSE.md", "LICENSE"):
+            self.assertEqual(
+                (PROJECT_ROOT / notice).read_bytes(),
+                (PROJECT_ROOT / "src/incretinselect/notices" / notice).read_bytes(),
+            )
 
     def test_checksum_verification(self) -> None:
         payload = b"synthetic checksum fixture"

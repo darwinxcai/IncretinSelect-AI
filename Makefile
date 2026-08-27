@@ -17,6 +17,8 @@ static-demo:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) scripts/verify_static_demo.py --json-output reports/static_demo_verification.json
 
 release-check:
+	$(PYTHON) scripts/sync_package_resources.py --check
+	$(PYTHON) scripts/sync_sdist_manifest.py --check
 	$(PYTHON) scripts/verify_distribution.py --json-output reports/distribution_verification.json
 
 release-readiness:

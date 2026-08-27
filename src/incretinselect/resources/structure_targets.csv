@@ -1,0 +1,11 @@
+pdb_id,receptor,receptor_match,ligand,ligand_match,benchmark_role,study_doi,modification_note
+6X18,GLP-1R,Glucagon-like peptide 1 receptor,GLP-1,Glucagon-like peptide-1 (GLP-1)(7-36)NH2,native_anchor,10.1016/j.molcel.2020.09.020,native peptide
+6LMK,GCGR,Glucagon receptor,Glucagon,Glucagon,native_anchor,10.1126/science.aaz5346,native peptide
+7VBH,GLP-1R,Glucagon-like peptide 1 receptor,Peptide 20,Peptide 20,paired_primary,10.1038/s41467-022-28683-0,Aib and lipid-linked chemistry present
+7V35,GCGR,Glucagon receptor,Peptide 20,Peptide 20,paired_primary,10.1038/s41467-022-28683-0,Aib and lipid-linked chemistry present
+7FIN,GIPR,Glucose-dependent insulinotropic polypeptide receptor,Peptide 20,Peptide 20,context_only,10.1038/s41467-022-28683-0,GIPR has no matched labels in the 125-peptide dataset
+7FIM,GLP-1R,Glucagon-like peptide 1 receptor,Tirzepatide,Tirzepatide,secondary_structure,10.1038/s41467-022-28683-0,Aib and lipidation complicate predictor input
+7FIY,GIPR,Gastric inhibitory polypeptide receptor,Tirzepatide,Tiezepatide,context_only,10.1038/s41467-022-28683-0,GIPR has no matched labels in the 125-peptide dataset
+8YW3,GLP-1R,Glucagon-like peptide 1 receptor,Retatrutide,Retatrutide,secondary_structure,10.1038/s41421-024-00700-0,noncanonical residues and lipidation require explicit handling
+8YW5,GCGR,Glucagon receptor,Retatrutide,Retatrutide,secondary_structure,10.1038/s41421-024-00700-0,noncanonical residues and lipidation require explicit handling
+8YW4,GIPR,Gastric inhibitory polypeptide receptor,Retatrutide,retatrutide,context_only,10.1038/s41421-024-00700-0,GIPR has no matched labels in the 125-peptide dataset

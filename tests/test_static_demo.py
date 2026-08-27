@@ -229,12 +229,16 @@ class StaticDemoTests(unittest.TestCase):
             self.assertIn(f'"{column}"', io_source)
 
     def test_static_page_has_no_remote_runtime_dependency(self) -> None:
-        combined = "\n".join(
+        index = (DOCS / "index.html").read_text(encoding="utf-8")
+        runtime_source = "\n".join(
             (DOCS / name).read_text(encoding="utf-8")
-            for name in ("index.html", "styles.css", "app.mjs", "model.mjs", "io.mjs")
+            for name in ("app.mjs", "model.mjs", "io.mjs")
         )
-        self.assertNotIn("https://", combined)
-        self.assertNotIn("http://", combined)
+        combined = index + "\n" + runtime_source
+        self.assertNotRegex(index, r'<script[^>]+src=["\']https?://')
+        self.assertNotRegex(index, r'<link[^>]+href=["\']https?://')
+        self.assertNotIn('fetch("https://', runtime_source)
+        self.assertNotIn("fetch('https://", runtime_source)
         single_spaced = " ".join(combined.split())
         self.assertIn("no backend, account, analytics service", single_spaced)
         self.assertIn("network transmission of sequences", single_spaced)
@@ -243,6 +247,9 @@ class StaticDemoTests(unittest.TestCase):
         self.assertIn("candidate_id,aligned_sequence", single_spaced)
         self.assertIn("Download JSON", single_spaced)
         self.assertIn("Download screened CSV", single_spaced)
+        self.assertIn("doi:10.1038/s41557-024-01532-x", single_spaced)
+        self.assertIn("CC BY 4.0", single_spaced)
+        self.assertIn("MIT-licensed", single_spaced)
 
     def test_docs_directory_serves_complete_demo(self) -> None:
         handler = lambda *args, **kwargs: QuietHandler(  # noqa: E731

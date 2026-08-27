@@ -221,7 +221,7 @@ class ReleaseReadinessTests(unittest.TestCase):
 
         self.assertEqual({item["status"] for item in after}, {"blocked"})
         self.assertTrue(
-            all("same-version source payload" in item["evidence"] for item in after)
+            all("current source payload" in item["evidence"] for item in after)
         )
 
     def test_source_archive_without_git_uses_release_files(self) -> None:

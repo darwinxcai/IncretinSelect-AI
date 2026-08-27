@@ -39,6 +39,9 @@ All notable changes to this research artifact are documented here.
   available only to the deployment job.
 - Public documentation and interface copy were shortened and standardized for
   scientific clarity.
+- Installed provenance and validation commands now use packaged resources instead
+  of repository-relative defaults. The wheel includes citation and data-license
+  notices, and the source distribution contains the complete reproducibility tree.
 
 ### Scientific boundaries
 

@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 import csv
+import io
 import json
 from concurrent.futures import ThreadPoolExecutor
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, Iterable
 from urllib.request import urlopen
@@ -52,7 +54,7 @@ class RCSBClient:
         return self._get(f"polymer_entity/{pdb_id}/{entity_id}")
 
 
-def load_structure_seeds(path: str | Path) -> list[dict[str, str]]:
+def load_structure_seeds(path: str | Path | None = None) -> list[dict[str, str]]:
     required = {
         "pdb_id",
         "receptor",
@@ -63,7 +65,13 @@ def load_structure_seeds(path: str | Path) -> list[dict[str, str]]:
         "study_doi",
         "modification_note",
     }
-    with Path(path).open(newline="", encoding="utf-8") as handle:
+    if path is None:
+        text = files("incretinselect").joinpath("resources/structure_targets.csv").read_text(
+            encoding="utf-8"
+        )
+    else:
+        text = Path(path).read_text(encoding="utf-8")
+    with io.StringIO(text, newline="") as handle:
         reader = csv.DictReader(handle)
         if reader.fieldnames is None or not required.issubset(reader.fieldnames):
             missing = sorted(required - set(reader.fieldnames or []))
@@ -194,8 +202,17 @@ def write_structure_manifest(records: Iterable[dict[str, str]], path: str | Path
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", default="configs/structure_targets.csv")
-    parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--seed",
+        metavar="PATH",
+        help="Seed CSV (default: packaged curated structure panel)",
+    )
+    parser.add_argument("--output")
+    parser.add_argument(
+        "--list-seeds",
+        action="store_true",
+        help="List the packaged seed panel without querying RCSB",
+    )
     parser.add_argument(
         "--strict", action="store_true", help="Abort if any RCSB entry cannot be resolved"
     )
@@ -204,9 +221,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    seeds = load_structure_seeds(args.seed)
+    if args.list_seeds:
+        print(json.dumps(seeds, indent=2))
+        return 0
+    if not args.output:
+        parser.error("--output is required unless --list-seeds is used")
     records = build_structure_manifest(
-        load_structure_seeds(args.seed),
+        seeds,
         RCSBClient(),
         strict=args.strict,
         workers=args.workers,

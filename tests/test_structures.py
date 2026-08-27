@@ -1,8 +1,12 @@
+import io
+import json
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from incretinselect.structures import (
     load_structure_seeds,
+    main,
     resolve_structure,
 )
 
@@ -32,6 +36,15 @@ class FakeRCSBClient:
 
 
 class StructureManifestTests(unittest.TestCase):
+    def test_packaged_seed_panel_and_listing_match_repository(self) -> None:
+        packaged = load_structure_seeds()
+        checked_in = load_structure_seeds(PROJECT_ROOT / "configs/structure_targets.csv")
+        self.assertEqual(packaged, checked_in)
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main(["--list-seeds"]), 0)
+        self.assertEqual(json.loads(output.getvalue()), packaged)
+
     def test_seed_manifest_is_unique_and_narrowly_labeled(self) -> None:
         seeds = load_structure_seeds(PROJECT_ROOT / "configs/structure_targets.csv")
         self.assertEqual(len(seeds), 10)
@@ -60,4 +73,3 @@ class StructureManifestTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

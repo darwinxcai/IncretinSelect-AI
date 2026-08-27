@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,14 +9,20 @@ description = "Reproducible ridge benchmark and browser/CLI tool for incretin cA
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{name = "Darwin Cai"}]
-license = {file = "LICENSE"}
+license = "MIT AND CC-BY-4.0"
+license-files = ["LICENSE", "DATA_LICENSE.md"]
 keywords = ["GPCR", "incretin", "peptide", "machine learning", "bioinformatics"]
 dependencies = ["numpy>=1.24,<3"]
+
+[project.urls]
+Homepage = "https://darwinxcai.github.io/IncretinSelect-AI/"
+Repository = "https://github.com/darwinxcai/IncretinSelect-AI"
+Documentation = "https://github.com/darwinxcai/IncretinSelect-AI#readme"
 
 [project.optional-dependencies]
 data = ["openpyxl>=3.1,<4"]
 plot = ["matplotlib>=3.8,<4"]
-dev = ["matplotlib>=3.8,<4", "openpyxl>=3.1,<4", "ruff==0.16.4", "setuptools>=68"]
+dev = ["matplotlib>=3.8,<4", "openpyxl>=3.1,<4", "ruff==0.16.4", "setuptools>=77"]
 
 [project.scripts]
 incretin-validate = "incretinselect.activity:main"
@@ -30,7 +36,16 @@ incretin-web = "incretinselect.web:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-incretinselect = ["assets/*.json", "web_assets/*.html", "web_assets/*.css", "web_assets/*.mjs", "web_assets/*.json"]
+incretinselect = [
+  "assets/*.json",
+  "notices/*",
+  "resources/*.csv",
+  "resources/*.json",
+  "web_assets/*.css",
+  "web_assets/*.html",
+  "web_assets/*.json",
+  "web_assets/*.mjs",
+]
 
 [tool.ruff]
 line-length = 100

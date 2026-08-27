@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -60,12 +61,20 @@ def main() -> int:
     if manifest.get("structure_inference") is not False:
         raise RuntimeError("Static demo manifest incorrectly claims structure inference")
 
-    combined_runtime = "\n".join(
+    index_source = (docs / "index.html").read_text(encoding="utf-8")
+    style_source = (docs / "styles.css").read_text(encoding="utf-8")
+    script_source = "\n".join(
         (docs / name).read_text(encoding="utf-8")
-        for name in ("index.html", "styles.css", "app.mjs", "model.mjs", "io.mjs")
+        for name in ("app.mjs", "model.mjs", "io.mjs")
     )
-    if "https://" in combined_runtime or "http://" in combined_runtime:
-        raise RuntimeError("Static demo runtime contains an outbound URL")
+    remote_dependencies = (
+        re.search(r'<script[^>]+src=["\']https?://', index_source),
+        re.search(r'<link[^>]+href=["\']https?://', index_source),
+        re.search(r"url\([^)]*https?://", style_source),
+        re.search(r"\bfetch\s*\(\s*[\"']https?://", script_source),
+    )
+    if any(remote_dependencies):
+        raise RuntimeError("Static demo runtime contains a remote dependency")
     if shutil.which("node") is None:
         raise RuntimeError("Node is required to verify browser/Python numerical parity")
 

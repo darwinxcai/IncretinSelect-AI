@@ -6,6 +6,7 @@ import argparse
 import json
 import math
 from dataclasses import asdict, dataclass
+from importlib.resources import files
 from numbers import Real
 from pathlib import Path
 from typing import Any, Iterable
@@ -296,22 +297,43 @@ def validate_workbook(path: str | Path, config: dict[str, Any]) -> ValidationRep
     )
 
 
-def load_config(path: str | Path) -> dict[str, Any]:
+def load_config(path: str | Path | None = None) -> dict[str, Any]:
+    if path is None:
+        text = files("incretinselect").joinpath("resources/activity_schema.json").read_text(
+            encoding="utf-8"
+        )
+        return json.loads(text)
     with Path(path).open(encoding="utf-8") as handle:
         return json.load(handle)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("workbook", help="Path to training_data.xlsx")
-    parser.add_argument("--config", default="configs/activity_schema.json")
+    parser.add_argument("workbook", nargs="?", help="Path to training_data.xlsx")
+    parser.add_argument(
+        "--config",
+        metavar="PATH",
+        help="Validation schema JSON (default: packaged activity schema)",
+    )
+    parser.add_argument(
+        "--print-schema",
+        action="store_true",
+        help="Print the packaged validation schema and exit",
+    )
     parser.add_argument("--json-output", help="Optional path for a machine-readable report")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    report = validate_workbook(args.workbook, load_config(args.config))
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    config = load_config(args.config)
+    if args.print_schema:
+        print(json.dumps(config, indent=2, sort_keys=True))
+        return 0
+    if not args.workbook:
+        parser.error("workbook is required unless --print-schema is used")
+    report = validate_workbook(args.workbook, config)
     payload = json.dumps(report.to_dict(), indent=2)
     print(payload)
     if args.json_output:
@@ -323,4 +345,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main())
-

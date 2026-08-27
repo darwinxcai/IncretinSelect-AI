@@ -1,7 +1,13 @@
 import copy
+import io
+import json
 import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
 
-from incretinselect.activity import validate_rows
+from incretinselect.activity import load_config, main, validate_rows
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def toy_config() -> dict:
@@ -43,6 +49,16 @@ def toy_dataset_row() -> dict:
 
 
 class ActivityValidationTests(unittest.TestCase):
+    def test_packaged_schema_and_print_command_match_repository(self) -> None:
+        expected = json.loads(
+            (PROJECT_ROOT / "configs/activity_schema.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(load_config(), expected)
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main(["--print-schema"]), 0)
+        self.assertEqual(json.loads(output.getvalue()), expected)
+
     def test_valid_rows_pass(self) -> None:
         report = validate_rows(
             [toy_dataset_row()],
@@ -81,4 +97,3 @@ class ActivityValidationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

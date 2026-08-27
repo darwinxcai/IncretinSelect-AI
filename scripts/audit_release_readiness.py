@@ -49,7 +49,7 @@ CI_URL_PATTERN = re.compile(
 DEMO_URL_PATTERN = re.compile(
     r"^https://darwinxcai\.github\.io/IncretinSelect-AI/?$", re.IGNORECASE
 )
-MINIMUM_RELEASE_TESTS = 97
+MINIMUM_RELEASE_TESTS = 100
 RELEASE_WORKFLOW_FILES = (
     ".github/workflows/ci.yml",
     ".github/workflows/pages.yml",
@@ -630,7 +630,7 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
             else None
         )
         payload_evidence = (
-            "publication receipt is stale for the current same-version source payload: "
+            "publication receipt does not match the current source payload: "
             f"recorded={recorded_sha!r}; current={current_payload.get('sha256')!r}"
         )
 

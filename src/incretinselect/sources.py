@@ -7,6 +7,7 @@ import hashlib
 import json
 import shutil
 import tempfile
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, BinaryIO, Callable
 from urllib.request import urlopen
@@ -16,10 +17,16 @@ class SourceManifestError(ValueError):
     """Raised when source provenance is incomplete or inconsistent."""
 
 
-def load_source_manifest(path: str | Path) -> dict[str, Any]:
-    manifest_path = Path(path)
-    with manifest_path.open(encoding="utf-8") as handle:
-        manifest = json.load(handle)
+def load_source_manifest(path: str | Path | None = None) -> dict[str, Any]:
+    if path is None:
+        text = files("incretinselect").joinpath("resources/sources.json").read_text(
+            encoding="utf-8"
+        )
+        manifest = json.loads(text)
+    else:
+        manifest_path = Path(path)
+        with manifest_path.open(encoding="utf-8") as handle:
+            manifest = json.load(handle)
     if manifest.get("manifest_version") != 1:
         raise SourceManifestError("Only source manifest version 1 is supported")
     sources = manifest.get("sources")
@@ -114,22 +121,35 @@ def fetch_source_files(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--manifest", default="data/manifests/sources.json", help="Source manifest JSON"
+        "--manifest",
+        metavar="PATH",
+        help="Source manifest JSON (default: packaged, checksum-pinned manifest)",
     )
-    parser.add_argument("--source", required=True, help="Source ID to download")
+    parser.add_argument("--source", help="Source ID to download")
     parser.add_argument(
         "--role",
         action="append",
         dest="roles",
         help="Download only this file role; repeat for multiple roles",
     )
-    parser.add_argument("--output-dir", required=True, help="Destination directory")
+    parser.add_argument("--output-dir", help="Destination directory")
+    parser.add_argument(
+        "--list-sources",
+        action="store_true",
+        help="List packaged source IDs without downloading files",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
     manifest = load_source_manifest(args.manifest)
+    if args.list_sources:
+        print("\n".join(str(source["id"]) for source in manifest["sources"]))
+        return 0
+    if not args.source or not args.output_dir:
+        parser.error("--source and --output-dir are required unless --list-sources is used")
     results = fetch_source_files(
         manifest,
         source_id=args.source,
@@ -142,4 +162,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main())
-

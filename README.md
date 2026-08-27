@@ -118,6 +118,16 @@ application reuses it as a software gate; it is not calibrated to prediction
 accuracy or confidence. Valid inputs outside either gate retain their numeric
 extrapolations but receive no rank and include an exclusion reason.
 
+The installed package also carries the checksum-pinned source manifest, activity
+schema, and curated structure seed panel. They can be inspected without a repository
+checkout or network request:
+
+```bash
+incretin-fetch --list-sources
+incretin-validate --print-schema
+incretin-structures --list-seeds
+```
+
 ## Screen a candidate table
 
 Create a UTF-8 CSV with exactly these columns:
@@ -190,6 +200,9 @@ remained one-sided bounds; they were not converted to exact values.
 
 ## Reproduce the release
 
+Use a GitHub checkout or the complete source distribution for full reproduction;
+the wheel contains the installed application and its runtime resources.
+
 ```bash
 python -m venv .venv
 . .venv/bin/activate
@@ -230,6 +243,10 @@ metrics and figure can be regenerated with `make post-score-figure`.
 | `data/derived/` | Frozen splits and machine-generated result tables |
 | `reports/` | Methods, metrics, figures, and verification records |
 | `tests/` | Offline unit and integration tests |
+
+The release check builds the wheel and source distribution separately, installs
+the wheel outside the repository, rebuilds it from the source distribution, and
+runs the source distribution's tests and product checks.
 
 ## Sources and licensing
 
