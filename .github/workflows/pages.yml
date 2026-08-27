@@ -104,6 +104,7 @@ jobs:
           path: docs
 
   deploy:
+    if: always() && needs.verify.result == 'success'
     permissions:
       pages: write
       id-token: write

@@ -354,6 +354,7 @@ def audit_local(project_root: Path) -> list[dict[str, str]]:
         and "id-token: write" not in workflow_permissions
         and "actions/configure-pages@" not in verify_job
         and "actions/configure-pages@" in deploy_job
+        and "if: always() && needs.verify.result == 'success'" in deploy_job
         and "permissions:\n      pages: write\n      id-token: write" in deploy_job
     )
     ci_contract = pages_permissions_scoped and all(

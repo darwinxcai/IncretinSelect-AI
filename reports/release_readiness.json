@@ -43,7 +43,7 @@
       "status": "pass"
     },
     {
-      "evidence": "canonical-path-content-manifest-sha256-v1 covers 125 files: 425bb1b2cd3e076d1844b95638f9839595d62146e6b0fc5229bad54d5b60ac8a",
+      "evidence": "canonical-path-content-manifest-sha256-v1 covers 125 files: 2437bf4745b0ebaeb8427bac9c59955acc221e45b0346b9f314fb31942b8b2df",
       "name": "release_payload_integrity",
       "status": "pass"
     }
@@ -52,22 +52,22 @@
   "project": "IncretinSelect-AI",
   "public_gates": [
     {
-      "evidence": "publication receipt is stale for the current same-version source payload: recorded=None; current='425bb1b2cd3e076d1844b95638f9839595d62146e6b0fc5229bad54d5b60ac8a'",
+      "evidence": "publication receipt is stale for the current same-version source payload: recorded=None; current='2437bf4745b0ebaeb8427bac9c59955acc221e45b0346b9f314fb31942b8b2df'",
       "name": "public_repository",
       "status": "blocked"
     },
     {
-      "evidence": "publication receipt is stale for the current same-version source payload: recorded=None; current='425bb1b2cd3e076d1844b95638f9839595d62146e6b0fc5229bad54d5b60ac8a'",
+      "evidence": "publication receipt is stale for the current same-version source payload: recorded=None; current='2437bf4745b0ebaeb8427bac9c59955acc221e45b0346b9f314fb31942b8b2df'",
       "name": "public_browser_demo",
       "status": "blocked"
     },
     {
-      "evidence": "publication receipt is stale for the current same-version source payload: recorded=None; current='425bb1b2cd3e076d1844b95638f9839595d62146e6b0fc5229bad54d5b60ac8a'",
+      "evidence": "publication receipt is stale for the current same-version source payload: recorded=None; current='2437bf4745b0ebaeb8427bac9c59955acc221e45b0346b9f314fb31942b8b2df'",
       "name": "remote_ci",
       "status": "blocked"
     },
     {
-      "evidence": "publication receipt is stale for the current same-version source payload: recorded=None; current='425bb1b2cd3e076d1844b95638f9839595d62146e6b0fc5229bad54d5b60ac8a'",
+      "evidence": "publication receipt is stale for the current same-version source payload: recorded=None; current='2437bf4745b0ebaeb8427bac9c59955acc221e45b0346b9f314fb31942b8b2df'",
       "name": "fresh_public_clone",
       "status": "blocked"
     }
@@ -84,7 +84,7 @@
     "file_count": 125,
     "hash_contract": "canonical-path-content-manifest-sha256-v1",
     "schema_version": 1,
-    "sha256": "425bb1b2cd3e076d1844b95638f9839595d62146e6b0fc5229bad54d5b60ac8a"
+    "sha256": "2437bf4745b0ebaeb8427bac9c59955acc221e45b0346b9f314fb31942b8b2df"
   },
   "schema_version": 1,
   "scientific_scope": {

@@ -65,6 +65,7 @@ class ReleaseReadinessTests(unittest.TestCase):
         deploy_job = workflow.split("\n  deploy:", maxsplit=1)[1]
         self.assertNotIn("actions/configure-pages@", verify_job)
         self.assertIn("actions/configure-pages@", deploy_job)
+        self.assertIn("if: always() && needs.verify.result == 'success'", deploy_job)
         self.assertIn("permissions:\n      pages: write\n      id-token: write", deploy_job)
 
     def test_release_workflows_pin_official_actions_to_commit_shas(self) -> None:
