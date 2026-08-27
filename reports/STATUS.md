@@ -1,125 +1,61 @@
-# Status
+# Project status
 
 **Updated:** 2026-08-27
-**Decision:** **PUBLIC RELEASE VERIFIED.** Version 0.6.0 is a usable, independently
-inspectable research-software release. The repository, two-version CI matrix,
-built wheel, clean public clone, and GitHub Pages application all pass. The locked
-P1–P15 external result remains mixed, so the product is presented as a guarded
-sequence-based research screen—not as a validated drug-selection system.
+**Release:** 0.7.0
+**State:** Public release verified
 
-## Current public product
+IncretinSelect-AI is a usable research-software release for estimating GLP-1R and
+GCGR cell-based cAMP EC50 from aligned incretin-like peptide sequences. It supports
+single-sequence review and guarded batch ranking for laboratory follow-up. It is not
+a binding-affinity, efficacy, safety, or clinical-outcome predictor.
+
+## Public release
 
 - Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
 - Browser application: <https://darwinxcai.github.io/IncretinSelect-AI/>
-- Verified source commit: `19c70897e1df03900f0a4ef787c774da62f11bf0`
-- Clean CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760548>
-- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760488>
-- Verification: 82 tests on Python 3.10 and 3.12, Ruff 0.16.4, 12 single-
-  prediction browser/Python parity cases, 5 batch-policy parity cases, and an
-  isolated built-wheel installation check.
-- Live workflow: aligned FASTA/text import, bounded CSV batch screening, explicit
-  GLP-1R/GCGR/dual objectives, visible applicability exclusions, and downloadable
-  JSON/CSV/audit outputs. Imported sequences stay in the browser.
+- Verified source commit: `517f97c1e31bc0c9fea5315184bde651bb6b671a`
+- CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083830513>
+- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083916679>
 
-## Complete
+The public source tree matches the audited local release. Python 3.10 and 3.12
+both passed Ruff, 100 tests, product smoke tests, browser/Python parity, wheel
+installation, deterministic source packaging, and the release-readiness audit. A
+fresh public clone passed the same release checks and remained clean.
 
-- [x] Created an installable Python package, reproducible command-line workflow,
-      and offline unit-test suite.
-- [x] Added a release check that builds the wheel, verifies bundled runtime files,
-      installs it outside the source tree, and exercises JSON, single-row CSV,
-      guarded batch-screening, and local-web entry points. The machine-readable
-      receipt preserves the EC50 boundary and records that no holdout labels or
-      structure inference were accessed.
-- [x] Added `incretin-screen` for a practical shortlist workflow. It requires an
-      explicit GLP-1R, GCGR, or dual objective, ranks only close analogues with at
-      least 26 standard residues, retains errors and exclusions, and writes a
-      checksum-bound audit receipt. Its checked demo uses label-free development
-      references rather than P1–P15.
-- [x] Added a guarded GitHub publication bootstrap. Dry-run is the default;
-      `--execute` requires a clean `main`, no existing `origin`, a passing release
-      check, GitHub authentication, the exact public target, and post-creation URL
-      and visibility verification.
-- [x] Added a machine-readable release-readiness audit. It passes seven local
-      gates and separately blocks public-verification status until exact public
-      repository, browser-demo, Actions-run, and fresh-clone evidence exists.
-- [x] Added a zero-install browser demo that verifies the frozen model checksum
-      before inference, sends no sequences to a server, and matches Python on 12
-      label-free references within `1e-12`. A guarded Pages workflow deploys it
-      only after the parity and privacy checks pass.
-- [x] Shipped the v0.6.0 browser workflow with one-sequence FASTA/text import,
-      bounded candidate CSV import, explicit screening objectives, auditable
-      downloads, and prominent out-of-scope handling. Structure upload is omitted
-      because this model has no validated structure features.
-- [x] Published the repository and verified a clean CI run, successful Pages
-      deployment, direct live use, downloads, and an independent fresh-clone
-      release check.
-- [x] Pinned primary source files, repository commit, licenses, assay mappings,
-      and SHA-256 checksums.
-- [x] Validated 125 training records and the T1=GCGR / T2=GLP-1R mapping.
-- [x] Frozen the official P1–P15 evaluation set with right-censoring retained:
-      9/45 GCGR and 12/45 GLP-1R replicate cells are bounds.
-- [x] Confirmed 0 exact P1–P15 training overlaps; nearest training distance is one
-      mutation for 3 designs and three mutations for 12 designs.
-- [x] Audited six sequence-identity thresholds without reading potency labels.
-- [x] Frozen 17 components at 0.85 identity and deterministic outer folds of
-      42/42/41; maximum cross-fold identity is 0.8333.
-- [x] Ran a zero-tuning, training-only tied 1-NN baseline for GCGR potency,
-      GLP-1R potency, and their log10 selectivity ratio.
-- [x] Ran a nested, component-weighted aligned-sequence ridge model on the same
-      outer folds, with whole-component bootstrap uncertainty.
-- [x] Committed label-independent final-model predictions, protocol, dependence
-      groups, and hashes before the separate outcome-scoring command.
-- [x] Scored P1–P15 exactly once from lock commit
-      `7feed50339e6695859efdddcd92efd7197c7d1d3`, preserving receptor censoring,
-      selectivity intervals, all comparators, and unfavorable results.
-- [x] Released the 45-row peptide-endpoint audit table, machine-readable metrics
-      and receipt, plus a deterministic PNG/SVG summary and source CSV.
-- [x] Added machine-readable predictions/metrics, scientific reports, MIT/CC BY
-      licensing metadata, citation metadata, contribution guidance, and CI.
-- [x] Curated a structure seed panel with GIPR marked context-only and added an
-      RCSB metadata resolver; all 10 receptor/peptide entity pairs are resolved.
+## Product capabilities
 
-## Sequence-model headline
+- Paste or import one aligned FASTA/text sequence and download JSON or CSV results.
+- Import a candidate CSV and rank compatible sequences for GLP-1R, GCGR, or a dual
+  objective.
+- Keep invalid and out-of-scope rows visible instead of silently dropping them.
+- Report the nearest development reference and per-position prediction differences.
+- Generate checksum-bound batch outputs and an audit receipt entirely in the browser.
+- Run the same model through the browser, Python API, or command line.
 
-On the 125 cluster-held-out records, nested ridge versus tied 1-NN achieved:
+The browser processes imported sequences locally. Structure upload is intentionally
+absent because the released model has no validated structural features.
 
-- GCGR MAE 0.627 versus 0.769 log10(pM);
-- GLP-1R MAE 1.070 versus 1.178 log10(pM);
-- selectivity MAE 1.136 versus 1.095 log10 ratio.
+## Scientific result
 
-The ridge improvements are confined to pooled receptor-potency MAE. Component-
-macro results are mixed, selectivity does not improve, and all paired component-
-bootstrap intervals include zero. Fold-specific errors vary substantially. These
-are development-CV results, not claims about P1–P15.
+The strongest result is a reproducible, leakage-resistant benchmark—not a claim of
+drug-discovery performance. On 125 cluster-held-out development records, ridge
+regression reduced pooled receptor-potency MAE relative to tied 1-nearest-neighbour,
+but selectivity did not improve and all paired component-bootstrap intervals included
+zero. Performance also varied substantially across folds.
 
-## External-evaluation headline
+The locked retrospective evaluation on 15 published designs was mixed. GCGR error
+was lower in the pooled comparison, while GLP-1R error was higher; the available
+dependence-aware intervals did not support overall superiority. P1–P15 remain closed
+to future tuning.
 
-There is no overall external superiority result. On all 15 designs, ridge versus
-tied 1-NN has a favorable GCGR constraint-MAE difference of -0.241, but the
-four-external-component descriptive interval [-0.818, 0.343] and leave-one-
-component-out range [-0.553, 0.047] cross zero. GLP-1R is unfavorable in the
-pooled comparison (1.699 versus 1.361; delta +0.337) and unstable across
-dependence weighting: component effects span -2.120 to +1.380 and the leave-one-
-component-out range spans -0.184 to +0.513. Its pooled sign is also opposite to
-all three group-macro signs.
+## Next work
 
-Selectivity is exploratory only: on 10 exact complete cases, ridge versus 1-NN
-has MAE 0.427 versus 0.622 and R2 0.805 versus 0.607; across 13 informative
-records, constraint MAE is 0.447 versus 0.479. No component-resampling uncertainty
-was predeclared for this secondary endpoint. Full results are in
-`reports/EXTERNAL_EVALUATION.md`.
+1. Collect user feedback on alignment failures, CSV exclusions, and downloaded
+   receipts before adding model complexity.
+2. Test automatic alignment only with explicit mapping and failure-mode checks for
+   the frozen 30-position input contract.
+3. Add structural inputs only if a preregistered structure-aware model improves on
+   this sequence baseline beyond seed variation.
 
-## Next
-
-- [ ] Collect user feedback on alignment errors, CSV exclusions, and downloaded
-      receipts before adding more modeling complexity.
-- [ ] Consider automatic alignment only after its failure modes and mapping into
-      the frozen 30-position model contract can be tested explicitly.
-- [ ] Add structure input only if a preregistered structure-aware pilot beats this
-      sequence baseline beyond seed noise; a file picker alone would not add
-      scientific value.
-- [ ] Keep P1–P15 closed to tuning and preserve the EC50-not-affinity boundary in
-      every future release.
-
-No peptide–GPCR structure prediction, structural-feature result, new prospective
-experiment, or overall external model-win claim is currently made.
+No peptide–receptor structure prediction, prospective experimental result, or overall
+external model-win claim is made in this release.

@@ -1,67 +1,37 @@
-# GitHub release and verification
+# Publishing and verification
 
-The last verified public release, version 0.6.0, is available. Its successful CI
-jobs on Python 3.10 and 3.12, browser deployment, and fresh-clone release check are
-recorded in `reports/publication_receipt.json`.
-
-## Last verified release
+Version 0.7.0 is public and independently reproducible.
 
 - Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
 - Browser application: <https://darwinxcai.github.io/IncretinSelect-AI/>
-- Source commit: `19c70897e1df03900f0a4ef787c774da62f11bf0`
-- CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760548>
-- Pages run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760488>
+- Source commit: `517f97c1e31bc0c9fea5315184bde651bb6b671a`
+- CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083830513>
+- Pages run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083916679>
 
-## Initial publication procedure
+## Release procedure
 
-The repository-creation procedure below is retained for provenance. It has already
-been completed and must not be run again for the existing repository.
+1. Start from a clean working tree.
+2. Run `make lint`, `make test`, `make product-smoke`, `make static-demo`, and
+   `make release-check`.
+3. Push the release commit and require successful Python 3.10 and 3.12 CI jobs.
+4. Let the Pages workflow deploy only the exact commit accepted by CI.
+5. Open the browser application and verify prediction, import, and download flows.
+6. Clone the public repository into a new directory and repeat the release check.
+7. Record the commit, CI, deployment, payload fingerprint, and clone result in
+   `reports/publication_receipt.json`.
 
-```bash
-# Read-only preflight
-python scripts/bootstrap_github.py
+The release check builds the wheel and complete source distribution from an exact
+Git-tracked allowlist. It installs the wheel outside the repository, exercises the
+installed commands and browser application, rebuilds from the source distribution,
+and checks that repeated builds are byte-deterministic.
 
-# Initial repository creation only
-python scripts/bootstrap_github.py --execute
-```
+## Scientific boundaries
 
-The execution mode requires GitHub CLI authentication, a clean `main` branch, no
-existing `origin`, a passing distribution check, and the configured public target
-`darwinxcai/IncretinSelect-AI`. It creates the repository, pushes the current
-commit, enables GitHub Pages when permitted, and verifies the resulting URL and
-visibility.
+The endpoint is cell-based cAMP EC50 functional potency, not binding affinity,
+maximal response, safety, or clinical activity. The P1–P15 evaluation is a locked
+retrospective test with mixed results and must not be reused for model selection.
+Raw source workbooks and the label-bearing holdout mirror are not part of the public
+release.
 
-If repository creation succeeds but Pages activation is unavailable, the script
-records repository publication as complete and Pages activation as pending. After
-selecting **Settings → Pages → Source → GitHub Actions**, request one deployment:
-
-```bash
-gh workflow run pages.yml --repo darwinxcai/IncretinSelect-AI
-```
-
-Avoid dispatching duplicate workflows during a GitHub service interruption. Wait
-for service recovery and then request one CI run and one Pages run.
-
-## Verification before a release
-
-1. Run `make lint`, `make test`, `make product-smoke`, `make static-demo`, and
-   `make release-check` from a clean working tree.
-2. Push the release commit and confirm that both Python 3.10 and 3.12 CI jobs pass.
-3. Confirm that the Pages workflow passes and open the browser application.
-4. Run the bundled example and confirm that the displayed model SHA-256 matches
-   `reports/static_demo_verification.json`.
-5. Clone the public repository into a new directory and run `make release-check`
-   and `make static-demo` from that checkout.
-6. Record the repository URL, application URL, source commit, CI run, deployment
-   run, and fresh-clone result in `reports/publication_receipt.json` and
-   `reports/STATUS.md`.
-7. Run the release-readiness audit with `--require-public`; see
-   [`RELEASE_READINESS.md`](RELEASE_READINESS.md).
-
-## Scientific and data boundaries
-
-Do not publish raw source workbooks or the redundant label-bearing P1–P15 mirror.
-The released endpoint is cell-based cAMP EC50 functional potency, not binding
-affinity, maximal assay response, safety, or clinical activity. The locked retrospective
-P1–P15 external evaluation remains mixed and must not be reused for model selection
-or tuning.
+The initial repository-creation helper is retained only for provenance. Do not run
+it again against the existing public repository.

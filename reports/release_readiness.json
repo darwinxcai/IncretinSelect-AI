@@ -1,6 +1,6 @@
 {
   "as_of": "2026-08-27",
-  "decision": "LOCAL_RELEASE_READY_PUBLICATION_BLOCKED",
+  "decision": "PUBLIC_RELEASE_VERIFIED",
   "local_gates": [
     {
       "evidence": "all required release files present",
@@ -52,27 +52,27 @@
   "project": "IncretinSelect-AI",
   "public_gates": [
     {
-      "evidence": "publication receipt does not match the current source payload: recorded=None; current='fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec'",
+      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI",
       "name": "public_repository",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded=None; current='fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec'",
+      "evidence": "https://darwinxcai.github.io/IncretinSelect-AI/",
       "name": "public_browser_demo",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded=None; current='fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec'",
+      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083830513",
       "name": "remote_ci",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded=None; current='fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec'",
+      "evidence": "make release-check passed in a separately cloned public checkout",
       "name": "fresh_public_clone",
-      "status": "blocked"
+      "status": "pass"
     }
   ],
-  "public_release_verified": false,
+  "public_release_verified": true,
   "release_payload": {
     "excluded_paths": [
       "PUBLISHING.md",

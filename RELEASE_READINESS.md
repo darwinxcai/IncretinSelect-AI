@@ -1,54 +1,31 @@
 # Release readiness
 
-The release audit distinguishes local package verification from verification of the
-public release:
+The audit separates two questions:
 
-1. **Locally release-ready** means that the scientific boundaries, tests,
-   distribution checks, browser checks, and public-bundle checks pass in the source
-   tree.
-2. **Publicly verified** additionally requires a successful overall GitHub Actions
-   workflow, a deployed browser application, and `make release-check` from a fresh
-   clone of the public repository.
+1. **Is the software locally release-ready?** Scientific boundaries, tests,
+   packaging, browser parity, licensing, and workflow policy must pass.
+2. **Is the public release verified?** The exact source payload must also have green
+   CI, a successful Pages deployment, and a passing check from a fresh public clone.
 
-The last verified public release, version 0.6.0, satisfies both criteria. Its
-checked receipt records the source commit, Python 3.10 and 3.12 CI results, browser
-deployment, and fresh-clone verification. The verified CI run is
-<https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33014760548>.
+Version 0.7.0 satisfies both criteria. The verified CI run is
+<https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083830513>.
 
-## Run the local audit
+## Local audit
 
 ```bash
 make release-readiness
 ```
 
-When `reports/publication_receipt.json` is present, the audit also checks its public
-release evidence. A URL alone is insufficient: the receipt must identify a matching
-source tree, successful overall CI workflow, deployed application, and complete
-fresh-clone release check.
+This command displays the audit in the terminal. To update the checked
+machine-readable report, run the auditor with
+`--json-output reports/release_readiness.json`. The release payload fingerprint
+covers every release-critical tracked path and its bytes. Post-verification
+attestations are excluded so recording the result does not change the payload being
+attested.
 
-The automatic Pages workflow accepts only a successful `CI` run for the exact
-current default-branch commit. A manual Pages dispatch runs the complete Python
-3.10/3.12 release matrix before it can deploy.
+## Public audit
 
-The receipt is also bound to a deterministic release-payload fingerprint. The
-fingerprint covers the sorted tracked path set and every included file's bytes, so
-an addition, deletion, rename, or same-version source edit invalidates earlier
-public evidence. Only the post-verification attestation files listed by
-`RELEASE_PAYLOAD_EXCLUDED_PATHS` are omitted to avoid a self-referential hash. Each
-generated readiness report records the fingerprint it audited.
-
-To write a dated machine-readable receipt:
-
-```bash
-python scripts/audit_release_readiness.py \
-  --as-of YYYY-MM-DD \
-  --json-output reports/release_readiness.json
-```
-
-## Verify a public release
-
-After CI, deployment, and fresh-clone checks pass, update
-`reports/publication_receipt.json` or supply the corresponding evidence directly:
+After CI, Pages, and a fresh-clone release check pass:
 
 ```bash
 python scripts/audit_release_readiness.py \
@@ -61,12 +38,9 @@ python scripts/audit_release_readiness.py \
   --json-output reports/release_readiness.json
 ```
 
-Use `--fresh-clone-release-check` only after the check has passed in a new checkout
-of the public repository. The audit restricts public URLs to the configured owner
-and repository and requires the overall workflow—not only individual jobs—to have
-succeeded.
+The automatic Pages workflow accepts only a successful CI run for the current
+default-branch commit. A manual deployment runs the complete two-version test matrix
+before publishing.
 
-The audit reads release metadata and tracked filenames. In a source archive without
-`.git`, it evaluates the extracted release files. It does not train a model, access
-P1–P15 outcome labels, run structure inference, or reinterpret cAMP EC50 as binding
-affinity.
+The audit does not train a model, access P1–P15 outcome labels, run structure
+inference, or reinterpret cAMP EC50 as binding affinity.
