@@ -1,4 +1,4 @@
-.PHONY: test lint product-smoke static-demo release-check release-readiness product-model fetch validate holdout splits baseline sequence-model figure external-predict external-score post-score-figure structures audit reproduce
+.PHONY: test coverage lint browser-acceptance product-smoke static-demo release-check release-readiness product-model fetch validate holdout splits baseline sequence-model figure external-predict external-score post-score-figure structures audit reproduce
 
 PYTHON ?= python
 PYTHONPATH := src
@@ -6,8 +6,17 @@ PYTHONPATH := src
 test:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m unittest discover -s tests -v
 
+coverage:
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m coverage erase
+	PYTHONPATH=$(PYTHONPATH) $(PYTHON) -m coverage run --branch -m unittest discover -s tests
+	$(PYTHON) -m coverage report --show-missing --fail-under=70
+	$(PYTHON) -m coverage xml -o coverage.xml
+
 lint:
 	$(PYTHON) -m ruff check .
+
+browser-acceptance:
+	npm run test:browser
 
 product-smoke:
 	PYTHONPATH=$(PYTHONPATH) $(PYTHON) scripts/smoke_product.py

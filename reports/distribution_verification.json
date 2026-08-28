@@ -13,11 +13,11 @@
     "prediction_schema_version": 1,
     "screening_objective": "dual",
     "screening_out_of_scope_rows": 1,
-    "screening_output_sha256": "f88b856c8861837c07b5e71fde9dc32caae7ee3cc6bba6d33ceb71e22cffad5f",
+    "screening_output_sha256": "d071d49a2e0953a752620076c6dfb9a7f631103bca97f7dfc183a54cb36064a0",
     "screening_ranked_rows": 3,
     "screening_rows": 4,
-    "software_version": "0.8.0",
-    "web_smoke": "ok: verified browser application v0.8.0 with model eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321"
+    "software_version": "0.9.0",
+    "web_smoke": "ok: verified browser application v0.9.0 with model eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321"
   },
   "python": "3.12.13",
   "scientific_boundaries": {
@@ -30,23 +30,23 @@
     "build_input": "git-tracked allowlist only",
     "byte_deterministic": true,
     "complete_research_tree": true,
-    "filename": "incretinselect_ai-0.8.0.tar.gz",
+    "filename": "incretinselect_ai-0.9.0.tar.gz",
     "forbidden_research_files_included": false,
-    "member_count": 174,
+    "member_count": 182,
     "product_smoke": "passed",
     "rebuilt_wheel_byte_identical": true,
-    "rebuilt_wheel_sha256": "de8f778733bf33700bdc9f31fe20a1e29ab746b81fc3dabf6cc99f6a371379c2",
+    "rebuilt_wheel_sha256": "4dc9298cddb9dddb517336f4b4485d9e58622b38ee8fbebfe6cd465cd6b89281",
     "resource_sync": "passed",
     "source_date_epoch": "946684800",
     "static_demo_sync": "passed",
     "tests": "passed",
-    "tracked_file_count": 144,
+    "tracked_file_count": 151,
     "untracked_files_included": false
   },
   "status": "passed",
   "verification_scope": "built wheel installed and exercised in a temporary environment outside the source tree; dependency metadata checked and runtime NumPy supplied by the verification environment",
   "wheel": {
-    "filename": "incretinselect_ai-0.8.0-py3-none-any.whl",
+    "filename": "incretinselect_ai-0.9.0-py3-none-any.whl",
     "member_count": 35,
     "required_runtime_files": [
       "incretinselect/__init__.py",
@@ -78,7 +78,7 @@
       "incretinselect/web_assets/io.mjs",
       "incretinselect/web_assets/demo_manifest.json"
     ],
-    "sha256": "de8f778733bf33700bdc9f31fe20a1e29ab746b81fc3dabf6cc99f6a371379c2",
+    "sha256": "4dc9298cddb9dddb517336f4b4485d9e58622b38ee8fbebfe6cd465cd6b89281",
     "source_date_epoch": "946684800"
   }
 }

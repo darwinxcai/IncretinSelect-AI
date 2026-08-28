@@ -120,10 +120,22 @@ h3 { margin: 24px 0 10px; font-size: 1.05rem; }
 
 label { display: block; margin: 15px 0 8px; font-weight: 800; }
 
+.quick-start {
+  margin: 16px 0 6px;
+  padding: 12px 14px;
+  color: #234839;
+  background: #eef7f1;
+  border-left: 4px solid var(--leaf);
+  border-radius: 8px;
+}
+
+.input-details { margin: 12px 0 0; }
+.input-details p { color: var(--muted); }
+
 .ruler {
   overflow: hidden;
   margin: 0 15px -1px;
-  color: #73817a;
+  color: #66736c;
   font: 500 .78rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
   letter-spacing: .16em;
   white-space: nowrap;

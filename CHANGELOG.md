@@ -6,6 +6,40 @@ All notable changes to this research artifact are documented here.
 
 - Complex-prediction pilot and structure-feature benchmark remain future work.
 
+## [0.9.0] - 2026-08-28
+
+### Added
+
+- Added real-Chromium acceptance tests for single-sequence prediction, batch
+  screening, and checksum-bound downloads.
+- Added automated WCAG 2.1 A/AA accessibility scans for the initial, single-result,
+  and batch-result interfaces.
+- Added a tag-producing release workflow that publishes a GitHub Release with the
+  wheel, source distribution, and SHA-256 checksum manifest only after exact-commit
+  CI succeeds.
+- Added branch-coverage reporting, a security disclosure policy, and monthly
+  dependency maintenance for Python, npm, and GitHub Actions.
+
+### Improved
+
+- Added Python 3.11 to the supported-version CI matrix.
+- Added an in-browser batch example and a short first-use path for readers who want
+  to evaluate the product before reading the complete methods.
+- Reorganized dense input guidance behind progressive disclosure and clarified the
+  automatic-alignment, noncanonical-chemistry, minimax-ranking, and benchmark-error
+  boundaries.
+- Replaced receptor-"favored" output labels with neutral descriptions of which
+  predicted EC50 is lower; the numerical model and threefold descriptive boundary
+  are unchanged.
+
+### Scientific boundaries
+
+- Browser and release engineering changes do not refit the model, change its
+  coefficients, access P1–P15 outcomes, or broaden the 26–30-residue local-analog
+  scope.
+- Passing accessibility, software, distribution, or applicability gates does not
+  establish experimental accuracy, binding affinity, safety, or therapeutic value.
+
 ## [0.8.0] - 2026-08-28
 
 ### Added

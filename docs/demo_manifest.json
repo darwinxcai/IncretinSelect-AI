@@ -11,6 +11,6 @@
   "local_file_import": true,
   "outbound_sequence_transmission": false,
   "schema_version": 1,
-  "software_version": "0.8.0",
+  "software_version": "0.9.0",
   "structure_inference": false
 }

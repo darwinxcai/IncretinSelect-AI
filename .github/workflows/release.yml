@@ -1,0 +1,149 @@
+name: Publish versioned release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: versioned-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >-
+      (
+        github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event != 'pull_request' &&
+        github.event.workflow_run.head_repository.full_name == github.repository
+      ) || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+      - name: Require the validated commit to remain current
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          VALIDATED_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          git fetch --no-tags origin \
+            "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+          checked_out_sha="$(git rev-parse HEAD)"
+          current_default_sha="$(git rev-parse "refs/remotes/origin/${DEFAULT_BRANCH}")"
+          test "${checked_out_sha}" = "${VALIDATED_SHA}"
+          test "${current_default_sha}" = "${VALIDATED_SHA}"
+      - name: Check whether this version is already released
+        id: release_state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          tag="v${version}"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            echo "released=true" >> "${GITHUB_OUTPUT}"
+            echo "${tag} already has an immutable GitHub Release; no publication action is needed."
+          else
+            echo "released=false" >> "${GITHUB_OUTPUT}"
+          fi
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        if: steps.release_state.outputs.released != 'true'
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: steps.release_state.outputs.released != 'true'
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install release dependencies
+        if: steps.release_state.outputs.released != 'true'
+        run: |
+          python -m pip install -e ".[dev]"
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Reverify release payload
+        if: steps.release_state.outputs.released != 'true'
+        run: |
+          make lint
+          make test
+          make product-smoke
+          make static-demo
+          make browser-acceptance
+          make release-check
+          make release-readiness
+      - name: Verify version contract
+        id: version
+        if: steps.release_state.outputs.released != 'true'
+        run: |
+          version="$(python -c 'import incretinselect; print(incretinselect.__version__)')"
+          python - "${version}" <<'PY'
+          import json
+          import pathlib
+          import re
+          import sys
+          import tomllib
+
+          root = pathlib.Path(".")
+          expected = sys.argv[1]
+          project = tomllib.loads((root / "pyproject.toml").read_text())["project"]["version"]
+          package = json.loads((root / "package.json").read_text())["version"]
+          citation = re.search(
+              r"^version:\s*(\S+)",
+              (root / "CITATION.cff").read_text(),
+              flags=re.MULTILINE,
+          ).group(1)
+          browser = re.search(
+              r'^export const SOFTWARE_VERSION = "([^"]+)";',
+              (root / "docs/model.mjs").read_text(),
+              flags=re.MULTILINE,
+          ).group(1)
+          versions = {expected, project, package, citation, browser}
+          if versions != {expected}:
+              raise SystemExit(f"release versions disagree: {sorted(versions)}")
+          changelog = (root / "CHANGELOG.md").read_text()
+          if f"## [{expected}]" not in changelog:
+              raise SystemExit(f"CHANGELOG.md has no {expected} release entry")
+          PY
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+          echo "tag=v${version}" >> "${GITHUB_OUTPUT}"
+      - name: Build release assets
+        if: steps.release_state.outputs.released != 'true'
+        run: |
+          python -m build
+          sha256sum dist/* | sort -k2 > SHA256SUMS
+      - name: Create immutable tag and GitHub Release
+        if: steps.release_state.outputs.released != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git fetch --tags origin
+          if git rev-parse -q --verify "refs/tags/${RELEASE_TAG}" >/dev/null; then
+            existing_sha="$(git rev-list -n 1 "${RELEASE_TAG}")"
+            test "${existing_sha}" = "$(git rev-parse HEAD)"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "${RELEASE_TAG}" -m "IncretinSelect-AI ${RELEASE_VERSION}"
+            git push origin "${RELEASE_TAG}"
+          fi
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "GitHub Release ${RELEASE_TAG} already exists; leaving it immutable."
+          else
+            gh release create "${RELEASE_TAG}" \
+              dist/* SHA256SUMS \
+              --verify-tag \
+              --title "IncretinSelect-AI ${RELEASE_VERSION}" \
+              --generate-notes
+          fi

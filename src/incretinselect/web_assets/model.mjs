@@ -1,5 +1,5 @@
 export const EXAMPLE_SEQUENCE = "HSQGTFTSDYSKYLDSRAASEFVQWLISH";
-export const SOFTWARE_VERSION = "0.8.0";
+export const SOFTWARE_VERSION = "0.9.0";
 export const EXPECTED_MODEL_SHA256 = (
   "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321"
 );
@@ -364,9 +364,9 @@ export function alignedIdentity(first, second) {
 
 function direction(selectivityLog10) {
   const foldRatio = 10 ** selectivityLog10;
-  if (foldRatio >= 3) return "GLP-1R-favored";
-  if (foldRatio <= 1 / 3) return "GCGR-favored";
-  return "Approximately balanced";
+  if (foldRatio >= 3) return "Lower predicted EC50 at GLP-1R";
+  if (foldRatio <= 1 / 3) return "Lower predicted EC50 at GCGR";
+  return "Predicted EC50 values within 3-fold";
 }
 
 function applicability(sequence, model) {
