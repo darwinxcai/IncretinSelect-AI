@@ -61,6 +61,7 @@ DEMO_URL_PATTERN = re.compile(
     r"^https://darwinxcai\.github\.io/IncretinSelect-AI/?$", re.IGNORECASE
 )
 MINIMUM_RELEASE_TESTS = 100
+SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 RELEASE_WORKFLOW_FILES = (
     ".github/workflows/ci.yml",
     ".github/workflows/pages.yml",
@@ -292,6 +293,75 @@ def static_demo_receipt_passes(receipt: dict[str, Any]) -> bool:
         and privacy.get("outbound_sequence_transmission") is False
         and boundaries.get("holdout_labels_accessed") is False
         and boundaries.get("structure_inference_run") is False
+    )
+
+
+def versioned_release_receipt_passes(
+    release: object,
+    *,
+    project_version: str,
+    verified_source_commit: object,
+    verified_wheel_sha256: object,
+    verified_sdist_sha256: object,
+) -> bool:
+    """Require a successful release workflow and checksum-bound durable assets."""
+
+    if not isinstance(release, dict):
+        return False
+    tag = f"v{project_version}"
+    expected_release_url = (
+        f"https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/{tag}"
+    )
+    workflow = release.get("release_workflow", {})
+    assets = release.get("assets", [])
+    if not isinstance(workflow, dict) or not isinstance(assets, list):
+        return False
+    expected_names = {
+        f"incretinselect_ai-{project_version}-py3-none-any.whl",
+        f"incretinselect_ai-{project_version}.tar.gz",
+        "SHA256SUMS",
+    }
+    asset_map = {
+        item.get("name"): item
+        for item in assets
+        if isinstance(item, dict) and isinstance(item.get("name"), str)
+    }
+    assets_ok = len(assets) == len(expected_names) and set(asset_map) == expected_names and all(
+        isinstance(item.get("size_bytes"), int)
+        and item["size_bytes"] > 0
+        and isinstance(item.get("sha256"), str)
+        and SHA256_PATTERN.fullmatch(item["sha256"])
+        and item.get("download_url")
+        == f"{expected_release_url.replace('/tag/', '/download/')}/{name}"
+        for name, item in asset_map.items()
+    )
+    verified_artifacts_match = bool(
+        isinstance(verified_wheel_sha256, str)
+        and SHA256_PATTERN.fullmatch(verified_wheel_sha256)
+        and isinstance(verified_sdist_sha256, str)
+        and SHA256_PATTERN.fullmatch(verified_sdist_sha256)
+        and asset_map.get(
+            f"incretinselect_ai-{project_version}-py3-none-any.whl", {}
+        ).get("sha256")
+        == verified_wheel_sha256
+        and asset_map.get(f"incretinselect_ai-{project_version}.tar.gz", {}).get(
+            "sha256"
+        )
+        == verified_sdist_sha256
+    )
+    run_url = workflow.get("run_url")
+    return bool(
+        release.get("tag") == tag
+        and release.get("release_url") == expected_release_url
+        and isinstance(verified_source_commit, str)
+        and re.fullmatch(r"[0-9a-f]{40}", verified_source_commit)
+        and release.get("source_commit") == verified_source_commit
+        and workflow.get("status") == "passed"
+        and workflow.get("run_api_conclusion") == "success"
+        and isinstance(run_url, str)
+        and CI_URL_PATTERN.fullmatch(run_url)
+        and assets_ok
+        and verified_artifacts_match
     )
 
 
@@ -589,6 +659,7 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
             gate("public_browser_demo", "blocked", "publication receipt is missing"),
             gate("remote_ci", "blocked", "publication receipt is missing"),
             gate("fresh_public_clone", "blocked", "publication receipt is missing"),
+            gate("versioned_release", "blocked", "publication receipt is missing"),
         ]
 
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
@@ -635,7 +706,7 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
     matrix_ok = all(
         ci.get(key, {}).get("status") == "passed"
         and ci.get(key, {}).get("tests_passed") == expected_tests
-        for key in ("python_3_10", "python_3_12")
+        for key in ("python_3_10", "python_3_11", "python_3_12")
     ) and test_evidence_current
     ci_ok = bool(
         isinstance(ci_url, str)
@@ -658,6 +729,21 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
         and clone_checks.get("built_distribution") == "passed"
         and clone_checks.get("static_demo_parity_cases") == 12
         and receipt_current
+    )
+    versioned_release = public.get("github_release", {})
+    versioned_release_ok = bool(
+        receipt_current
+        and versioned_release_receipt_passes(
+            versioned_release,
+            project_version=read_project_version(project_root),
+            verified_source_commit=public.get("verified_source_commit"),
+            verified_wheel_sha256=local_release.get("verified_artifacts", {}).get(
+                "wheel_sha256"
+            ),
+            verified_sdist_sha256=local_release.get("verified_artifacts", {}).get(
+                "source_distribution_sha256"
+            ),
+        )
     )
 
     if receipt_payload_ok:
@@ -685,7 +771,7 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
             f"{ci_conclusion!r}; clean top-level CI is still required: {ci_url}"
         )
     else:
-        ci_evidence = "publication receipt has no successful two-version CI run"
+        ci_evidence = "publication receipt has no successful three-version CI run"
 
     return [
         gate(
@@ -722,6 +808,17 @@ def audit_publication_receipt(project_root: Path) -> list[dict[str, str]]:
                 else "publication receipt does not attest the complete clean-clone check"
             ),
         ),
+        gate(
+            "versioned_release",
+            "pass" if versioned_release_ok else "blocked",
+            str(versioned_release.get("release_url"))
+            if versioned_release_ok
+            else (
+                payload_evidence
+                if not receipt_payload_ok
+                else "publication receipt does not attest the version tag, release workflow, and checksum-bound wheel/source assets"
+            ),
+        ),
     ]
 
 
@@ -755,14 +852,19 @@ def build_report(
         ci_run_url,
         fresh_clone_release_check,
     )
-    public_gates = [
-        explicit if supplied else receipt
-        for explicit, receipt, supplied in zip(
-            explicit_public_gates,
-            receipt_public_gates,
+    explicit_by_name = {item["name"]: item for item in explicit_public_gates}
+    supplied_by_name = dict(
+        zip(
+            ("public_repository", "public_browser_demo", "remote_ci", "fresh_public_clone"),
             explicit_inputs,
             strict=True,
         )
+    )
+    public_gates = [
+        explicit_by_name[item["name"]]
+        if supplied_by_name.get(item["name"])
+        else item
+        for item in receipt_public_gates
     ]
     local_ready = all(item["status"] == "pass" for item in local_gates)
     public_verified = all(item["status"] == "pass" for item in public_gates)

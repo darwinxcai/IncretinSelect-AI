@@ -79,8 +79,15 @@ jobs:
           make product-smoke
           make static-demo
           make browser-acceptance
-          make release-check
+          python scripts/verify_distribution.py \
+            --json-output reports/distribution_verification.json \
+            --artifact-output-dir dist
           make release-readiness
+      - name: Require verification receipts to remain source-stable
+        if: steps.release_state.outputs.released != 'true'
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=no)"
       - name: Verify version contract
         id: version
         if: steps.release_state.outputs.released != 'true'
@@ -119,7 +126,8 @@ jobs:
       - name: Build release assets
         if: steps.release_state.outputs.released != 'true'
         run: |
-          python -m build
+          test -f "dist/incretinselect_ai-${{ steps.version.outputs.version }}-py3-none-any.whl"
+          test -f "dist/incretinselect_ai-${{ steps.version.outputs.version }}.tar.gz"
           sha256sum dist/* | sort -k2 > SHA256SUMS
       - name: Create immutable tag and GitHub Release
         if: steps.release_state.outputs.released != 'true'

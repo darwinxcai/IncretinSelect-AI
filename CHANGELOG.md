@@ -6,6 +6,24 @@ All notable changes to this research artifact are documented here.
 
 - Complex-prediction pilot and structure-feature benchmark remain future work.
 
+## [0.9.1] - 2026-08-28
+
+### Improved
+
+- Public-release verification now requires successful Python 3.10, 3.11, and 3.12
+  jobs plus the exact version tag, release workflow, wheel, source archive, and
+  checksum manifest.
+- The release workflow publishes the same deterministic wheel and source archive
+  exercised by distribution verification, and fails if verification changes any
+  tracked source receipt.
+- Distribution receipts record the supported Python minor line rather than an
+  environment-specific patch number, keeping clean-runner verification stable.
+
+### Scientific boundaries
+
+- This patch changes release assurance only. The frozen model, adapter, benchmark,
+  P1–P15 evaluation, and 26–30-residue local-analog scope are unchanged.
+
 ## [0.9.0] - 2026-08-28
 
 ### Added

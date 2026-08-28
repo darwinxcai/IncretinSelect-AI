@@ -1,5 +1,5 @@
 export const EXAMPLE_SEQUENCE = "HSQGTFTSDYSKYLDSRAASEFVQWLISH";
-export const SOFTWARE_VERSION = "0.9.0";
+export const SOFTWARE_VERSION = "0.9.1";
 export const EXPECTED_MODEL_SHA256 = (
   "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321"
 );

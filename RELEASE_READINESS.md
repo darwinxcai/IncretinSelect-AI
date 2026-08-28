@@ -5,14 +5,21 @@ The audit separates two questions:
 1. **Is the software locally release-ready?** Scientific boundaries, tests,
    packaging, browser parity, licensing, and workflow policy must pass.
 2. **Is the public release verified?** The exact source payload must also have green
-   CI, a successful Pages deployment, and a passing check from a fresh public clone.
+   Python 3.10/3.11/3.12 CI, real-browser acceptance/accessibility, a successful
+   Pages deployment, a clean public-clone check, and a versioned GitHub Release whose
+   wheel and source archive are the exact bytes exercised by distribution
+   verification.
 
-Version 0.8.0 satisfies both criteria. Its exact public source tree passed Python
-3.10/3.12 CI, Pages deployment, and the complete release check from a fresh public
-clone. The verified CI run is
-<https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33197985085> and the
-verified deployment is
-<https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33198064933>.
+Version 0.9.0 is publicly released and its source passed CI, Pages deployment, the
+release workflow, and a clean-clone check. The strengthened audit deliberately does
+not mark it fully public-release verified because the workflow rebuilt the upload
+assets after verification. Version 0.9.1 changes the workflow to publish the exact
+verified artifacts and makes that equality a required receipt gate.
+
+- v0.9.0 CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206129159>
+- v0.9.0 Pages: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206238008>
+- v0.9.0 release workflow: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206238005>
+- v0.9.0 Release: <https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v0.9.0>
 
 ## Local audit
 
@@ -24,27 +31,25 @@ This command displays the audit in the terminal. To update the checked
 machine-readable report, run the auditor with
 `--json-output reports/release_readiness.json`. The release payload fingerprint
 covers every release-critical tracked path and its bytes. Post-verification
-attestations are excluded so recording the result does not change the payload being
+attestations are excluded so recording a result does not change the payload being
 attested.
 
 ## Public audit
 
-After CI, Pages, and a fresh-clone release check pass:
+After CI, Pages, the versioned release, and a clean-clone release check pass, update
+`reports/publication_receipt.json` with the exact commit, tree, run URLs, asset names,
+asset SHA-256 digests, and verified artifact digests. Then run:
 
 ```bash
 python scripts/audit_release_readiness.py \
-  --public-repository-url https://github.com/darwinxcai/IncretinSelect-AI \
-  --public-demo-url https://darwinxcai.github.io/IncretinSelect-AI/ \
-  --ci-run-url https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/RUN_ID \
-  --verified-release-payload-sha256 PAYLOAD_SHA256 \
-  --fresh-clone-release-check \
   --require-public \
+  --as-of YYYY-MM-DD \
   --json-output reports/release_readiness.json
 ```
 
-The automatic Pages workflow accepts only a successful CI run for the current
-default-branch commit. A manual deployment runs the complete two-version test matrix
-before publishing.
+The automatic Pages workflow accepts only successful CI for the current
+default-branch commit. A manual deployment runs the complete three-version matrix,
+with browser acceptance/accessibility on Python 3.12.
 
 The audit does not train a model, access P1–P15 outcome labels, run structure
 inference, or reinterpret cAMP EC50 as binding affinity.
