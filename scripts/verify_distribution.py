@@ -113,6 +113,14 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Optional path for a machine-readable verification receipt.",
     )
+    parser.add_argument(
+        "--artifact-output-dir",
+        type=Path,
+        help=(
+            "Optional empty directory that receives the exact wheel and source "
+            "archive exercised by this verification run."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -249,7 +257,7 @@ def build_and_verify_sdist(
     build_env: dict[str, str],
     clean_env: dict[str, str],
     wheel_sha256: str,
-) -> dict[str, object]:
+) -> tuple[dict[str, object], Path]:
     allowlist = manifest_allowlist(repository)
     manifest_entries = set(allowlist)
     sdist_input = temp / "sdist-input"
@@ -377,23 +385,26 @@ def build_and_verify_sdist(
     rebuilt_wheel_sha256 = sha256(rebuilt_wheels[0])
     if rebuilt_wheel_sha256 != wheel_sha256:
         raise RuntimeError("Wheel rebuilt from the source distribution is not byte-identical")
-    return {
-        "filename": sdist.name,
-        "member_count": len(members),
-        "tracked_file_count": len(manifest_entries),
-        "build_input": "git-tracked allowlist only",
-        "complete_research_tree": True,
-        "untracked_files_included": False,
-        "forbidden_research_files_included": False,
-        "byte_deterministic": True,
-        "source_date_epoch": str(source_date_epoch),
-        "tests": "passed",
-        "product_smoke": "passed",
-        "resource_sync": "passed",
-        "static_demo_sync": "passed",
-        "rebuilt_wheel_sha256": rebuilt_wheel_sha256,
-        "rebuilt_wheel_byte_identical": True,
-    }
+    return (
+        {
+            "filename": sdist.name,
+            "member_count": len(members),
+            "tracked_file_count": len(manifest_entries),
+            "build_input": "git-tracked allowlist only",
+            "complete_research_tree": True,
+            "untracked_files_included": False,
+            "forbidden_research_files_included": False,
+            "byte_deterministic": True,
+            "source_date_epoch": str(source_date_epoch),
+            "tests": "passed",
+            "product_smoke": "passed",
+            "resource_sync": "passed",
+            "static_demo_sync": "passed",
+            "rebuilt_wheel_sha256": rebuilt_wheel_sha256,
+            "rebuilt_wheel_byte_identical": True,
+        },
+        sdist,
+    )
 
 
 def executable(environment: Path, name: str) -> Path:
@@ -613,7 +624,7 @@ def main() -> int:
         if not web_output.startswith("ok: verified browser application"):
             raise RuntimeError("Installed browser entry point did not pass its smoke test")
 
-        source_distribution = build_and_verify_sdist(
+        source_distribution, source_distribution_path = build_and_verify_sdist(
             repository,
             temp,
             build_env,
@@ -628,7 +639,10 @@ def main() -> int:
                 "the source tree; dependency metadata checked and runtime NumPy supplied "
                 "by the verification environment"
             ),
-            "python": sys.version.split()[0],
+            # Patch releases differ across otherwise equivalent CI runners. Record
+            # the supported interpreter line so regenerating this checked-in receipt
+            # cannot make a validated source tree dirty solely because 3.12.x moved.
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}",
             "wheel": {
                 "filename": wheel.name,
                 "sha256": wheel_sha256,
@@ -664,6 +678,22 @@ def main() -> int:
                 "endpoint": "cell-based cAMP EC50 functional potency, not binding affinity",
             },
         }
+
+        if args.artifact_output_dir:
+            artifact_output_dir = args.artifact_output_dir
+            if not artifact_output_dir.is_absolute():
+                artifact_output_dir = repository / artifact_output_dir
+            if artifact_output_dir.exists() and any(artifact_output_dir.iterdir()):
+                raise RuntimeError(
+                    "Artifact output directory must be empty: "
+                    f"{artifact_output_dir}"
+                )
+            artifact_output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(wheel, artifact_output_dir / wheel.name)
+            shutil.copy2(
+                source_distribution_path,
+                artifact_output_dir / source_distribution_path.name,
+            )
 
     if args.json_output:
         args.json_output.parent.mkdir(parents=True, exist_ok=True)

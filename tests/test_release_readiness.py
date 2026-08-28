@@ -108,6 +108,20 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertGreater(checked, 0)
         self.assertEqual(violations, [])
 
+    def test_release_workflow_publishes_the_verified_artifacts(self) -> None:
+        workflow = (PROJECT_ROOT / ".github/workflows/release.yml").read_text(
+            encoding="utf-8"
+        )
+        for token in (
+            "--artifact-output-dir dist",
+            "Require verification receipts to remain source-stable",
+            "git diff --exit-code",
+            'test -z "$(git status --porcelain --untracked-files=no)"',
+            "sha256sum dist/* | sort -k2 > SHA256SUMS",
+        ):
+            self.assertIn(token, workflow)
+        self.assertNotIn("python -m build", workflow)
+
     def test_mutable_official_action_tag_fails_the_release_audit(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -155,6 +169,69 @@ class ReleaseReadinessTests(unittest.TestCase):
     def test_public_evidence_is_blocked_when_not_supplied(self) -> None:
         gates = audit_release_readiness.audit_public(None, None, None, False)
         self.assertEqual({item["status"] for item in gates}, {"blocked"})
+
+    def test_versioned_release_requires_exact_checksum_bound_assets(self) -> None:
+        version = "9.9.9"
+        commit = "a" * 40
+        release_url = (
+            "https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v9.9.9"
+        )
+        release = {
+            "tag": "v9.9.9",
+            "release_url": release_url,
+            "source_commit": commit,
+            "release_workflow": {
+                "status": "passed",
+                "run_api_conclusion": "success",
+                "run_url": (
+                    "https://github.com/darwinxcai/IncretinSelect-AI/"
+                    "actions/runs/123456"
+                ),
+            },
+            "assets": [
+                {
+                    "name": name,
+                    "size_bytes": 1,
+                    "sha256": "b" * 64,
+                    "download_url": (
+                        "https://github.com/darwinxcai/IncretinSelect-AI/"
+                        f"releases/download/v9.9.9/{name}"
+                    ),
+                }
+                for name in (
+                    "incretinselect_ai-9.9.9-py3-none-any.whl",
+                    "incretinselect_ai-9.9.9.tar.gz",
+                    "SHA256SUMS",
+                )
+            ],
+        }
+        self.assertTrue(
+            audit_release_readiness.versioned_release_receipt_passes(
+                release,
+                project_version=version,
+                verified_source_commit=commit,
+                verified_wheel_sha256="b" * 64,
+                verified_sdist_sha256="b" * 64,
+            )
+        )
+        for mutation in ("tag", "source_commit", "release_workflow", "assets"):
+            with self.subTest(mutation=mutation):
+                altered = copy.deepcopy(release)
+                if mutation == "release_workflow":
+                    altered[mutation]["run_api_conclusion"] = "failure"
+                elif mutation == "assets":
+                    altered[mutation].pop()
+                else:
+                    altered[mutation] = "invalid"
+                self.assertFalse(
+                    audit_release_readiness.versioned_release_receipt_passes(
+                        altered,
+                        project_version=version,
+                        verified_source_commit=commit,
+                        verified_wheel_sha256="b" * 64,
+                        verified_sdist_sha256="b" * 64,
+                    )
+                )
 
     def test_stale_publication_receipt_cannot_verify_a_new_version(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -234,7 +311,10 @@ class ReleaseReadinessTests(unittest.TestCase):
             receipt["version"] = "9.9.9"
             expected_tests = audit_release_readiness.MINIMUM_RELEASE_TESTS
             receipt["local_release"]["tests_passed"] = expected_tests
-            for key in ("python_3_10", "python_3_12"):
+            receipt["public_release"]["ci"]["python_3_11"] = copy.deepcopy(
+                receipt["public_release"]["ci"]["python_3_10"]
+            )
+            for key in ("python_3_10", "python_3_11", "python_3_12"):
                 receipt["public_release"]["ci"][key]["tests_passed"] = expected_tests
             receipt["public_release"]["fresh_public_clone"]["checks"][
                 "tests_passed"
@@ -242,6 +322,44 @@ class ReleaseReadinessTests(unittest.TestCase):
             receipt["local_release"]["release_payload"] = (
                 audit_release_readiness.release_payload_evidence(root)
             )
+            receipt["local_release"]["verified_artifacts"] = {
+                "wheel_sha256": "b" * 64,
+                "source_distribution_sha256": "b" * 64,
+            }
+            receipt["public_release"]["github_release"] = {
+                "tag": "v9.9.9",
+                "release_url": (
+                    "https://github.com/darwinxcai/IncretinSelect-AI/"
+                    "releases/tag/v9.9.9"
+                ),
+                "source_commit": receipt["public_release"][
+                    "verified_source_commit"
+                ],
+                "release_workflow": {
+                    "status": "passed",
+                    "run_api_conclusion": "success",
+                    "run_url": (
+                        "https://github.com/darwinxcai/IncretinSelect-AI/"
+                        "actions/runs/123456"
+                    ),
+                },
+                "assets": [
+                    {
+                        "name": name,
+                        "size_bytes": 1,
+                        "sha256": "b" * 64,
+                        "download_url": (
+                            "https://github.com/darwinxcai/IncretinSelect-AI/"
+                            f"releases/download/v9.9.9/{name}"
+                        ),
+                    }
+                    for name in (
+                        "incretinselect_ai-9.9.9-py3-none-any.whl",
+                        "incretinselect_ai-9.9.9.tar.gz",
+                        "SHA256SUMS",
+                    )
+                ],
+            }
             (root / "reports/publication_receipt.json").write_text(
                 json.dumps(receipt), encoding="utf-8"
             )
@@ -322,6 +440,7 @@ class ReleaseReadinessTests(unittest.TestCase):
                 "public_browser_demo",
                 "remote_ci",
                 "fresh_public_clone",
+                "versioned_release",
             )
         ]
         with tempfile.TemporaryDirectory() as directory:
@@ -381,7 +500,13 @@ class ReleaseReadinessTests(unittest.TestCase):
         self.assertGreater(report["release_payload"]["file_count"], 0)
         self.assertEqual(
             {item["name"] for item in report["public_gates"]},
-            {"public_repository", "public_browser_demo", "remote_ci", "fresh_public_clone"},
+            {
+                "public_repository",
+                "public_browser_demo",
+                "remote_ci",
+                "fresh_public_clone",
+                "versioned_release",
+            },
         )
         self.assertFalse(report["scientific_scope"]["affinity_claim"])
         self.assertFalse(report["scientific_scope"]["p1_p15_reused_for_tuning"])
