@@ -135,7 +135,7 @@ label { display: block; margin: 15px 0 8px; font-weight: 800; }
 .ruler {
   overflow: hidden;
   margin: 0 15px -1px;
-  color: #73817a;
+  color: #66736c;
   font: 500 .78rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
   letter-spacing: .16em;
   white-space: nowrap;

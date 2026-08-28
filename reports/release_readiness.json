@@ -43,7 +43,7 @@
       "status": "pass"
     },
     {
-      "evidence": "canonical-path-content-manifest-sha256-v1 covers 146 files: f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7",
+      "evidence": "canonical-path-content-manifest-sha256-v1 covers 146 files: 86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3",
       "name": "release_payload_integrity",
       "status": "pass"
     }
@@ -52,22 +52,22 @@
   "project": "IncretinSelect-AI",
   "public_gates": [
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7'",
+      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'",
       "name": "public_repository",
       "status": "blocked"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7'",
+      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'",
       "name": "public_browser_demo",
       "status": "blocked"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7'",
+      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'",
       "name": "remote_ci",
       "status": "blocked"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7'",
+      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'",
       "name": "fresh_public_clone",
       "status": "blocked"
     }
@@ -84,7 +84,7 @@
     "file_count": 146,
     "hash_contract": "canonical-path-content-manifest-sha256-v1",
     "schema_version": 1,
-    "sha256": "f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7"
+    "sha256": "86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3"
   },
   "schema_version": 1,
   "scientific_scope": {
