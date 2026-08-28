@@ -387,6 +387,7 @@ button.link-button:hover { color: var(--leaf-dark); background: transparent; }
 }
 .summary-grid strong { color: #174a35; font-size: 1.45rem; }
 .summary-grid span { color: var(--muted); font-size: .82rem; }
+.result-overview { grid-template-columns: repeat(2, 1fr); }
 .result-overview strong { font-size: 1rem; line-height: 1.35; }
 
 .comparison-grid {

@@ -35,7 +35,7 @@
     "member_count": 174,
     "product_smoke": "passed",
     "rebuilt_wheel_byte_identical": true,
-    "rebuilt_wheel_sha256": "22d506bcad36276b7ee988525164f462eec86da74d49f207518561bcaf3f505d",
+    "rebuilt_wheel_sha256": "de8f778733bf33700bdc9f31fe20a1e29ab746b81fc3dabf6cc99f6a371379c2",
     "resource_sync": "passed",
     "source_date_epoch": "946684800",
     "static_demo_sync": "passed",
@@ -78,7 +78,7 @@
       "incretinselect/web_assets/io.mjs",
       "incretinselect/web_assets/demo_manifest.json"
     ],
-    "sha256": "22d506bcad36276b7ee988525164f462eec86da74d49f207518561bcaf3f505d",
+    "sha256": "de8f778733bf33700bdc9f31fe20a1e29ab746b81fc3dabf6cc99f6a371379c2",
     "source_date_epoch": "946684800"
   }
 }
