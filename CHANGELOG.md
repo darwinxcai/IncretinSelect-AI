@@ -6,6 +6,48 @@ All notable changes to this research artifact are documented here.
 
 - Complex-prediction pilot and structure-feature benchmark remain future work.
 
+## [0.8.0] - 2026-08-28
+
+### Added
+
+- Added a separately frozen, checksum-bound adapter for canonical 26–30-residue
+  raw sequences. It uses only the label-free 125-sequence reference panel, retains
+  every residue, requires at least 85% nearest aligned identity, and rejects
+  distinct tied projections rather than guessing an alignment.
+- Added preferred `candidate_id,sequence` batch input while retaining the reviewed
+  `candidate_id,aligned_sequence` expert path.
+- Added adapter provenance to JSON/CSV results and receipts, 125-reference
+  round-trip tests, ambiguity/no-truncation regression tests, and Python/browser
+  acceptance parity.
+- Batch receipts now bind the adapter ID, version, checksum, and frozen policy even
+  when every row is invalid; displayed and recorded row limits are mode-specific.
+
+### Improved
+
+- Reorganized browser, terminal, and Markdown results around four separate
+  questions: predicted functional potency, receptor profile, model applicability,
+  and validation evidence.
+- Added directional closest-sequence comparisons and human-readable batch states;
+  raw internal labels remain available in machine-readable downloads.
+- The bundled browser and command-line examples now demonstrate raw 29-residue
+  input and show the 30-column representation used by the unchanged model.
+- Sequence validation now rejects non-ASCII glyphs before case normalization, and
+  batch caches retain pre-validation characters so Unicode case expansion cannot
+  alias a canonical peptide.
+- Browser length feedback follows the explicitly selected raw or expert contract,
+  and batch screening paints a progress state before local alignment begins.
+
+### Scientific boundaries
+
+- The adapter is input preprocessing, not a new fitted model. It does not access
+  activity labels or alter the frozen ridge coefficients, benchmark, or P1–P15
+  evaluation.
+- Inputs longer than 30 residues, shorter than 26 residues, ambiguous mappings,
+  and unsupported chemistry are rejected. A reviewed 30-column expert input does
+  not make an out-of-scope prediction suitable for ranking.
+- Outputs remain estimates of cell-based cAMP EC50—not binding affinity, maximal
+  response, safety, in vivo efficacy, or an overall peptide-quality score.
+
 ## [0.7.0] - 2026-08-27
 
 ### Added

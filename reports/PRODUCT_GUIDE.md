@@ -2,10 +2,11 @@
 
 ## Scope
 
-IncretinSelect-AI estimates cell-based cAMP EC50 at GLP-1R and GCGR for an
-incretin-like peptide represented in the source study's 30-position alignment. It
-also reports the predicted EC50 ratio between receptors, similarity to the model's
-reference sequences, and evidence needed to interpret the result.
+IncretinSelect-AI estimates cell-based cAMP EC50 at GLP-1R and GCGR for a compatible
+incretin-like peptide. It accepts canonical 26–30-residue sequences through a
+guarded adapter or a reviewed 30-column alignment. It also reports the predicted
+EC50 ratio between receptors, similarity to the model's reference sequences, and
+evidence needed to interpret the result.
 
 The application is intended for exploratory comparison of compatible sequences.
 Its outputs do not measure binding affinity, maximal assay response, safety, in vivo
@@ -41,16 +42,22 @@ python -m http.server 8000 --directory docs
 
 ## Input contract
 
-Single-sequence input must contain exactly 30 aligned characters drawn from:
+Default single-sequence input contains 26–30 ASCII residues drawn from:
 
 ```text
--ACDEFGHIKLMNPQRSTVWY
+ACDEFGHIKLMNPQRSTVWY
 ```
 
-Lowercase and whitespace are normalized. The software rejects wrong lengths,
-ambiguous residues, and noncanonical symbols; it does not pad, truncate, or infer an
-alignment. FASTA import accepts one record. A raw sequence must first be mapped to
-the source study's alignment and reviewed by the user.
+Lowercase and whitespace are normalized. A separately frozen, checksum-bound
+adapter maps the sequence into the model's 30 columns using the label-free reference
+panel. It accepts only one unambiguous optimal projection with at least 85% nearest
+aligned identity. It never truncates residues. FASTA import accepts one record.
+
+Expert users may supply a reviewed 30-column alignment using the standard residues
+and `-`. The software rejects wrong lengths, ambiguous symbols, automatic mappings
+with multiple equally supported projections, and raw sequences outside the adapter's
+local-analog scope. The adapter does not change the model coefficients or any
+benchmark result.
 
 The `-` symbol denotes an alignment gap. It does not encode a linker, cleavage, or
 chemical modification. The model cannot represent Aib, lipidation, amidation,
@@ -71,6 +78,11 @@ A positive value indicates lower predicted EC50 at GLP-1R; a negative value
 indicates lower predicted EC50 at GCGR. The interface describes ratios within
 three-fold as roughly balanced, but this is descriptive wording rather than a
 validated decision threshold or evidence of dual agonism.
+
+The result overview keeps predicted functional potency, receptor profile, model
+applicability, and validation evidence separate. There is no universal peptide
+quality score because the model does not assess stability, safety, pharmacokinetics,
+maximal response, or in vivo efficacy.
 
 Each result has one of four evidence states:
 
@@ -105,20 +117,24 @@ Single results can be downloaded as JSON, CSV, or a concise Markdown report. The
 command line exposes the same formats:
 
 ```bash
-incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format json
-incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format csv --output result.csv
-incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format markdown --output result.md
+incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH --format json
+incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH --format csv --output result.csv
+incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH --format markdown --output result.md
 incretin-predict --model-info
 ```
 
 ## Candidate-table screening
 
-`incretin-screen` accepts a UTF-8 CSV with exactly two columns:
+`incretin-screen` accepts a UTF-8 CSV with exactly two columns. The preferred raw
+sequence schema is:
 
 ```text
-candidate_id,aligned_sequence
-variant_a,HSQGTFTSDYSKYLDSRAASEFVQWLISE-
+candidate_id,sequence
+variant_a,HSQGTFTSDYSKYLDSRAASEFVQWLISE
 ```
+
+The expert schema `candidate_id,aligned_sequence` remains supported for reviewed
+30-column inputs.
 
 The `glp1r` and `gcgr` objectives minimize the corresponding predicted
 log10(EC50 / 1 pM). The `dual` objective minimizes the larger, less favorable of the
@@ -144,11 +160,13 @@ incretin-screen examples/candidate_screening/candidates.csv \
   --receipt screening_receipt.json
 ```
 
-The Python CLI accepts at most 10,000 rows or 10 MB; the browser accepts 500 rows or
-2 MB. The receipt records SHA-256 hashes of the original input bytes and generated
-output bytes, linking each result to the exact files used. It also records the
-objective, ranking gates, score context, row counts, software and model versions,
-and scientific boundaries.
+Raw-sequence screening accepts at most 200 rows per file and caches repeated
+sequences within a run. For reviewed 30-column inputs, the Python CLI accepts up to
+10,000 rows or 10 MB and the browser accepts up to 500 rows or 2 MB. These bounds
+keep the reference-guided alignment step responsive. The receipt records SHA-256
+hashes of the original input bytes and generated output bytes, linking each result
+to the exact files used. It also records the objective, ranking gates, score context,
+row counts, software and model versions, and scientific boundaries.
 
 ## Validation context
 

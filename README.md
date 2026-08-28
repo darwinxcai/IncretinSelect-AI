@@ -9,10 +9,12 @@
 · [Read the external evaluation](reports/EXTERNAL_EVALUATION.md)
 
 IncretinSelect-AI is a reproducible ridge-regression benchmark and research
-application for estimating GLP-1R and GCGR cAMP EC50 from curated, aligned
-30-position incretin peptide sequences. The model was trained on 125 peptides
-measured in a matched cell assay and evaluated with sequence-component-held-out
-cross-validation against a tied 1-nearest-neighbor (1-NN) baseline.
+application for estimating GLP-1R and GCGR cAMP EC50 from incretin-like peptide
+sequences. It accepts canonical 26–30-residue local analogs and maps them into the
+frozen model's 30-column coordinate system only when that mapping is unambiguous.
+The model was trained on 125 peptides measured in a matched cell assay and evaluated
+with sequence-component-held-out cross-validation against a tied 1-nearest-neighbor
+(1-NN) baseline.
 
 The released model is intended for exploratory comparison of close sequence
 analogs. In development cross-validation, ridge had lower pooled MAE for GCGR and
@@ -51,13 +53,14 @@ censoring rules, and sensitivity analyses are reported in
 
 ## What the application does
 
-For one compatible aligned sequence, the application reports:
+For one compatible sequence, the application reports:
 
 - predicted GLP-1R and GCGR cAMP EC50 as log10(EC50 / 1 pM), pM, and nM;
-- the predicted potency ratio, defined as GCGR EC50 / GLP-1R EC50;
+- a plain-language receptor profile derived from the predicted potency ratio,
+  defined as GCGR EC50 / GLP-1R EC50;
 - aligned identity to the nearest reference sequence and an exact additive
   comparison with that reference;
-- applicability status, model version, benchmark context, and limitations; and
+- a separate applicability assessment, validation context, and limitations; and
 - downloadable JSON, CSV, or Markdown results.
 
 A positive log10 potency ratio indicates lower predicted EC50 at GLP-1R; a negative
@@ -76,11 +79,11 @@ reading the ordering, not an individual confidence interval.
 ## Use the browser application
 
 The public [browser application](https://darwinxcai.github.io/IncretinSelect-AI/)
-runs the released coefficients without installation. It supports one aligned FASTA
-or text sequence, CSV batch screening, and local JSON/CSV/Markdown downloads. Imported
+runs the released coefficients without installation. It supports one FASTA or text
+sequence, CSV batch screening, and local JSON/CSV/Markdown downloads. Imported
 sequences and calculations remain in the browser; no sequence data are transmitted
-to a backend or analytics service. The application verifies the model checksum
-before enabling prediction.
+to a backend or analytics service. The application verifies both the model and
+raw-sequence adapter checksums before enabling prediction.
 
 To serve the same application from a local checkout:
 
@@ -92,21 +95,31 @@ Then open `http://127.0.0.1:8000`. Browser predictions are checked against the
 Python package across all 601 deterministic single-position variants of a reference
 sequence, including applicability and nearest-reference attribution. Browser batch
 behavior and exported fields are also checked against the Python implementation.
+The raw adapter round-trips all 125 label-free reference sequences, and explicit
+ambiguity, distance, gap, and no-truncation cases must match across both runtimes.
 
 ## Input requirements
 
-The model accepts exactly 30 aligned characters: the 20 standard amino-acid letters
-and `-` for an alignment gap. For example:
+The default input is one canonical 26–30-residue peptide, using ASCII representations
+of the 20 standard amino-acid letters. For example:
 
 ```text
-HSQGTFTSDYSKYLDSRAASEFVQWLISH-
+HSQGTFTSDYSKYLDSRAASEFVQWLISH
 ```
 
-Inputs must follow the 30-column alignment used in the source study. The software
-does not infer an alignment, trim a longer construct, or encode Aib, lipidation,
-amidation, cyclization, stapling, D-amino acids, or other noncanonical chemistry.
-The `-` symbol denotes an alignment gap; it does not represent a linker, cleavage,
-or chemical modification.
+The frozen ridge model still consumes exactly 30 alignment columns. A separate,
+checksum-bound, label-free adapter projects a raw sequence into those columns only
+when all best-scoring reference-guided mappings agree and the mapped sequence is at
+least 85% identical to the reference panel. It never removes residues or trims a
+longer construct. Ambiguous mappings, sequences outside 26–30 residues, and raw
+sequences outside the local-analog gate are rejected with an explanation.
+
+Expert users may instead supply a reviewed 30-column alignment with explicit `-`
+gaps. This mode permits transparent inspection outside the automatic adapter's
+scope, but out-of-scope results remain ineligible for ranking. The `-` symbol is an
+alignment gap, not a linker, cleavage, or chemical modification. Neither input mode
+represents Aib, lipidation, amidation, cyclization, stapling, D-amino acids, or other
+noncanonical chemistry.
 
 Ranking is limited by two software gates:
 
@@ -130,12 +143,17 @@ incretin-structures --list-seeds
 
 ## Screen a candidate table
 
-Create a UTF-8 CSV with exactly these columns:
+The preferred CSV schema uses raw peptide sequences:
 
 ```text
-candidate_id,aligned_sequence
-variant_a,HSQGTFTSDYSKYLDSRAASEFVQWLISE-
+candidate_id,sequence
+variant_a,HSQGTFTSDYSKYLDSRAASEFVQWLISE
 ```
+
+For reviewed expert inputs, the legacy schema
+`candidate_id,aligned_sequence` remains available and requires exactly 30 columns.
+Raw-sequence files are limited to 200 rows and repeated sequences are aligned once
+per run; the larger expert-alignment limits remain documented in the product guide.
 
 Then choose a ranking objective:
 
@@ -175,9 +193,10 @@ incretin-web --open
 Machine-readable output is available from the command line:
 
 ```bash
-incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format json
-incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --format csv --output result.csv
+incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH --format json
+incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH --format csv --output result.csv
 incretin-predict --sequence-file candidate.fasta --format markdown --output result.md
+incretin-predict HSQGTFTSDYSKYLDSRAASEFVQWLISH- --aligned --format json
 incretin-predict --model-info
 ```
 

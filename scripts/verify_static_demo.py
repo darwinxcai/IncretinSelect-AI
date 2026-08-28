@@ -12,7 +12,14 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from incretinselect.product import load_model, predict
+from incretinselect.product import (
+    EXPECTED_ALIGNMENT_POLICY_SHA256,
+    ProductError,
+    load_alignment_policy,
+    load_model,
+    predict,
+    predict_raw,
+)
 from incretinselect.screen import screen_records
 
 PARITY_REFERENCE_INDICES = (0, 11, 22, 33, 44, 55, 66, 77, 88, 99, 110, 124)
@@ -23,6 +30,19 @@ BATCH_PARITY_RECORDS = (
     ("short_close", SHORT_CLOSE_ANALOGUE),
     ("outside", "A" * 30),
     ("invalid", "TOO-SHORT"),
+)
+RAW_ADAPTER_CASES = (
+    "HSQGTFTSDYSKYLDSRAASEFVQWLISH",
+    "HSQGTFTSDYSKYLDSRAAAKFVQWLLNGG",
+    "HSQGTFTSDYSKYLDSRAQDFVQWLEEGE",
+    "HAEGTFADVSSYLEGQAAKEFIAWLVKGR",
+    "A" * 30,
+    "HSQGTFTSDYSKYLDSRAASEFVQWLISH-",
+    "A" * 25,
+    "A" * 31,
+    "ſSQGTFTSDYSKYLDSRAASEFVQWLISH",
+    "ßSQGTFTSDYSKYLDSRAASEFVQWLISH",
+    "ﬀSQGTFTSDYSKYLDSRAASEFVQWLISH",
 )
 
 
@@ -47,9 +67,22 @@ def main() -> int:
     if source_model.read_bytes() != demo_model.read_bytes():
         raise RuntimeError("Static demo model differs from the authoritative artifact")
     model = load_model(source_model)
+    source_adapter = root / "configs/raw_alignment_adapter.json"
+    demo_adapter = docs / "assets/raw_alignment_adapter.json"
+    if source_adapter.read_bytes() != demo_adapter.read_bytes():
+        raise RuntimeError("Static demo raw adapter differs from the frozen policy")
+    adapter = load_alignment_policy()
+    if sha256(demo_adapter) != EXPECTED_ALIGNMENT_POLICY_SHA256:
+        raise RuntimeError("Static demo raw adapter has the wrong checksum")
     manifest = json.loads((docs / "demo_manifest.json").read_text(encoding="utf-8"))
     if manifest.get("artifact_sha256") != model.sha256:
         raise RuntimeError("Static demo manifest has the wrong artifact checksum")
+    if (
+        manifest.get("alignment_adapter_id") != adapter["adapter_id"]
+        or manifest.get("alignment_adapter_version") != adapter["adapter_version"]
+        or manifest.get("alignment_adapter_sha256") != adapter["sha256"]
+    ):
+        raise RuntimeError("Static demo manifest has the wrong raw-adapter identity")
     if manifest.get("labels_included") is not False:
         raise RuntimeError(
             "Static demo manifest does not preserve the activity-outcome omission boundary"
@@ -144,6 +177,56 @@ def main() -> int:
                 raise RuntimeError("Browser model-attribution delta differs from Python")
     if maximum_delta > 1e-12:
         raise RuntimeError(f"Browser/Python maximum prediction delta is {maximum_delta}")
+
+    raw_request = {
+        "model_path": str(demo_model),
+        "adapter_path": str(demo_adapter),
+        "adapter_sha256": adapter["sha256"],
+        "sequences": list(RAW_ADAPTER_CASES),
+    }
+    raw_completed = subprocess.run(
+        ["node", str(root / "tests/static_demo_alignment_runner.mjs")],
+        input=json.dumps(raw_request),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if raw_completed.returncode != 0:
+        raise RuntimeError(f"Browser raw-adapter runner failed: {raw_completed.stderr}")
+    browser_raw = json.loads(raw_completed.stdout)
+    raw_accepted = 0
+    raw_rejected = 0
+    for sequence, browser_row in zip(RAW_ADAPTER_CASES, browser_raw, strict=True):
+        try:
+            python_result = predict_raw(sequence, model)
+        except ProductError:
+            python_result = None
+        browser_ok = bool(browser_row.get("ok"))
+        if browser_ok != (python_result is not None):
+            raise RuntimeError(
+                f"Browser/Python raw-adapter decision differs for {sequence}"
+            )
+        if python_result is None:
+            raw_rejected += 1
+            continue
+        raw_accepted += 1
+        browser_prediction = browser_row["prediction"]
+        browser_input = browser_prediction["input"]
+        python_input = python_result["input"]
+        if (
+            browser_input["alignedSequence"] != python_input["aligned_sequence"]
+            or browser_input["alignmentReferenceIds"]
+            != python_input["alignment_reference_ids"]
+            or browser_input["alignmentScore"] != python_input["alignment_score"]
+            or browser_input["alignmentAdapterSha256"]
+            != python_input["alignment_adapter_sha256"]
+        ):
+            raise RuntimeError("Browser/Python raw-adapter provenance differs")
+        for endpoint in ("glp1r", "gcgr"):
+            browser_value = browser_prediction["predictions"][endpoint]["log10Ec50Pm"]
+            python_value = python_result["predictions"][endpoint]["log10_ec50_pm"]
+            if not math.isclose(browser_value, python_value, rel_tol=1e-12, abs_tol=1e-12):
+                raise RuntimeError("Browser/Python raw-adapter prediction differs")
 
     batch_records = [
         {"candidateId": candidate_id, "alignedSequence": sequence}
@@ -251,10 +334,22 @@ def main() -> int:
             "source_and_demo_bytes_identical": True,
             "version": model.artifact_version,
         },
+        "alignment_adapter": {
+            "id": adapter["adapter_id"],
+            "version": adapter["adapter_version"],
+            "sha256": adapter["sha256"],
+            "source_and_demo_bytes_identical": True,
+            "labels_accessed": adapter["labels_accessed"],
+            "model_coefficients_changed": adapter["model_coefficients_changed"],
+        },
         "browser_python_parity": {
             "applicability_exact": True,
             "batch_policy_cases": len(BATCH_PARITY_RECORDS),
             "batch_policy_exact": True,
+            "raw_adapter_cases": len(RAW_ADAPTER_CASES),
+            "raw_adapter_accepted": raw_accepted,
+            "raw_adapter_rejected": raw_rejected,
+            "raw_adapter_decisions_and_provenance_exact": True,
             "batch_maximum_absolute_numeric_delta": batch_maximum_absolute_delta,
             "batch_maximum_relative_numeric_delta": batch_maximum_relative_delta,
             "cases": len(sequences),

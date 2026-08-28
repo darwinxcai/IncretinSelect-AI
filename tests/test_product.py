@@ -10,7 +10,13 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from incretinselect.cli import EXAMPLE_SEQUENCE, format_csv, format_markdown, format_text
+from incretinselect.cli import (
+    EXAMPLE_RAW_SEQUENCE,
+    EXAMPLE_SEQUENCE,
+    format_csv,
+    format_markdown,
+    format_text,
+)
 from incretinselect.cli import main as cli_main
 from incretinselect.product import ProductError, load_model, model_info, predict
 from incretinselect.web import WEB_ASSETS, render_page, verify_web_assets
@@ -119,7 +125,7 @@ class ProductTests(unittest.TestCase):
         )
 
         report = format_markdown(result)
-        self.assertIn("Nearest-reference model comparison", report)
+        self.assertIn("Comparison with the closest development sequence", report)
         self.assertIn("not a causal substitution effect", report)
 
     def test_all_locked_external_predictions_are_reproduced(self) -> None:
@@ -181,7 +187,7 @@ class ProductTests(unittest.TestCase):
         outside_csv = next(csv.DictReader(io.StringIO(format_csv(outside))))
         self.assertEqual(outside_csv["exploratory_ranking_enabled"], "false")
         self.assertIn("should not be used to rank", outside_csv["exploratory_ranking_exclusion_reason"])
-        self.assertEqual(outside_csv["software_version"], "0.7.0")
+        self.assertEqual(outside_csv["software_version"], "0.8.0")
         self.assertIn("no overall superiority", outside_csv["validation_warning"])
         outside_report = format_markdown(outside)
         self.assertIn("Do not use this output to rank experiments", outside_report)
@@ -198,7 +204,7 @@ class ProductTests(unittest.TestCase):
         self.assertEqual(page, (PROJECT_ROOT / "docs/index.html").read_text(encoding="utf-8"))
         self.assertIn("Candidate screen", page)
         self.assertIn("Download screened CSV", page)
-        self.assertIn("Nearest-reference model comparison", page)
+        self.assertIn("Comparison with the closest development sequence", page)
         self.assertEqual(
             set(WEB_ASSETS),
             {
@@ -210,6 +216,7 @@ class ProductTests(unittest.TestCase):
                 "/io.mjs",
                 "/demo_manifest.json",
                 "/assets/incretin_ridge_v1.json",
+                "/assets/raw_alignment_adapter.json",
             },
         )
 
@@ -221,18 +228,37 @@ class ProductTests(unittest.TestCase):
         )
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
-            exit_code = cli_main([f"--sequence={sequence}", "--format", "json"])
+            exit_code = cli_main(
+                [f"--sequence={sequence}", "--aligned", "--format", "json"]
+            )
         self.assertEqual(exit_code, 0)
         self.assertEqual(json.loads(stdout.getvalue())["input"]["aligned_sequence"], sequence)
 
         csv_row = next(csv.DictReader(io.StringIO(format_csv(predict(sequence, self.model)))))
         self.assertEqual(csv_row["aligned_sequence"], "'" + sequence)
 
+    def test_cli_requires_explicit_opt_in_for_a_gapped_alignment(self) -> None:
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            exit_code = cli_main([EXAMPLE_SEQUENCE, "--format", "json"])
+        self.assertEqual(exit_code, 2)
+        self.assertIn("Raw-sequence mode does not accept '-' gaps", stderr.getvalue())
+
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            exit_code = cli_main(
+                [EXAMPLE_SEQUENCE, "--aligned", "--format", "json"]
+            )
+        self.assertEqual(exit_code, 0)
+        result = json.loads(stdout.getvalue())
+        self.assertEqual(result["input"]["alignment_status"], "provided")
+
     def test_cli_reads_one_fasta_file_or_standard_input(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             fasta = Path(directory) / "candidate.fasta"
             fasta.write_text(
-                f">candidate\n{EXAMPLE_SEQUENCE[:15]}\n{EXAMPLE_SEQUENCE[15:]}\n",
+                f">candidate\n{EXAMPLE_RAW_SEQUENCE[:15]}\n"
+                f"{EXAMPLE_RAW_SEQUENCE[15:]}\n",
                 encoding="utf-8",
             )
             stdout = io.StringIO()
@@ -247,7 +273,7 @@ class ProductTests(unittest.TestCase):
             )
 
         fake_stdin = mock.Mock()
-        fake_stdin.buffer = io.BytesIO((EXAMPLE_SEQUENCE + "\n").encode())
+        fake_stdin.buffer = io.BytesIO((EXAMPLE_RAW_SEQUENCE + "\n").encode())
         stdout = io.StringIO()
         with mock.patch("sys.stdin", fake_stdin), contextlib.redirect_stdout(stdout):
             exit_code = cli_main(["--sequence-file", "-", "--format", "json"])
@@ -337,7 +363,27 @@ class ProductTests(unittest.TestCase):
                 ),
                 0,
             )
-            self.assertEqual(json.loads(output.read_text(encoding="utf-8"))["schema_version"], 1)
+            example_result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(example_result["schema_version"], 1)
+            self.assertEqual(example_result["input"]["original_sequence"], EXAMPLE_RAW_SEQUENCE)
+            self.assertEqual(example_result["input"]["aligned_sequence"], EXAMPLE_SEQUENCE)
+            self.assertEqual(
+                example_result["input"]["alignment_status"],
+                "mapped_unambiguously",
+            )
+
+            aligned_stdout = io.StringIO()
+            with contextlib.redirect_stdout(aligned_stdout):
+                self.assertEqual(
+                    cli_main(["--example", "--aligned", "--format", "json"]),
+                    0,
+                )
+            aligned_example = json.loads(aligned_stdout.getvalue())
+            self.assertEqual(
+                aligned_example["input"]["alignment_method"],
+                "provided_30_column_alignment",
+            )
+            self.assertEqual(aligned_example["input"]["aligned_sequence"], EXAMPLE_SEQUENCE)
 
             missing = root / "missing" / "result.json"
             stderr = io.StringIO()

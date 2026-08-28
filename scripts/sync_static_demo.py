@@ -30,11 +30,17 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def expected_assets(root: Path) -> tuple[bytes, bytes]:
+def expected_assets(root: Path) -> tuple[bytes, bytes, bytes]:
     source = root / "src" / "incretinselect" / "assets" / "incretin_ridge_v1.json"
     artifact = source.read_bytes()
     digest = hashlib.sha256(artifact).hexdigest()
+    adapter = (root / "configs" / "raw_alignment_adapter.json").read_bytes()
+    adapter_digest = hashlib.sha256(adapter).hexdigest()
     manifest = {
+        "alignment_adapter_id": "raw_alignment_adapter_v1",
+        "alignment_adapter_path": "assets/raw_alignment_adapter.json",
+        "alignment_adapter_sha256": adapter_digest,
+        "alignment_adapter_version": "1.0.0",
         "artifact_id": "incretinselect_aligned_ridge_v1",
         "artifact_path": "assets/incretin_ridge_v1.json",
         "artifact_sha256": digest,
@@ -43,23 +49,26 @@ def expected_assets(root: Path) -> tuple[bytes, bytes]:
         "local_file_import": True,
         "outbound_sequence_transmission": False,
         "schema_version": 1,
-        "software_version": "0.7.0",
+        "software_version": "0.8.0",
         "structure_inference": False,
     }
     rendered_manifest = json.dumps(manifest, indent=2, sort_keys=True).encode() + b"\n"
-    return artifact, rendered_manifest
+    return artifact, adapter, rendered_manifest
 
 
 def main() -> int:
     args = parse_args()
     root = Path(__file__).resolve().parents[1]
-    expected_model, expected_manifest = expected_assets(root)
+    expected_model, expected_adapter, expected_manifest = expected_assets(root)
     model_path = root / "docs" / "assets" / "incretin_ridge_v1.json"
+    adapter_path = root / "docs" / "assets" / "raw_alignment_adapter.json"
     manifest_path = root / "docs" / "demo_manifest.json"
     package_web_root = root / "src" / "incretinselect" / "web_assets"
     if args.check:
         if not model_path.is_file() or model_path.read_bytes() != expected_model:
             raise SystemExit("browser demo model is stale; run scripts/sync_static_demo.py")
+        if not adapter_path.is_file() or adapter_path.read_bytes() != expected_adapter:
+            raise SystemExit("browser alignment adapter is stale; run scripts/sync_static_demo.py")
         if not manifest_path.is_file() or manifest_path.read_bytes() != expected_manifest:
             raise SystemExit("browser demo manifest is stale; run scripts/sync_static_demo.py")
         for name in WEB_ASSET_NAMES:
@@ -75,6 +84,7 @@ def main() -> int:
         return 0
     model_path.parent.mkdir(parents=True, exist_ok=True)
     model_path.write_bytes(expected_model)
+    adapter_path.write_bytes(expected_adapter)
     manifest_path.write_bytes(expected_manifest)
     package_web_root.mkdir(parents=True, exist_ok=True)
     for name in WEB_ASSET_NAMES:

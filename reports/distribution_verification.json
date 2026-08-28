@@ -1,5 +1,7 @@
 {
   "installed_product": {
+    "alignment_adapter_id": "raw_alignment_adapter_v1",
+    "alignment_adapter_sha256": "a606f0edda342471dc5e42d667d05506ac604c53cd221ecd8e1821edff6fd5fe",
     "citation_and_license_notices": "passed",
     "csv_rows": 1,
     "ec50_warning_present": true,
@@ -11,11 +13,11 @@
     "prediction_schema_version": 1,
     "screening_objective": "dual",
     "screening_out_of_scope_rows": 1,
-    "screening_output_sha256": "f8b5a861015f3323801213df537bebed5590e6485cee90c5d87f3a6284170655",
+    "screening_output_sha256": "f88b856c8861837c07b5e71fde9dc32caae7ee3cc6bba6d33ceb71e22cffad5f",
     "screening_ranked_rows": 3,
     "screening_rows": 4,
-    "software_version": "0.7.0",
-    "web_smoke": "ok: verified browser application v0.7.0 with model eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321"
+    "software_version": "0.8.0",
+    "web_smoke": "ok: verified browser application v0.8.0 with model eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321"
   },
   "python": "3.12.13",
   "scientific_boundaries": {
@@ -28,24 +30,24 @@
     "build_input": "git-tracked allowlist only",
     "byte_deterministic": true,
     "complete_research_tree": true,
-    "filename": "incretinselect_ai-0.7.0.tar.gz",
+    "filename": "incretinselect_ai-0.8.0.tar.gz",
     "forbidden_research_files_included": false,
-    "member_count": 169,
+    "member_count": 174,
     "product_smoke": "passed",
     "rebuilt_wheel_byte_identical": true,
-    "rebuilt_wheel_sha256": "53a037164f5f0c1af5230dc4732bffab29e9a092183bf7fbe214de9ec9f611eb",
+    "rebuilt_wheel_sha256": "22d506bcad36276b7ee988525164f462eec86da74d49f207518561bcaf3f505d",
     "resource_sync": "passed",
     "source_date_epoch": "946684800",
     "static_demo_sync": "passed",
     "tests": "passed",
-    "tracked_file_count": 139,
+    "tracked_file_count": 144,
     "untracked_files_included": false
   },
   "status": "passed",
   "verification_scope": "built wheel installed and exercised in a temporary environment outside the source tree; dependency metadata checked and runtime NumPy supplied by the verification environment",
   "wheel": {
-    "filename": "incretinselect_ai-0.7.0-py3-none-any.whl",
-    "member_count": 34,
+    "filename": "incretinselect_ai-0.8.0-py3-none-any.whl",
+    "member_count": 35,
     "required_runtime_files": [
       "incretinselect/__init__.py",
       "incretinselect/activity.py",
@@ -66,6 +68,7 @@
       "incretinselect/notices/DATA_LICENSE.md",
       "incretinselect/notices/LICENSE",
       "incretinselect/resources/activity_schema.json",
+      "incretinselect/resources/raw_alignment_adapter.json",
       "incretinselect/resources/sources.json",
       "incretinselect/resources/structure_targets.csv",
       "incretinselect/web_assets/index.html",
@@ -75,7 +78,7 @@
       "incretinselect/web_assets/io.mjs",
       "incretinselect/web_assets/demo_manifest.json"
     ],
-    "sha256": "53a037164f5f0c1af5230dc4732bffab29e9a092183bf7fbe214de9ec9f611eb",
+    "sha256": "22d506bcad36276b7ee988525164f462eec86da74d49f207518561bcaf3f505d",
     "source_date_epoch": "946684800"
   }
 }

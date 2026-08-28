@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-08-27",
-  "decision": "PUBLIC_RELEASE_VERIFIED",
+  "as_of": "2026-08-28",
+  "decision": "LOCAL_RELEASE_READY_PUBLICATION_BLOCKED",
   "local_gates": [
     {
       "evidence": "all required release files present",
@@ -8,7 +8,7 @@
       "status": "pass"
     },
     {
-      "evidence": "pyproject=0.7.0; citation=0.7.0; changelog entry=True",
+      "evidence": "pyproject=0.8.0; citation=0.8.0; changelog entry=True",
       "name": "version_alignment",
       "status": "pass"
     },
@@ -23,7 +23,7 @@
       "status": "pass"
     },
     {
-      "evidence": "static model bytes match; browser/Python parity and local-only privacy pass",
+      "evidence": "static model and adapter bytes match; browser/Python prediction, raw-mapping, provenance, and local-only privacy checks pass",
       "name": "zero_install_browser_demo",
       "status": "pass"
     },
@@ -43,7 +43,7 @@
       "status": "pass"
     },
     {
-      "evidence": "canonical-path-content-manifest-sha256-v1 covers 134 files: fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec",
+      "evidence": "canonical-path-content-manifest-sha256-v1 covers 139 files: 23e1016bfad0f6b3faa2d0140f86127f4d8b6405e41467e39262106e50415e4c",
       "name": "release_payload_integrity",
       "status": "pass"
     }
@@ -52,27 +52,27 @@
   "project": "IncretinSelect-AI",
   "public_gates": [
     {
-      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI",
+      "evidence": "publication receipt does not match the current source payload: recorded='fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec'; current='23e1016bfad0f6b3faa2d0140f86127f4d8b6405e41467e39262106e50415e4c'",
       "name": "public_repository",
-      "status": "pass"
+      "status": "blocked"
     },
     {
-      "evidence": "https://darwinxcai.github.io/IncretinSelect-AI/",
+      "evidence": "publication receipt does not match the current source payload: recorded='fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec'; current='23e1016bfad0f6b3faa2d0140f86127f4d8b6405e41467e39262106e50415e4c'",
       "name": "public_browser_demo",
-      "status": "pass"
+      "status": "blocked"
     },
     {
-      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083830513",
+      "evidence": "publication receipt does not match the current source payload: recorded='fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec'; current='23e1016bfad0f6b3faa2d0140f86127f4d8b6405e41467e39262106e50415e4c'",
       "name": "remote_ci",
-      "status": "pass"
+      "status": "blocked"
     },
     {
-      "evidence": "make release-check passed in a separately cloned public checkout",
+      "evidence": "publication receipt does not match the current source payload: recorded='fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec'; current='23e1016bfad0f6b3faa2d0140f86127f4d8b6405e41467e39262106e50415e4c'",
       "name": "fresh_public_clone",
-      "status": "pass"
+      "status": "blocked"
     }
   ],
-  "public_release_verified": true,
+  "public_release_verified": false,
   "release_payload": {
     "excluded_paths": [
       "PUBLISHING.md",
@@ -81,10 +81,10 @@
       "reports/publication_receipt.json",
       "reports/release_readiness.json"
     ],
-    "file_count": 134,
+    "file_count": 139,
     "hash_contract": "canonical-path-content-manifest-sha256-v1",
     "schema_version": 1,
-    "sha256": "fc1c460d74947eb87146157be105bbef0ae16118ae40ba0ec98906b782ff56ec"
+    "sha256": "23e1016bfad0f6b3faa2d0140f86127f4d8b6405e41467e39262106e50415e4c"
   },
   "schema_version": 1,
   "scientific_scope": {
@@ -94,5 +94,5 @@
     "p1_p15_reused_for_tuning": false,
     "structure_inference_claim": false
   },
-  "version": "0.7.0"
+  "version": "0.8.0"
 }

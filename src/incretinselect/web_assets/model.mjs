@@ -1,7 +1,10 @@
-export const EXAMPLE_SEQUENCE = "HSQGTFTSDYSKYLDSRAASEFVQWLISH-";
-export const SOFTWARE_VERSION = "0.7.0";
+export const EXAMPLE_SEQUENCE = "HSQGTFTSDYSKYLDSRAASEFVQWLISH";
+export const SOFTWARE_VERSION = "0.8.0";
 export const EXPECTED_MODEL_SHA256 = (
   "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321"
+);
+export const EXPECTED_ALIGNMENT_ADAPTER_SHA256 = (
+  "a606f0edda342471dc5e42d667d05506ac604c53cd221ecd8e1821edff6fd5fe"
 );
 
 export const TIER_COPY = {
@@ -20,11 +23,39 @@ export const TIER_COPY = {
 };
 
 export const EVIDENCE_COPY = {
-  training_reference_match: { label: "Training reference · in-sample", className: "close" },
-  local_analogue_mixed_evidence: { label: "Local analog · mixed evidence", className: "close" },
-  outside_ranking_scope: { label: "Outside ranking scope", className: "distant" },
-  far_outside_ranking_scope: { label: "Far outside ranking scope", className: "outside" },
+  training_reference_match: { label: "Training-set match · in-sample", className: "close" },
+  local_analogue_mixed_evidence: {
+    label: "Within local-analog scope · exploratory use",
+    className: "close",
+  },
+  outside_ranking_scope: { label: "Outside supported comparison scope", className: "distant" },
+  far_outside_ranking_scope: {
+    label: "Distant extrapolation · do not rank",
+    className: "outside",
+  },
 };
+
+export function validateAlignmentAdapter(adapter) {
+  const acceptance = adapter?.acceptance_policy;
+  const alignment = adapter?.alignment_policy;
+  if (
+    adapter?.schema_version !== 1 ||
+    adapter?.adapter_id !== "raw_alignment_adapter_v1" ||
+    adapter?.adapter_version !== "1.0.0" ||
+    adapter?.canonical_alphabet !== "ACDEFGHIKLMNPQRSTVWY" ||
+    adapter?.labels_accessed !== false ||
+    adapter?.model_coefficients_changed !== false ||
+    acceptance?.minimum_raw_residues !== AUTOALIGN_MIN_RESIDUES ||
+    acceptance?.maximum_raw_residues !== AUTOALIGN_MAX_RESIDUES ||
+    acceptance?.minimum_nearest_aligned_identity !== 0.85 ||
+    acceptance?.ambiguous_projection !== "reject" ||
+    acceptance?.terminal_trimming !== false ||
+    alignment?.model_columns !== 30
+  ) {
+    throw new Error("Raw-alignment adapter contract is invalid.");
+  }
+  return adapter;
+}
 
 export function validateModelArtifact(model) {
   const alphabet = model?.input_contract?.alphabet;
@@ -79,22 +110,28 @@ export function validateModelArtifact(model) {
   return model;
 }
 
-export function normalizeSequence(value, model) {
+export const AUTOALIGN_MIN_RESIDUES = 26;
+export const AUTOALIGN_MAX_RESIDUES = 30;
+
+function normalizeSequenceText(value, model) {
   if (typeof value !== "string") throw new Error("Sequence input must be text.");
   if (value.includes(">")) {
     throw new Error(
       "FASTA headers cannot be pasted into the sequence field. Use the FASTA import control.",
     );
   }
-  const sequence = value.replace(/\s/g, "").toUpperCase();
-  if (!sequence) throw new Error("Sequence input is empty.");
-  const length = model.input_contract.aligned_length;
-  if (sequence.length !== length) {
+  const compacted = value.replace(/\s/g, "");
+  const nonAscii = [...new Set([...compacted].filter(
+    (symbol) => !/^[\x00-\x7F]$/.test(symbol),
+  ))].sort();
+  if (nonAscii.length) {
     throw new Error(
-      `This model requires exactly ${length} aligned characters; received ` +
-      `${sequence.length}. The software will not guess an alignment or trim residues.`,
+      `Sequence input must use ASCII amino-acid letters; unsupported symbols: ` +
+      nonAscii.join(""),
     );
   }
+  const sequence = compacted.toUpperCase();
+  if (!sequence) throw new Error("Sequence input is empty.");
   const alphabet = new Set(model.input_contract.alphabet);
   const invalid = [...new Set([...sequence].filter((symbol) => !alphabet.has(symbol)))].sort();
   if (invalid.length) {
@@ -105,6 +142,207 @@ export function normalizeSequence(value, model) {
   }
   if ([...sequence].every((symbol) => symbol === "-")) {
     throw new Error("An all-gap sequence cannot be predicted.");
+  }
+  return sequence;
+}
+
+function retainTwo(values) {
+  return [...new Set(values)].sort().slice(0, 2);
+}
+
+function alignRawToReference(rawSequence, reference) {
+  const queryLength = rawSequence.length;
+  const columnCount = reference.length;
+  const unreachable = -1e9;
+  const scores = Array.from(
+    { length: queryLength + 1 },
+    () => Array(columnCount + 1).fill(unreachable),
+  );
+  const paths = Array.from(
+    { length: queryLength + 1 },
+    () => Array.from({ length: columnCount + 1 }, () => []),
+  );
+  scores[0][0] = 0;
+  paths[0][0] = [""];
+
+  const update = (queryIndex, columnIndex, score, candidates) => {
+    if (score > scores[queryIndex][columnIndex]) {
+      scores[queryIndex][columnIndex] = score;
+      paths[queryIndex][columnIndex] = retainTwo(candidates);
+    } else if (score === scores[queryIndex][columnIndex]) {
+      paths[queryIndex][columnIndex] = retainTwo([
+        ...paths[queryIndex][columnIndex],
+        ...candidates,
+      ]);
+    }
+  };
+
+  for (let columnIndex = 0; columnIndex < columnCount; columnIndex += 1) {
+    const referenceSymbol = reference[columnIndex];
+    for (let queryIndex = 0; queryIndex <= queryLength; queryIndex += 1) {
+      const currentPaths = paths[queryIndex][columnIndex];
+      if (!currentPaths.length) continue;
+      update(
+        queryIndex,
+        columnIndex + 1,
+        scores[queryIndex][columnIndex] + (referenceSymbol === "-" ? 0 : -1),
+        currentPaths.map((path) => `${path}-`),
+      );
+      if (queryIndex === queryLength) continue;
+      const querySymbol = rawSequence[queryIndex];
+      const residueScore = referenceSymbol === querySymbol ? 0 : -1;
+      update(
+        queryIndex + 1,
+        columnIndex + 1,
+        scores[queryIndex][columnIndex] + residueScore,
+        currentPaths.map((path) => `${path}${querySymbol}`),
+      );
+    }
+  }
+  return {
+    score: scores[queryLength][columnCount],
+    alignments: paths[queryLength][columnCount],
+  };
+}
+
+/** Map a supported raw peptide into the frozen 30-column coordinate system. */
+function prepareSequence(value, model) {
+  const sequence = normalizeSequenceText(value, model);
+  const alignedLength = model.input_contract.aligned_length;
+  if (sequence.includes("-")) {
+    if (sequence.length !== alignedLength) {
+      throw new Error(
+        `A sequence containing alignment gaps must provide all ${alignedLength} model ` +
+        `columns; received ${sequence.length}.`,
+      );
+    }
+    return {
+      originalSequence: sequence,
+      alignedSequence: sequence,
+      inputResidueCount: [...sequence].filter((symbol) => symbol !== "-").length,
+      alignmentMethod: "provided_30_column_alignment",
+      alignmentStatus: "provided",
+      alignmentReferenceIds: [],
+      alignmentScore: null,
+      alignmentNote: (
+        "The user supplied all 30 model columns, including explicit alignment gaps."
+      ),
+      alignmentAdapterId: null,
+      alignmentAdapterVersion: null,
+      alignmentAdapterSha256: null,
+    };
+  }
+
+  const adapter = validateAlignmentAdapter(model.raw_alignment_adapter);
+  const adapterSha256 = model.raw_alignment_adapter_sha256;
+  if (adapterSha256 !== EXPECTED_ALIGNMENT_ADAPTER_SHA256) {
+    throw new Error("Raw-alignment adapter checksum is invalid.");
+  }
+
+  const residueCount = sequence.length;
+  if (residueCount > AUTOALIGN_MAX_RESIDUES) {
+    throw new Error(
+      `The frozen model has ${alignedLength} alignment columns, but the raw sequence ` +
+      `contains ${residueCount} residues. Terminal extensions or insertions are not ` +
+      "truncated automatically.",
+    );
+  }
+  if (residueCount < AUTOALIGN_MIN_RESIDUES) {
+    throw new Error(
+      `Automatic alignment supports ${AUTOALIGN_MIN_RESIDUES}–${AUTOALIGN_MAX_RESIDUES} ` +
+      `standard residues, matching the development sequence range; received ` +
+      `${residueCount}. A shorter peptide requires a scientifically reviewed ` +
+      `${alignedLength}-column alignment.`,
+    );
+  }
+  if (residueCount === alignedLength) {
+    const nearestIdentity = Math.max(...model.applicability_reference.sequences.map(
+      (reference) => alignedIdentity(sequence, reference.aligned_sequence),
+    ));
+    if (nearestIdentity < 0.85) {
+      throw new Error(
+        "Raw-sequence mode is limited to local analogs: the sequence is only " +
+        `${(nearestIdentity * 100).toFixed(1)}% identical to the reference panel, ` +
+        "below the preset 85% gate. Expert users may instead provide an explicit " +
+        "30-column alignment for transparent out-of-scope inspection.",
+      );
+    }
+    return {
+      originalSequence: sequence,
+      alignedSequence: sequence,
+      inputResidueCount: residueCount,
+      alignmentMethod: "direct_30_column_sequence",
+      alignmentStatus: "not_required",
+      alignmentReferenceIds: [],
+      alignmentScore: null,
+      alignmentNote: "The 30-residue input directly fills the 30 model columns.",
+      alignmentAdapterId: adapter.adapter_id,
+      alignmentAdapterVersion: adapter.adapter_version,
+      alignmentAdapterSha256: adapterSha256,
+    };
+  }
+
+  let bestScore = null;
+  let bestAlignments = [];
+  let bestReferenceIds = [];
+  for (const reference of model.applicability_reference.sequences) {
+    const candidate = alignRawToReference(sequence, reference.aligned_sequence);
+    if (bestScore === null || candidate.score > bestScore) {
+      bestScore = candidate.score;
+      bestAlignments = [...candidate.alignments];
+      bestReferenceIds = [reference.peptide_id];
+    } else if (candidate.score === bestScore) {
+      bestAlignments = retainTwo([...bestAlignments, ...candidate.alignments]);
+      bestReferenceIds.push(reference.peptide_id);
+    }
+  }
+  bestAlignments = retainTwo(bestAlignments);
+  if (bestAlignments.length !== 1) {
+    throw new Error(
+      "Automatic alignment is ambiguous: equally scoring reference mappings place " +
+      "residues in different model columns. Supply a reviewed 30-column alignment " +
+      "with explicit '-' gaps.",
+    );
+  }
+  const alignedSequence = bestAlignments[0];
+  const nearestIdentity = Math.max(...model.applicability_reference.sequences.map(
+    (reference) => alignedIdentity(alignedSequence, reference.aligned_sequence),
+  ));
+  if (nearestIdentity < 0.85) {
+    throw new Error(
+      "Automatic alignment is limited to local analogs: the best projected alignment " +
+      `is only ${(nearestIdentity * 100).toFixed(1)}% identical to the reference panel, ` +
+      "below the preset 85% gate. Supply a reviewed 30-column alignment only if an " +
+      "expert mapping is available.",
+    );
+  }
+  return {
+    originalSequence: sequence,
+    alignedSequence,
+    inputResidueCount: residueCount,
+    alignmentMethod: "reference_panel_auto_alignment",
+    alignmentStatus: "mapped_unambiguously",
+    alignmentReferenceIds: [...new Set(bestReferenceIds)].sort(),
+    alignmentScore: bestScore,
+    alignmentNote: (
+      `The ${residueCount}-residue input was mapped without truncation to the frozen ` +
+      "30-column coordinate system. The alignment score is an input-mapping heuristic, " +
+      "not prediction confidence."
+    ),
+    alignmentAdapterId: adapter.adapter_id,
+    alignmentAdapterVersion: adapter.adapter_version,
+    alignmentAdapterSha256: adapterSha256,
+  };
+}
+
+export function normalizeSequence(value, model) {
+  const sequence = normalizeSequenceText(value, model);
+  const length = model.input_contract.aligned_length;
+  if (sequence.length !== length) {
+    throw new Error(
+      `The strict model requires exactly ${length} aligned characters; received ` +
+      `${sequence.length}. Use the raw-sequence adapter for 26–30 canonical residues.`,
+    );
   }
   return sequence;
 }
@@ -126,9 +364,9 @@ export function alignedIdentity(first, second) {
 
 function direction(selectivityLog10) {
   const foldRatio = 10 ** selectivityLog10;
-  if (foldRatio >= 3) return "Lower predicted EC50 at GLP-1R";
-  if (foldRatio <= 1 / 3) return "Lower predicted EC50 at GCGR";
-  return "Predicted EC50 values within three-fold";
+  if (foldRatio >= 3) return "GLP-1R-favored";
+  if (foldRatio <= 1 / 3) return "GCGR-favored";
+  return "Approximately balanced";
 }
 
 function applicability(sequence, model) {
@@ -273,8 +511,8 @@ function nearestReferenceComparison(sequence, values, scope, model) {
   };
 }
 
-export function predictFromModel(value, model) {
-  const sequence = normalizeSequence(value, model);
+function predictPrepared(prepared, model) {
+  const sequence = prepared.alignedSequence;
   const values = predictLog10Values(sequence, model);
   const [gcgrLog10, glp1rLog10] = values;
   const selectivityLog10 = gcgrLog10 - glp1rLog10;
@@ -317,7 +555,20 @@ export function predictFromModel(value, model) {
   warnings.push(...rankingExclusions);
   if (scope.exactReferenceMatch) warnings.push(scope.summary);
   return {
-    input: { alignedSequence: sequence, standardResidueCount: residueCount },
+    input: {
+      originalSequence: prepared.originalSequence,
+      alignedSequence: sequence,
+      standardResidueCount: residueCount,
+      inputResidueCount: prepared.inputResidueCount,
+      alignmentMethod: prepared.alignmentMethod,
+      alignmentStatus: prepared.alignmentStatus,
+      alignmentReferenceIds: prepared.alignmentReferenceIds,
+      alignmentScore: prepared.alignmentScore,
+      alignmentNote: prepared.alignmentNote,
+      alignmentAdapterId: prepared.alignmentAdapterId,
+      alignmentAdapterVersion: prepared.alignmentAdapterVersion,
+      alignmentAdapterSha256: prepared.alignmentAdapterSha256,
+    },
     predictions: {
       gcgr: { log10Ec50Pm: gcgrLog10, ec50Pm: 10 ** gcgrLog10 },
       glp1r: { log10Ec50Pm: glp1rLog10, ec50Pm: 10 ** glp1rLog10 },
@@ -332,6 +583,40 @@ export function predictFromModel(value, model) {
     nearestReferenceComparison: comparison,
     warnings,
   };
+}
+
+export function predictFromModel(value, model) {
+  const sequence = normalizeSequence(value, model);
+  return predictPrepared({
+    originalSequence: sequence,
+    alignedSequence: sequence,
+    inputResidueCount: [...sequence].filter((symbol) => symbol !== "-").length,
+    alignmentMethod: "provided_30_column_alignment",
+    alignmentStatus: "provided",
+    alignmentReferenceIds: [],
+    alignmentScore: null,
+    alignmentNote: (
+      "The user supplied all 30 model columns, including any explicit alignment gaps."
+    ),
+    alignmentAdapterId: null,
+    alignmentAdapterVersion: null,
+    alignmentAdapterSha256: null,
+  }, model);
+}
+
+export function prepareRawSequence(value, model) {
+  const sequence = normalizeSequenceText(value, model);
+  if (sequence.includes("-")) {
+    throw new Error(
+      "Raw-sequence mode does not accept '-' gaps. Select expert 30-column mode " +
+      "only when you have a reviewed alignment.",
+    );
+  }
+  return prepareSequence(sequence, model);
+}
+
+export function predictRawFromModel(value, model) {
+  return predictPrepared(prepareRawSequence(value, model), model);
 }
 
 export async function sha256Hex(bytes) {

@@ -1,5 +1,6 @@
 import {
   EXAMPLE_SEQUENCE,
+  EXPECTED_ALIGNMENT_ADAPTER_SHA256,
   EXPECTED_MODEL_SHA256,
   EVIDENCE_COPY,
   SOFTWARE_VERSION,
@@ -7,8 +8,11 @@ import {
   formatNumber,
   normalizeSequence,
   predictFromModel,
+  predictRawFromModel,
+  prepareRawSequence,
   sha256Hex,
   validateModelArtifact,
+  validateAlignmentAdapter,
 } from "./model.mjs";
 import {
   MAX_BROWSER_BYTES,
@@ -24,6 +28,7 @@ import {
 // Retain these exports for the Node parity runner and downstream users.
 export {
   EXAMPLE_SEQUENCE,
+  EXPECTED_ALIGNMENT_ADAPTER_SHA256,
   EXPECTED_MODEL_SHA256,
   EVIDENCE_COPY,
   SOFTWARE_VERSION,
@@ -32,13 +37,16 @@ export {
   formatNumber,
   normalizeSequence,
   predictFromModel,
+  predictRawFromModel,
+  prepareRawSequence,
   sha256Hex,
   validateModelArtifact,
+  validateAlignmentAdapter,
 } from "./model.mjs";
 
 const BATCH_TEMPLATE = (
-  "candidate_id,aligned_sequence\n" +
-  `candidate_01,${EXAMPLE_SEQUENCE}\n` +
+  "candidate_id,sequence\n" +
+  `candidate_01,${EXAMPLE_SEQUENCE.replaceAll("-", "")}\n` +
   "candidate_02,HSQGTFTSDYSKYLDSRAAAEFVQWLLAGG\n"
 );
 
@@ -86,15 +94,55 @@ function downloadText(filename, text, mimeType) {
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-function updateSequenceCount(sequenceInput) {
-  const normalizedLength = sequenceInput.value.replace(/\s/g, "").length;
+function updateSequenceCount(sequenceInput, expertAlignedMode = false) {
+  const normalized = sequenceInput.value.replace(/\s/g, "");
+  const residueCount = normalized.replaceAll("-", "").length;
   const count = element("sequence-count");
-  count.textContent = `${normalizedLength} / 30`;
-  count.classList.toggle("bad", normalizedLength !== 30);
+  if (expertAlignedMode) {
+    count.textContent = `${normalized.length} / 30 model columns · ${residueCount} residues`;
+    count.classList.toggle("bad", normalized.length !== 30);
+  } else if (normalized.includes("-")) {
+    count.textContent = `${residueCount} residues · gaps require expert mode`;
+    count.classList.toggle("bad", true);
+  } else {
+    count.textContent = `${residueCount} residues`;
+    count.classList.toggle("bad", residueCount < 26 || residueCount > 30);
+  }
 }
 
 export function rankingExclusion(result) {
   return [...result.exploratoryRanking.exclusionReasons];
+}
+
+function comparisonStatus(result) {
+  if (result.applicability.evidenceState === "training_reference_match") {
+    return "In-sample reference · not an independent prediction";
+  }
+  return result.exploratoryRanking.enabled
+    ? "Eligible for exploratory comparison"
+    : "Do not use for candidate ranking";
+}
+
+function validationEvidence(result) {
+  if (result.applicability.evidenceState === "training_reference_match") {
+    return "In-sample evidence only";
+  }
+  if (result.applicability.evidenceState === "local_analogue_mixed_evidence") {
+    return "Mixed retrospective transfer";
+  }
+  return "No supported transfer evidence";
+}
+
+function foldComparison(foldRatio, receptor) {
+  if (Math.abs(foldRatio - 1) <= 1e-12) {
+    return `${receptor} EC50 is unchanged from the closest development sequence.`;
+  }
+  if (foldRatio > 1) {
+    return `Query ${receptor} EC50 is predicted ${formatNumber(foldRatio)}× higher than ` +
+      "the closest development sequence.";
+  }
+  return `Query ${receptor} EC50 is predicted ${formatNumber(1 / foldRatio)}× lower than ` +
+    "the closest development sequence.";
 }
 
 function renderResult(result, model, artifactSha256) {
@@ -104,21 +152,43 @@ function renderResult(result, model, artifactSha256) {
   const badge = element("applicability-badge");
   badge.textContent = tier.label;
   badge.className = `badge ${tier.className}`;
+  setText("overview-applicability", tier.label);
+  setText("overview-ranking", comparisonStatus(result));
+  setText("overview-profile", predictions.selectivity.interpretation);
+  setText("overview-evidence", validationEvidence(result));
   setText("normalized-sequence", result.input.alignedSequence);
-  setText("glp1r-value", `${formatNumber(predictions.glp1r.ec50Pm)} pM`);
+  setText(
+    "alignment-summary",
+    result.input.alignmentStatus === "mapped_unambiguously"
+      ? `${result.input.inputResidueCount} input residues → 30 model columns · ` +
+        "mapped without ambiguity"
+      : `${result.input.inputResidueCount} residues represented in 30 model columns`,
+  );
+  const concentration = (endpoint) => (
+    endpoint.ec50Pm >= 1000
+      ? `${formatNumber(endpoint.ec50Pm / 1000)} nM`
+      : `${formatNumber(endpoint.ec50Pm)} pM`
+  );
+  setText("glp1r-value", concentration(predictions.glp1r));
   setText(
     "glp1r-detail",
-    `${formatNumber(predictions.glp1r.ec50Pm / 1000)} nM · ` +
+    `${formatNumber(predictions.glp1r.ec50Pm)} pM · ` +
       `log10(EC50 / 1 pM) ${predictions.glp1r.log10Ec50Pm.toFixed(4)}`,
   );
-  setText("gcgr-value", `${formatNumber(predictions.gcgr.ec50Pm)} pM`);
+  setText("gcgr-value", concentration(predictions.gcgr));
   setText(
     "gcgr-detail",
-    `${formatNumber(predictions.gcgr.ec50Pm / 1000)} nM · ` +
+    `${formatNumber(predictions.gcgr.ec50Pm)} pM · ` +
       `log10(EC50 / 1 pM) ${predictions.gcgr.log10Ec50Pm.toFixed(4)}`,
   );
-  setText("balance-value", `${formatNumber(predictions.selectivity.ec50FoldRatio)}-fold`);
-  setText("balance-detail", predictions.selectivity.interpretation);
+  setText("balance-value", predictions.selectivity.interpretation);
+  const ratio = predictions.selectivity.ec50FoldRatio;
+  const profileDetail = ratio >= 3
+    ? `GCGR EC50 is predicted to be ${formatNumber(ratio)}× higher than GLP-1R EC50.`
+    : ratio <= 1 / 3
+    ? `GLP-1R EC50 is predicted to be ${formatNumber(1 / ratio)}× higher than GCGR EC50.`
+    : `The two predicted EC50 values are within ${formatNumber(Math.max(ratio, 1 / ratio))}×.`;
+  setText("balance-detail", profileDetail);
   setText("applicability-name", tier.label);
   setText("nearest-identity", `${(scope.nearestAlignedIdentity * 100).toFixed(1)}%`);
   setText("nearest-reference", scope.nearestReferenceIds.join(", "));
@@ -129,15 +199,21 @@ function renderResult(result, model, artifactSha256) {
   setText("comparison-reference", comparison.referenceId);
   setText("comparison-change-count", comparison.changedPositionCount);
   setText("comparison-tie-count", comparison.nearestReferenceTieCount);
-  setText("comparison-glp1r-delta", delta.glp1rDeltaLog10Ec50Pm.toFixed(4));
-  setText("comparison-gcgr-delta", delta.gcgrDeltaLog10Ec50Pm.toFixed(4));
+  setText(
+    "comparison-glp1r-delta",
+    `Δlog10 EC50 ${delta.glp1rDeltaLog10Ec50Pm.toFixed(4)}`,
+  );
+  setText(
+    "comparison-gcgr-delta",
+    `Δlog10 EC50 ${delta.gcgrDeltaLog10Ec50Pm.toFixed(4)}`,
+  );
   setText(
     "comparison-glp1r-fold",
-    `${formatNumber(delta.glp1rEc50FoldRatio)}x query/reference EC50`,
+    foldComparison(delta.glp1rEc50FoldRatio, "GLP-1R"),
   );
   setText(
     "comparison-gcgr-fold",
-    `${formatNumber(delta.gcgrEc50FoldRatio)}x query/reference EC50`,
+    foldComparison(delta.gcgrEc50FoldRatio, "GCGR"),
   );
   const contributionRows = comparison.positionContributions;
   element("comparison-table-body").replaceChildren(...contributionRows.map((row) => {
@@ -211,12 +287,17 @@ function renderBatch(artifacts) {
 
   const visibleRows = artifacts.rows.slice(0, 50);
   const body = element("batch-table-body");
+  const statusLabels = {
+    ranked: "Eligible and ranked",
+    not_ranked_out_of_scope: "Not ranked — outside scope",
+    input_error: "Input error",
+  };
   body.replaceChildren(...visibleRows.map((row) => {
     const tableRow = document.createElement("tr");
     const values = [
       row.rank || "—",
       row.candidate_id,
-      row.status.replaceAll("_", " "),
+      statusLabels[row.status] ?? "Review required",
       row.score_delta_from_first_log10 || "—",
       row.within_one_development_mae_of_first === "true"
         ? "Within 1 development MAE"
@@ -225,7 +306,9 @@ function renderBatch(artifacts) {
         : "—",
       row.glp1r_ec50_pm ? formatNumber(Number(row.glp1r_ec50_pm)) : "—",
       row.gcgr_ec50_pm ? formatNumber(Number(row.gcgr_ec50_pm)) : "—",
-      row.applicability_tier ? row.applicability_tier.replaceAll("_", " ") : "—",
+      row.applicability_evidence_state
+        ? (EVIDENCE_COPY[row.applicability_evidence_state]?.label ?? "Review required")
+        : "—",
       row.nearest_aligned_identity
         ? `${(Number(row.nearest_aligned_identity) * 100).toFixed(1)}%`
         : "—",
@@ -249,20 +332,33 @@ function renderBatch(artifacts) {
 }
 
 async function loadVerifiedModel() {
-  const [manifestResponse, modelResponse] = await Promise.all([
+  const [manifestResponse, modelResponse, adapterResponse] = await Promise.all([
     fetch("demo_manifest.json", { cache: "no-store" }),
     fetch("assets/incretin_ridge_v1.json", { cache: "no-store" }),
+    fetch("assets/raw_alignment_adapter.json", { cache: "no-store" }),
   ]);
-  if (!manifestResponse.ok || !modelResponse.ok) {
+  if (!manifestResponse.ok || !modelResponse.ok || !adapterResponse.ok) {
     throw new Error("Application assets could not be loaded. Serve the docs directory over HTTP.");
   }
   const manifest = await manifestResponse.json();
   const bytes = await modelResponse.arrayBuffer();
+  const adapterBytes = await adapterResponse.arrayBuffer();
   const observed = await sha256Hex(bytes);
+  const observedAdapter = await sha256Hex(adapterBytes);
   if (observed !== manifest.artifact_sha256 || observed !== EXPECTED_MODEL_SHA256) {
     throw new Error("Frozen model checksum mismatch. Do not use this application copy.");
   }
+  if (
+    observedAdapter !== manifest.alignment_adapter_sha256 ||
+    observedAdapter !== EXPECTED_ALIGNMENT_ADAPTER_SHA256
+  ) {
+    throw new Error("Raw-alignment adapter checksum mismatch. Do not use this application copy.");
+  }
   const model = validateModelArtifact(JSON.parse(new TextDecoder().decode(bytes)));
+  model.raw_alignment_adapter = validateAlignmentAdapter(
+    JSON.parse(new TextDecoder().decode(adapterBytes)),
+  );
+  model.raw_alignment_adapter_sha256 = observedAdapter;
   if (manifest.software_version !== SOFTWARE_VERSION) {
     throw new Error("Browser application version does not match its release manifest.");
   }
@@ -290,6 +386,7 @@ async function initialize() {
   const modelState = element("model-state");
   const fastaFile = element("fasta-file");
   const batchFile = element("batch-file");
+  const expertAlignedMode = element("expert-aligned-mode");
   const objectiveRadios = [...document.querySelectorAll('input[name="objective"]')];
   let singleDownloads = null;
   let batchText = null;
@@ -321,9 +418,15 @@ async function initialize() {
   objectiveRadios.forEach((radio) => { radio.disabled = true; });
 
   sequence.value = EXAMPLE_SEQUENCE;
-  updateSequenceCount(sequence);
+  expertAlignedMode.checked = false;
+  updateSequenceCount(sequence, expertAlignedMode.checked);
   sequence.addEventListener("input", () => {
-    updateSequenceCount(sequence);
+    updateSequenceCount(sequence, expertAlignedMode.checked);
+    invalidateSingleResult();
+    clearError();
+  });
+  expertAlignedMode.addEventListener("change", () => {
+    updateSequenceCount(sequence, expertAlignedMode.checked);
     invalidateSingleResult();
     clearError();
   });
@@ -332,9 +435,10 @@ async function initialize() {
   element("example-button").addEventListener("click", () => {
     invalidateSingleResult();
     sequence.value = EXAMPLE_SEQUENCE;
+    expertAlignedMode.checked = false;
     fastaFile.value = "";
     setText("fasta-status", "Example restored; no file is loaded.");
-    updateSequenceCount(sequence);
+    updateSequenceCount(sequence, expertAlignedMode.checked);
     clearError();
     sequence.focus();
   });
@@ -370,11 +474,20 @@ async function initialize() {
       if (revision !== singleRevision || file !== fastaFile.files?.[0]) return;
       const text = decodeUtf8Bytes(bytes, file.name);
       const trimmed = text.trimStart();
+      const inputMode = expertAlignedMode.checked
+        ? "provided_alignment"
+        : "raw_sequence";
       const parsed = trimmed.startsWith(">")
-        ? parseSingleFasta(text, verified.model)
-        : { header: file.name, alignedSequence: normalizeSequence(text, verified.model) };
-      sequence.value = parsed.alignedSequence;
-      updateSequenceCount(sequence);
+        ? parseSingleFasta(text, verified.model, inputMode)
+        : {
+          header: file.name,
+          inputSequence: inputMode === "provided_alignment"
+            ? normalizeSequence(text, verified.model)
+            : prepareRawSequence(text, verified.model).originalSequence,
+          inputMode,
+        };
+      sequence.value = parsed.inputSequence;
+      updateSequenceCount(sequence, expertAlignedMode.checked);
       setText("fasta-status", `Loaded ${file.name} locally (${parsed.header}).`);
       clearError();
     } catch (error) {
@@ -387,9 +500,10 @@ async function initialize() {
   element("prediction-form").addEventListener("submit", (event) => {
     event.preventDefault();
     try {
-      const result = predictFromModel(sequence.value, verified.model);
-      sequence.value = result.input.alignedSequence;
-      updateSequenceCount(sequence);
+      const result = expertAlignedMode.checked
+        ? predictFromModel(sequence.value, verified.model)
+        : predictRawFromModel(sequence.value, verified.model);
+      updateSequenceCount(sequence, expertAlignedMode.checked);
       singleDownloads = {
         json: renderSingleResultJson(result, verified.model, verified.artifactSha256),
         csv: renderSingleResultCsv(result, verified.model, verified.artifactSha256),
@@ -481,6 +595,8 @@ async function initialize() {
       batchRunning = true;
       updateBatchButton();
       screenButton.textContent = "Screening…";
+      // Let the browser paint the progress state before synchronous local alignment.
+      await new Promise((resolve) => setTimeout(resolve, 0));
       const artifacts = await buildBatchArtifacts(inputText, objective, verified.model, {
         artifactSha256: verified.artifactSha256,
         inputBytes,

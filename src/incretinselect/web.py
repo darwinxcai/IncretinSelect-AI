@@ -28,6 +28,10 @@ WEB_ASSETS = {
         "../assets/incretin_ridge_v1.json",
         "application/json; charset=utf-8",
     ),
+    "/assets/raw_alignment_adapter.json": (
+        "../resources/raw_alignment_adapter.json",
+        "application/json; charset=utf-8",
+    ),
 }
 
 
@@ -36,6 +40,9 @@ def _asset_bytes(relative_path: str) -> bytes:
     if relative_path.startswith("../assets/"):
         asset_name = relative_path.removeprefix("../assets/")
         return package_root.joinpath("assets", asset_name).read_bytes()
+    if relative_path.startswith("../resources/"):
+        resource_name = relative_path.removeprefix("../resources/")
+        return package_root.joinpath("resources", resource_name).read_bytes()
     return package_root.joinpath("web_assets", relative_path).read_bytes()
 
 
@@ -55,7 +62,7 @@ def verify_web_assets() -> dict[str, str]:
         "IncretinSelect-AI",
         "Candidate screen",
         "Download screened CSV",
-        "Nearest-reference model comparison",
+        "Comparison with the closest development sequence",
     ):
         if marker not in page:
             raise RuntimeError(f"Packaged browser application is missing: {marker}")

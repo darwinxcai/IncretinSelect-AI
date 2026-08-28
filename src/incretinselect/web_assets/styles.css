@@ -57,6 +57,7 @@ h1 {
 }
 
 h2 { margin: 0 0 10px; font-size: 1.45rem; }
+h3 { margin: 24px 0 10px; font-size: 1.05rem; }
 
 .lede {
   max-width: 680px;
@@ -155,6 +156,20 @@ textarea:focus { outline: 3px solid #b9e0ca; border-color: var(--leaf); }
 .input-meta p { margin: 8px 0 0; }
 .count { white-space: nowrap; font-weight: 800; }
 .count.bad { color: var(--danger); }
+
+.expert-toggle {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  background: #f5f8f6;
+  border: 1px solid #cbd8d1;
+  border-radius: 10px;
+}
+.expert-toggle input { margin-top: 3px; }
+.expert-toggle span { display: flex; flex-direction: column; gap: 2px; }
+.expert-toggle small { color: var(--muted); font-weight: 500; line-height: 1.4; }
 
 .mode-switch {
   display: inline-flex;
@@ -372,6 +387,7 @@ button.link-button:hover { color: var(--leaf-dark); background: transparent; }
 }
 .summary-grid strong { color: #174a35; font-size: 1.45rem; }
 .summary-grid span { color: var(--muted); font-size: .82rem; }
+.result-overview strong { font-size: 1rem; line-height: 1.35; }
 
 .comparison-grid {
   display: grid;

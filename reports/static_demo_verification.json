@@ -1,4 +1,12 @@
 {
+  "alignment_adapter": {
+    "id": "raw_alignment_adapter_v1",
+    "labels_accessed": false,
+    "model_coefficients_changed": false,
+    "sha256": "a606f0edda342471dc5e42d667d05506ac604c53cd221ecd8e1821edff6fd5fe",
+    "source_and_demo_bytes_identical": true,
+    "version": "1.0.0"
+  },
   "artifact": {
     "id": "incretinselect_aligned_ridge_v1",
     "sha256": "eb7e99bbc3d83fdfb11ded4ba215fd7f6107a6e7d254f68e1b9610da6eb7e321",
@@ -13,6 +21,10 @@
     "batch_policy_exact": true,
     "cases": 12,
     "maximum_absolute_log10_delta": 7.993605777301127e-15,
+    "raw_adapter_accepted": 2,
+    "raw_adapter_cases": 11,
+    "raw_adapter_decisions_and_provenance_exact": true,
+    "raw_adapter_rejected": 9,
     "reference_source": "model applicability references stored without outcomes",
     "tolerance": 1e-12
   },

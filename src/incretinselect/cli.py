@@ -6,6 +6,7 @@ import argparse
 import csv
 import io
 import json
+import math
 import os
 import stat
 import sys
@@ -14,9 +15,10 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from incretinselect import __version__
-from incretinselect.product import ProductError, model_info, predict
+from incretinselect.product import ProductError, model_info, predict, predict_raw
 
 EXAMPLE_SEQUENCE = "HSQGTFTSDYSKYLDSRAASEFVQWLISH-"
+EXAMPLE_RAW_SEQUENCE = EXAMPLE_SEQUENCE.rstrip("-")
 MAX_SEQUENCE_FILE_BYTES = 65_536
 
 
@@ -38,6 +40,36 @@ def _safe_csv_text(value: str) -> str:
     return "'" + value if value.startswith(("=", "+", "-", "@")) else value
 
 
+def _comparison_status(evidence_state: str, ranking_enabled: bool) -> str:
+    if evidence_state == "training_reference_match":
+        return "In-sample reference · not an independent prediction"
+    if ranking_enabled:
+        return "Eligible for exploratory comparison"
+    return "Do not use for candidate ranking"
+
+
+def _validation_evidence(evidence_state: str) -> str:
+    if evidence_state == "training_reference_match":
+        return "In-sample evidence only"
+    if evidence_state == "local_analogue_mixed_evidence":
+        return "Mixed retrospective transfer"
+    return "No supported transfer evidence"
+
+
+def _fold_comparison(fold_ratio: float, receptor: str) -> str:
+    if math.isclose(fold_ratio, 1.0, rel_tol=0.0, abs_tol=1e-12):
+        return f"{receptor} EC50 is unchanged from the closest development sequence."
+    if fold_ratio > 1:
+        return (
+            f"Query {receptor} EC50 is predicted {_number(fold_ratio)}× higher than "
+            "the closest development sequence."
+        )
+    return (
+        f"Query {receptor} EC50 is predicted {_number(1 / fold_ratio)}× lower than "
+        "the closest development sequence."
+    )
+
+
 def format_text(result: dict[str, Any]) -> str:
     """Render one prediction as a readable terminal report."""
 
@@ -51,47 +83,82 @@ def format_text(result: dict[str, Any]) -> str:
     delta = comparison["query_minus_reference"]
     metrics = benchmark.get("metrics", {})
     nearest = ", ".join(applicability["nearest_reference_ids"])
+    applicability_labels = {
+        "training_reference_match": "Training-set match · in-sample",
+        "local_analogue_mixed_evidence": "Within local-analog scope · exploratory use",
+        "outside_ranking_scope": "Outside supported comparison scope",
+        "far_outside_ranking_scope": "Distant extrapolation · do not rank",
+    }
+    applicability_label = applicability_labels.get(
+        applicability["evidence_state"], "Applicability unavailable"
+    )
+    ranking = result["exploratory_ranking"]
+    comparison_status = _comparison_status(
+        applicability["evidence_state"], ranking["enabled"]
+    )
+    validation_evidence = _validation_evidence(applicability["evidence_state"])
+    ratio = float(selectivity["ec50_fold_ratio"])
+    if ratio >= 3:
+        ratio_sentence = (
+            f"GCGR EC50 is predicted to be {_number(ratio)}× higher than GLP-1R EC50."
+        )
+    elif ratio <= 1 / 3:
+        ratio_sentence = (
+            f"GLP-1R EC50 is predicted to be {_number(1 / ratio)}× higher than GCGR EC50."
+        )
+    else:
+        ratio_sentence = (
+            "The two predicted EC50 values are within "
+            f"{_number(max(ratio, 1 / ratio))}×."
+        )
     lines = [
         "IncretinSelect-AI — research estimate",
         "=" * 43,
-        f"Aligned input : {result['input']['aligned_sequence']}",
+        "Result overview",
+        f"  Model applicability : {applicability_label}",
+        f"  Comparison status   : {comparison_status}",
+        f"  Receptor profile    : {selectivity['interpretation']}",
+        f"  Validation evidence : {validation_evidence}",
         "",
-        "Predicted cell-based cAMP EC50 (lower EC50 = greater functional potency)",
+        f"Input sequence : {result['input']['original_sequence']}",
+        f"Model alignment: {result['input']['aligned_sequence']}",
+        f"Input mapping  : {result['input']['alignment_note']}",
+        "",
+        "Predicted functional potency — cell-based cAMP EC50",
         f"  GLP-1R : log10(EC50 / 1 pM) {glp1r['log10_ec50_pm']:.4f} | "
         f"{_number(glp1r['ec50_pm'])} pM | {_number(glp1r['ec50_nm'])} nM",
         f"  GCGR   : log10(EC50 / 1 pM) {gcgr['log10_ec50_pm']:.4f} | "
         f"{_number(gcgr['ec50_pm'])} pM | {_number(gcgr['ec50_nm'])} nM",
         "",
-        "Predicted GCGR/GLP-1R EC50 ratio",
-        f"  log10(GCGR EC50 / GLP-1R EC50) : {selectivity['log10_ec50_ratio']:.4f}",
-        f"  EC50 ratio                       : {_number(selectivity['ec50_fold_ratio'])}-fold",
-        f"  Interpretation                   : {selectivity['interpretation']}",
+        "Predicted receptor profile",
+        f"  {selectivity['interpretation']}: {ratio_sentence}",
+        "  Functional-potency balance only; not binding selectivity or proof of dual agonism.",
         "",
-        "Applicability check",
-        f"  Tier             : {applicability['tier']}",
+        "Model applicability",
+        f"  Assessment       : {applicability_label}",
         f"  Nearest identity : {applicability['nearest_aligned_identity'] * 100:.1f}%",
         f"  Nearest reference: {nearest}",
         f"  Meaning          : {applicability['summary']}",
         "",
-        "Nearest-reference model comparison",
+        "Comparison with the closest development sequence",
         f"  Reference        : {comparison['reference_id']}",
         f"  Changed positions: {comparison['changed_position_count']}",
-        f"  GLP-1R delta     : {delta['glp1r_delta_log10_ec50_pm']:+.4f} log10 units "
-        f"({_number(delta['glp1r_ec50_fold_ratio'])}x query/reference EC50)",
-        f"  GCGR delta       : {delta['gcgr_delta_log10_ec50_pm']:+.4f} log10 units "
-        f"({_number(delta['gcgr_ec50_fold_ratio'])}x query/reference EC50)",
+        f"  GLP-1R           : {_fold_comparison(delta['glp1r_ec50_fold_ratio'], 'GLP-1R')}",
+        f"                     Δlog10 EC50 {delta['glp1r_delta_log10_ec50_pm']:+.4f}",
+        f"  GCGR             : {_fold_comparison(delta['gcgr_ec50_fold_ratio'], 'GCGR')}",
+        f"                     Δlog10 EC50 {delta['gcgr_delta_log10_ec50_pm']:+.4f}",
         f"  Boundary         : {comparison['scientific_boundary']}",
         "",
-        "Benchmark context (not an individual confidence interval)",
+        "Benchmark performance (not an individual confidence interval)",
     ]
-    for endpoint, label in (("gcgr", "GCGR"), ("glp1r", "GLP-1R"), ("selectivity", "Balance")):
+    for endpoint, label in (("glp1r", "GLP-1R"), ("gcgr", "GCGR"), ("selectivity", "Balance")):
         row = metrics.get(endpoint, {})
         if row:
             lines.append(
                 f"  {label:<7}: development MAE {row['development_oof_mae_log10']:.2f} log10 "
                 f"(~{row['development_oof_geometric_fold_error']:.1f}-fold)"
             )
-    lines.extend(["", "Important limitations"])
+    lines.extend(["", "Interpretation limits"])
     lines.extend(f"  - {warning}" for warning in result["warnings"])
     lines.extend(
         [
@@ -111,56 +178,96 @@ def format_markdown(result: dict[str, Any]) -> str:
     comparison = result["nearest_reference_comparison"]
     delta = comparison["query_minus_reference"]
     ranking = result["exploratory_ranking"]
+    metrics = result["benchmark_context"].get("metrics", {})
+    applicability_labels = {
+        "training_reference_match": "Training-set match · in-sample",
+        "local_analogue_mixed_evidence": "Within local-analog scope · exploratory use",
+        "outside_ranking_scope": "Outside supported comparison scope",
+        "far_outside_ranking_scope": "Distant extrapolation · do not rank",
+    }
+    applicability_label = applicability_labels.get(
+        applicability["evidence_state"], "Applicability unavailable"
+    )
+    comparison_status = _comparison_status(
+        applicability["evidence_state"], ranking["enabled"]
+    )
+    validation_evidence = _validation_evidence(applicability["evidence_state"])
+    ratio = float(predictions["selectivity"]["ec50_fold_ratio"])
+    if ratio >= 3:
+        ratio_sentence = (
+            f"GCGR EC50 is predicted to be {_number(ratio)}× higher than GLP-1R EC50."
+        )
+    elif ratio <= 1 / 3:
+        ratio_sentence = (
+            f"GLP-1R EC50 is predicted to be {_number(1 / ratio)}× higher than GCGR EC50."
+        )
+    else:
+        ratio_sentence = (
+            "The two predicted EC50 values are within "
+            f"{_number(max(ratio, 1 / ratio))}×."
+        )
     lines = [
         "# IncretinSelect-AI result",
         "",
-        f"**Aligned sequence:** `{result['input']['aligned_sequence']}`",
+        "## Result overview",
         "",
-        "## Predicted cell-based cAMP EC50",
+        "| Question | Assessment |",
+        "|:--|:--|",
+        f"| Model applicability | {applicability_label} |",
+        f"| Comparison status | {comparison_status} |",
+        f"| Predicted receptor profile | {predictions['selectivity']['interpretation']} |",
+        f"| Validation evidence | {validation_evidence} |",
         "",
-        "| Endpoint | log10(EC50 / 1 pM) | pM | nM |",
+        f"**Input sequence:** `{result['input']['original_sequence']}`  ",
+        f"**Model alignment:** `{result['input']['aligned_sequence']}`  ",
+        f"**Input mapping:** {result['input']['alignment_note']}",
+        "",
+        "## Predicted functional potency",
+        "",
+        "Cell-based cAMP EC50 in the source assay; lower predicted EC50 means greater "
+        "functional potency in that assay.",
+        "",
+        "| Receptor | pM | nM | Model scale: log10(EC50 / 1 pM) |",
         "|:--|--:|--:|--:|",
         (
-            f"| GLP-1R | {predictions['glp1r']['log10_ec50_pm']:.4f} | "
-            f"{_number(predictions['glp1r']['ec50_pm'])} | "
-            f"{_number(predictions['glp1r']['ec50_nm'])} |"
+            f"| GLP-1R | {_number(predictions['glp1r']['ec50_pm'])} | "
+            f"{_number(predictions['glp1r']['ec50_nm'])} | "
+            f"{predictions['glp1r']['log10_ec50_pm']:.4f} |"
         ),
         (
-            f"| GCGR | {predictions['gcgr']['log10_ec50_pm']:.4f} | "
-            f"{_number(predictions['gcgr']['ec50_pm'])} | "
-            f"{_number(predictions['gcgr']['ec50_nm'])} |"
+            f"| GCGR | {_number(predictions['gcgr']['ec50_pm'])} | "
+            f"{_number(predictions['gcgr']['ec50_nm'])} | "
+            f"{predictions['gcgr']['log10_ec50_pm']:.4f} |"
         ),
         "",
-        (
-            "Predicted GCGR/GLP-1R EC50 ratio: "
-            f"**{_number(predictions['selectivity']['ec50_fold_ratio'])}-fold** "
-            f"({predictions['selectivity']['interpretation']})."
-        ),
+        f"**Predicted receptor profile: {predictions['selectivity']['interpretation']}.** "
+        + ratio_sentence,
+        "This describes functional-potency balance, not binding selectivity or evidence "
+        "of dual agonism.",
         "",
-        "## Applicability",
+        "## Model applicability",
         "",
-        f"- Tier: `{applicability['tier']}`",
+        f"- Assessment: {applicability_label}",
         f"- Nearest aligned identity: {applicability['nearest_aligned_identity'] * 100:.1f}%",
         f"- Nearest reference: `{comparison['reference_id']}`",
         f"- Changed alignment positions: {comparison['changed_position_count']}",
-        f"- Assessment: {applicability['summary']}",
-        (
-            "- Exploratory ranking: enabled"
-            if ranking["enabled"]
-            else "- Exploratory ranking: disabled"
-        ),
+        f"- Meaning: {applicability['summary']}",
+        "- Candidate comparison: "
+        + ("eligible for exploratory use" if ranking["enabled"] else "disabled"),
         "",
-        "## Nearest-reference model comparison",
+        "## Comparison with the closest development sequence",
         "",
-        "| Endpoint | Query − reference, log10 units | Query/reference EC50 |",
-        "|:--|--:|--:|",
+        "| Endpoint | Plain-language comparison | Δ log10 EC50 |",
+        "|:--|:--|--:|",
         (
-            f"| GLP-1R | {delta['glp1r_delta_log10_ec50_pm']:+.4f} | "
-            f"{_number(delta['glp1r_ec50_fold_ratio'])}x |"
+            "| GLP-1R | "
+            f"{_fold_comparison(delta['glp1r_ec50_fold_ratio'], 'GLP-1R')} | "
+            f"{delta['glp1r_delta_log10_ec50_pm']:+.4f} |"
         ),
         (
-            f"| GCGR | {delta['gcgr_delta_log10_ec50_pm']:+.4f} | "
-            f"{_number(delta['gcgr_ec50_fold_ratio'])}x |"
+            "| GCGR | "
+            f"{_fold_comparison(delta['gcgr_ec50_fold_ratio'], 'GCGR')} | "
+            f"{delta['gcgr_delta_log10_ec50_pm']:+.4f} |"
         ),
         "",
     ]
@@ -205,13 +312,28 @@ def format_markdown(result: dict[str, Any]) -> str:
             f"> {comparison['scientific_boundary']}",
             "> Reference values in this report are model predictions, not observed assay values.",
             "",
-            "## Interpretation boundary",
+            "## Benchmark performance",
             "",
-            "These are sequence-model point estimates of cell-based cAMP EC50. They are "
-            "not binding affinity, maximal assay response, safety, or evidence of activity "
-            "in vivo.",
-            "The locked retrospective P1–P15 external evaluation was mixed and showed no "
-            "overall model superiority.",
+            f"- GLP-1R development MAE: {metrics['glp1r']['development_oof_mae_log10']:.2f} "
+            f"log10 units (~{metrics['glp1r']['development_oof_geometric_fold_error']:.1f}-fold)",
+            f"- GCGR development MAE: {metrics['gcgr']['development_oof_mae_log10']:.2f} "
+            f"log10 units (~{metrics['gcgr']['development_oof_geometric_fold_error']:.1f}-fold)",
+            "- Receptor-balance development MAE: "
+            f"{metrics['selectivity']['development_oof_mae_log10']:.2f} log10 units "
+            f"(~{metrics['selectivity']['development_oof_geometric_fold_error']:.1f}-fold)",
+            "",
+            "These are population-level cross-validated errors, not uncertainty intervals "
+            "for this peptide. Evaluation on 15 published designs showed mixed transfer "
+            "and no overall superiority over nearest-neighbor prediction.",
+            "",
+            "## Interpretation limits",
+            "",
+            "- Endpoint: cell-based cAMP EC50—not binding affinity, maximal response, "
+            "safety, stability, pharmacokinetics, or in vivo efficacy.",
+            "- Chemistry: Aib, lipidation, amidation, cyclization, stapling, D-amino "
+            "acids, and other noncanonical modifications are not represented.",
+            "- Applicability: estimates outside the local-analog gate are extrapolations "
+            "and should not be used for ranking.",
             "",
             f"Model: `{result['model']['artifact_id']}` v{result['model']['artifact_version']}",
             "",
@@ -229,7 +351,20 @@ def _flat_row(result: dict[str, Any]) -> dict[str, Any]:
     delta = comparison["query_minus_reference"]
     ranking = result["exploratory_ranking"]
     return {
+        "original_sequence": _safe_csv_text(result["input"]["original_sequence"]),
         "aligned_sequence": _safe_csv_text(result["input"]["aligned_sequence"]),
+        "alignment_method": result["input"]["alignment_method"],
+        "alignment_status": result["input"]["alignment_status"],
+        "alignment_reference_ids": ";".join(
+            result["input"]["alignment_reference_ids"]
+        ),
+        "alignment_adapter_id": result["input"]["alignment_adapter_id"] or "",
+        "alignment_adapter_version": (
+            result["input"]["alignment_adapter_version"] or ""
+        ),
+        "alignment_adapter_sha256": (
+            result["input"]["alignment_adapter_sha256"] or ""
+        ),
         "glp1r_log10_ec50_pm": predictions["glp1r"]["log10_ec50_pm"],
         "glp1r_ec50_pm": predictions["glp1r"]["ec50_pm"],
         "glp1r_ec50_nm": predictions["glp1r"]["ec50_nm"],
@@ -284,20 +419,24 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="incretin-predict",
         description=(
-            "Estimate GLP-1R and GCGR cell-based cAMP EC50 from one aligned 30-position "
-            "peptide sequence. The model does not predict binding affinity."
+            "Estimate GLP-1R and GCGR cell-based cAMP EC50 from one 26--30-residue "
+            "incretin-like peptide or an expert-supplied 30-column alignment. The model "
+            "does not predict binding affinity."
         ),
         epilog=(
             "Example: incretin-predict --sequence-file candidate.fasta\n"
-            "A 29-residue core needs an explicit alignment gap, usually supplied by the "
-            "source alignment. This tool never guesses or trims it."
+            "Raw 26--29-residue local analogs are mapped only when the separately frozen "
+            "adapter finds one unambiguous alignment. Residues are never trimmed."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
         "sequence",
         nargs="?",
-        help="Exactly 30 aligned symbols: 20 standard amino acids plus optional '-' gaps.",
+        help=(
+            "A raw 26--30-residue canonical sequence. To provide exactly 30 model "
+            "columns with explicit '-' gaps, also pass --aligned."
+        ),
     )
     parser.add_argument(
         "--sequence",
@@ -311,9 +450,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--sequence-file",
         metavar="PATH",
         help=(
-            "Read one aligned sequence from UTF-8 text or single-record FASTA. "
+            "Read one raw or aligned sequence from UTF-8 text or single-record FASTA. "
             "Use '-' to read from standard input and avoid exposing a sequence in "
             "shell history or process listings."
+        ),
+    )
+    parser.add_argument(
+        "--aligned",
+        action="store_true",
+        help=(
+            "Treat the input as an expert-supplied 30-column alignment. Use this for "
+            "reviewed out-of-scope alignments; raw input is the default."
         ),
     )
     parser.add_argument(
@@ -331,7 +478,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--example",
         action="store_true",
-        help="Run the bundled 30-column example without supplying a sequence.",
+        help="Run the bundled example without supplying a sequence.",
     )
     parser.add_argument(
         "--model-info",
@@ -465,7 +612,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "Sequence input and --output must refer to different files"
                 )
             sequence = (
-                EXAMPLE_SEQUENCE
+                (EXAMPLE_SEQUENCE if args.aligned else EXAMPLE_RAW_SEQUENCE)
                 if args.example
                 else _read_sequence_file(args.sequence_file)
                 if args.sequence_file is not None
@@ -474,8 +621,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 else args.sequence
             )
             if not sequence:
-                parser.error("a 30-column sequence is required (or use --example)")
-            result = predict(sequence)
+                parser.error("a peptide sequence is required (or use --example)")
+            result = predict(sequence) if args.aligned else predict_raw(sequence)
             if args.format == "json":
                 rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
             elif args.format == "csv":

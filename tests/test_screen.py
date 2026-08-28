@@ -12,10 +12,11 @@ from pathlib import Path
 from unittest import mock
 
 from incretinselect import __version__
-from incretinselect.product import load_model, predict
+from incretinselect.product import load_model, predict, predict_raw
 from incretinselect.screen import (
     INPUT_COLUMNS,
     MAX_CANDIDATES,
+    MAX_RAW_CANDIDATES,
     OBJECTIVES,
     ScreeningError,
     _atomic_write_pair,
@@ -103,6 +104,52 @@ class BatchScreeningTests(unittest.TestCase):
         self.assertIn("not an individual confidence interval", receipt["ranking_context"]["interpretation"])
         self.assertIn("not a calibrated", receipt["ranking_gate"]["scientific_boundary"])
 
+    def test_raw_sequence_schema_maps_unambiguous_rows_and_retains_ambiguity(self) -> None:
+        raw_sequence = REF_93.rstrip("-")
+        ambiguous = "HAEGTFADVSSYLEGQAAKEFIAWLVKGR"
+        raw = (
+            "candidate_id,sequence\n"
+            f"raw_local,{raw_sequence}\n"
+            f"ambiguous,{ambiguous}\n"
+        ).encode("utf-8")
+        rendered, receipt, exit_code = build_screening(raw, "dual", model=self.model)
+        rows = list(csv.DictReader(io.StringIO(rendered)))
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(rows[0]["status"], "ranked")
+        self.assertEqual(rows[0]["input_sequence"], raw_sequence)
+        self.assertEqual(rows[0]["input_mode"], "raw_sequence")
+        self.assertEqual(rows[0]["aligned_sequence"], REF_93)
+        self.assertEqual(rows[0]["alignment_status"], "mapped_unambiguously")
+        self.assertRegex(rows[0]["alignment_adapter_sha256"], r"^[0-9a-f]{64}$")
+        self.assertEqual(rows[1]["status"], "input_error")
+        self.assertEqual(rows[1]["error_code"], "invalid_raw_sequence")
+        self.assertIn("ambiguous", rows[1]["error_message"].lower())
+        self.assertEqual(receipt["input"]["input_mode"], "raw_sequence")
+        self.assertEqual(receipt["input"]["maximum_rows"], MAX_RAW_CANDIDATES)
+        self.assertEqual(
+            receipt["alignment_adapter"]["adapter_id"],
+            "raw_alignment_adapter_v1",
+        )
+        self.assertRegex(receipt["alignment_adapter"]["sha256"], r"^[0-9a-f]{64}$")
+        self.assertTrue(receipt["alignment_adapter"]["used_for_input"])
+        self.assertFalse(receipt["alignment_adapter"]["labels_accessed"])
+
+    def test_unicode_row_cannot_alias_a_cached_canonical_sequence(self) -> None:
+        raw_sequence = REF_93.rstrip("-")
+        unicode_alias = raw_sequence.replace("S", "ſ", 1)
+        raw = (
+            "candidate_id,sequence\n"
+            f"canonical,{raw_sequence}\n"
+            f"unicode_alias,{unicode_alias}\n"
+        ).encode("utf-8")
+        rendered, receipt, exit_code = build_screening(raw, "dual", model=self.model)
+        rows = list(csv.DictReader(io.StringIO(rendered)))
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(rows[0]["status"], "ranked")
+        self.assertEqual(rows[1]["status"], "input_error")
+        self.assertIn("ASCII", rows[1]["error_message"])
+        self.assertEqual(receipt["alignment_adapter"]["adapter_id"], "raw_alignment_adapter_v1")
+
     def test_duplicate_sequences_tie_but_duplicate_ids_are_fatal(self) -> None:
         raw = input_csv([("copy_a", REF_93), ("copy_b", REF_93), ("other", REF_11)])
         rendered, receipt, exit_code = build_screening(raw, "dual", model=self.model)
@@ -133,6 +180,33 @@ class BatchScreeningTests(unittest.TestCase):
         rows = ((f"candidate_{index}", REF_93) for index in range(MAX_CANDIDATES + 1))
         with self.assertRaisesRegex(ScreeningError, "more than 10000 rows"):
             build_screening(input_csv(list(rows)), "dual", model=self.model)
+
+    def test_raw_sequence_row_limit_prevents_unbounded_alignment_work(self) -> None:
+        rows = "".join(
+            f"candidate_{index},{REF_93.rstrip('-')}\n"
+            for index in range(MAX_RAW_CANDIDATES + 1)
+        )
+        raw = f"candidate_id,sequence\n{rows}".encode("utf-8")
+        with self.assertRaisesRegex(ScreeningError, "alignment-adapter limit"):
+            build_screening(raw, "dual", model=self.model)
+
+    def test_repeated_raw_sequences_reuse_one_alignment_prediction(self) -> None:
+        records = [
+            {
+                "candidate_id": f"copy_{index}",
+                "sequence": REF_93.rstrip("-"),
+                "input_mode": "raw_sequence",
+            }
+            for index in range(4)
+        ]
+        with mock.patch(
+            "incretinselect.screen.predict_raw",
+            wraps=predict_raw,
+        ) as predictor:
+            rows, counts = screen_records(records, "dual", model=self.model)
+        self.assertEqual(predictor.call_count, 1)
+        self.assertEqual(counts["ranked_rows"], 4)
+        self.assertEqual({row["duplicate_sequence_count"] for row in rows}, {"4"})
 
     def test_utf8_bom_is_accepted_and_schema_is_strict(self) -> None:
         rendered, _, exit_code = build_screening(

@@ -11,7 +11,11 @@ import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from incretinselect.product import load_model, predict
+from incretinselect.product import (
+    EXPECTED_ALIGNMENT_POLICY_SHA256,
+    load_model,
+    predict,
+)
 from incretinselect.screen import OUTPUT_COLUMNS, screen_records
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -36,6 +40,13 @@ class StaticDemoTests(unittest.TestCase):
         manifest = json.loads((DOCS / "demo_manifest.json").read_text(encoding="utf-8"))
         self.assertEqual(digest, manifest["artifact_sha256"])
         self.assertEqual(digest, self.model.sha256)
+        source_adapter = PROJECT_ROOT / "configs/raw_alignment_adapter.json"
+        demo_adapter = DOCS / "assets/raw_alignment_adapter.json"
+        self.assertEqual(source_adapter.read_bytes(), demo_adapter.read_bytes())
+        adapter_digest = hashlib.sha256(demo_adapter.read_bytes()).hexdigest()
+        self.assertEqual(adapter_digest, EXPECTED_ALIGNMENT_POLICY_SHA256)
+        self.assertEqual(adapter_digest, manifest["alignment_adapter_sha256"])
+        self.assertEqual(manifest["alignment_adapter_id"], "raw_alignment_adapter_v1")
         self.assertFalse(manifest["labels_included"])
         self.assertTrue(manifest["local_file_import"])
         self.assertFalse(manifest["outbound_sequence_transmission"])
@@ -244,6 +255,7 @@ class StaticDemoTests(unittest.TestCase):
         self.assertIn("network transmission of sequences", single_spaced)
         self.assertIn("Outputs do not measure binding affinity", single_spaced)
         self.assertIn("Structure files are not supported", single_spaced)
+        self.assertIn("candidate_id,sequence", single_spaced)
         self.assertIn("candidate_id,aligned_sequence", single_spaced)
         self.assertIn("Download JSON", single_spaced)
         self.assertIn("Download screened CSV", single_spaced)
@@ -268,6 +280,10 @@ class StaticDemoTests(unittest.TestCase):
                 ("/model.mjs", b"predictFromModel"),
                 ("/io.mjs", b"buildBatchArtifacts"),
                 ("/demo_manifest.json", self.model.sha256.encode()),
+                (
+                    "/assets/raw_alignment_adapter.json",
+                    b"raw_alignment_adapter_v1",
+                ),
                 ("/assets/incretin_ridge_v1.json", b"incretinselect_aligned_ridge_v1"),
             ):
                 with urllib.request.urlopen(base + path, timeout=5) as response:

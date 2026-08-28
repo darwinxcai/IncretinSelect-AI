@@ -10,6 +10,9 @@ MIRRORS = {
     "data/manifests/sources.json": "src/incretinselect/resources/sources.json",
     "configs/activity_schema.json": "src/incretinselect/resources/activity_schema.json",
     "configs/structure_targets.csv": "src/incretinselect/resources/structure_targets.csv",
+    "configs/raw_alignment_adapter.json": (
+        "src/incretinselect/resources/raw_alignment_adapter.json"
+    ),
     "CITATION.cff": "src/incretinselect/notices/CITATION.cff",
     "DATA_LICENSE.md": "src/incretinselect/notices/DATA_LICENSE.md",
     "LICENSE": "src/incretinselect/notices/LICENSE",

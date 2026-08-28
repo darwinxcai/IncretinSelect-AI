@@ -4,7 +4,9 @@ import { readFile } from "node:fs/promises";
 const ELEMENT_IDS = [
   "applicability-badge",
   "applicability-name",
+  "applicability-panel",
   "applicability-summary",
+  "alignment-summary",
   "balance-detail",
   "balance-error",
   "balance-value",
@@ -29,10 +31,12 @@ const ELEMENT_IDS = [
   "comparison-glp1r-delta",
   "comparison-glp1r-fold",
   "comparison-reference",
+  "comparison-panel",
   "comparison-table-body",
   "comparison-table-wrap",
   "comparison-tie-count",
   "example-button",
+  "expert-aligned-mode",
   "fasta-file",
   "fasta-status",
   "gcgr-detail",
@@ -48,6 +52,10 @@ const ELEMENT_IDS = [
   "nearest-identity",
   "nearest-reference",
   "normalized-sequence",
+  "overview-applicability",
+  "overview-evidence",
+  "overview-profile",
+  "overview-ranking",
   "predict-button",
   "prediction-form",
   "ranking-block",
@@ -56,6 +64,7 @@ const ELEMENT_IDS = [
   "screen-button",
   "sequence",
   "sequence-count",
+  "sequence-help",
   "single-csv-button",
   "single-json-button",
   "single-markdown-button",
@@ -228,12 +237,18 @@ const manifest = JSON.parse(
 const modelBytes = await readFile(
   new URL("../docs/assets/incretin_ridge_v1.json", import.meta.url),
 );
+const adapterBytes = await readFile(
+  new URL("../docs/assets/raw_alignment_adapter.json", import.meta.url),
+);
 globalThis.fetch = async (path) => {
   if (path === "demo_manifest.json") {
     return { ok: true, json: async () => structuredClone(manifest) };
   }
   if (path === "assets/incretin_ridge_v1.json") {
     return { ok: true, arrayBuffer: async () => arrayBufferCopy(modelBytes) };
+  }
+  if (path === "assets/raw_alignment_adapter.json") {
+    return { ok: true, arrayBuffer: async () => arrayBufferCopy(adapterBytes) };
   }
   return { ok: false };
 };
@@ -257,6 +272,26 @@ const ref11 = "HSQGTFTSDYSKYLDSRAAAKFVQWLLNGG";
 const sequence = document.getElementById("sequence");
 const results = document.getElementById("results");
 const predictionForm = document.getElementById("prediction-form");
+const expertMode = document.getElementById("expert-aligned-mode");
+const sequenceCount = document.getElementById("sequence-count");
+
+// Input feedback must describe the selected contract, not infer mode from text.
+sequence.value = ref93;
+await sequence.fire("input");
+assert.match(sequenceCount.textContent, /gaps require expert mode/);
+assert.equal(sequenceCount.classList.values.has("bad"), true);
+expertMode.checked = true;
+await expertMode.fire("change");
+assert.match(sequenceCount.textContent, /30 \/ 30 model columns/);
+assert.equal(sequenceCount.classList.values.has("bad"), false);
+sequence.value = ref93.replaceAll("-", "");
+await sequence.fire("input");
+assert.match(sequenceCount.textContent, /29 \/ 30 model columns/);
+assert.equal(sequenceCount.classList.values.has("bad"), true);
+expertMode.checked = false;
+await expertMode.fire("change");
+assert.equal(sequenceCount.textContent, "29 residues");
+assert.equal(sequenceCount.classList.values.has("bad"), false);
 
 // Editing the sequence must invalidate both the visible result and its downloads.
 await predictionForm.fire("submit");
@@ -270,19 +305,19 @@ assert.equal(document.downloads.length, downloadCount);
 
 // A slow earlier FASTA read must not replace a newer selection.
 const fastaFile = document.getElementById("fasta-file");
-const olderFasta = delayedFile("older.fasta", `>older\n${ref93}\n`);
-const newerFasta = delayedFile("newer.fasta", `>newer\n${ref11}\n`);
+const olderFasta = delayedFile("older.fasta", `>older\n${ref93.replaceAll("-", "")}\n`);
+const newerFasta = delayedFile("newer.fasta", `>newer\n${ref11.replaceAll("-", "")}\n`);
 fastaFile.files = [olderFasta.file];
 const olderFastaRead = fastaFile.fire("change");
 fastaFile.files = [newerFasta.file];
 const newerFastaRead = fastaFile.fire("change");
 newerFasta.resolve();
 await newerFastaRead;
-assert.equal(sequence.value, ref11);
+assert.equal(sequence.value, ref11.replaceAll("-", ""));
 assert.match(document.getElementById("fasta-status").textContent, /newer\.fasta/);
 olderFasta.resolve();
 await olderFastaRead;
-assert.equal(sequence.value, ref11);
+assert.equal(sequence.value, ref11.replaceAll("-", ""));
 assert.match(document.getElementById("fasta-status").textContent, /newer\.fasta/);
 
 const batchFile = document.getElementById("batch-file");

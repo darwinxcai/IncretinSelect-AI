@@ -17,6 +17,7 @@ include RELEASE_READINESS.md
 include configs/activity_schema.json
 include configs/cpu_sequence_model.json
 include configs/external_evaluation.json
+include configs/raw_alignment_adapter.json
 include configs/sequence_split.json
 include configs/structure_targets.csv
 include data/derived/README.md
@@ -36,6 +37,7 @@ include data/raw/README.md
 include docs/README.md
 include docs/app.mjs
 include docs/assets/incretin_ridge_v1.json
+include docs/assets/raw_alignment_adapter.json
 include docs/demo_manifest.json
 include docs/index.html
 include docs/io.mjs
@@ -104,6 +106,7 @@ include src/incretinselect/notices/DATA_LICENSE.md
 include src/incretinselect/notices/LICENSE
 include src/incretinselect/product.py
 include src/incretinselect/resources/activity_schema.json
+include src/incretinselect/resources/raw_alignment_adapter.json
 include src/incretinselect/resources/sources.json
 include src/incretinselect/resources/structure_targets.csv
 include src/incretinselect/screen.py
@@ -118,6 +121,7 @@ include src/incretinselect/web_assets/index.html
 include src/incretinselect/web_assets/io.mjs
 include src/incretinselect/web_assets/model.mjs
 include src/incretinselect/web_assets/styles.css
+include tests/static_demo_alignment_runner.mjs
 include tests/static_demo_app_state_unit.mjs
 include tests/static_demo_export_runner.mjs
 include tests/static_demo_io_unit.mjs
@@ -125,6 +129,7 @@ include tests/static_demo_runner.mjs
 include tests/static_demo_screen_runner.mjs
 include tests/static_demo_unit.mjs
 include tests/test_activity.py
+include tests/test_alignment_adapter.py
 include tests/test_baseline.py
 include tests/test_clustering.py
 include tests/test_cross_runtime_contract.py

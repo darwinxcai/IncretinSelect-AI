@@ -16,23 +16,27 @@ REQUIRED_FILES = (
     ".github/workflows/pages.yml",
     "CHANGELOG.md",
     "CITATION.cff",
+    "configs/raw_alignment_adapter.json",
     "LICENSE",
     "PUBLISHING.md",
     "README.md",
     "RELEASE_READINESS.md",
     "docs/app.mjs",
     "docs/assets/incretin_ridge_v1.json",
+    "docs/assets/raw_alignment_adapter.json",
     "docs/index.html",
     "examples/candidate_screening/README.md",
     "examples/candidate_screening/candidates.csv",
     "examples/candidate_screening/screened_dual.csv",
     "examples/candidate_screening/screening_receipt.json",
     "reports/EXTERNAL_EVALUATION.md",
+    "reports/PRODUCT_GUIDE.md",
     "reports/distribution_verification.json",
     "reports/release_readiness.json",
     "reports/static_demo_verification.json",
     "scripts/audit_release_readiness.py",
     "scripts/verify_static_demo.py",
+    "tests/test_alignment_adapter.py",
 )
 FORBIDDEN_TRACKED_PATTERNS = (
     re.compile(r"^data/raw/(?!README\.md$)"),
@@ -257,6 +261,32 @@ def gate(name: str, status: str, evidence: str) -> dict[str, str]:
     return {"name": name, "status": status, "evidence": evidence}
 
 
+def static_demo_receipt_passes(receipt: dict[str, Any]) -> bool:
+    """Require both frozen-model and raw-adapter cross-runtime evidence."""
+
+    artifact = receipt.get("artifact", {})
+    adapter = receipt.get("alignment_adapter", {})
+    parity = receipt.get("browser_python_parity", {})
+    boundaries = receipt.get("scientific_boundaries", {})
+    privacy = receipt.get("privacy", {})
+    return bool(
+        receipt.get("status") == "passed"
+        and artifact.get("source_and_demo_bytes_identical") is True
+        and adapter.get("id") == "raw_alignment_adapter_v1"
+        and adapter.get("source_and_demo_bytes_identical") is True
+        and adapter.get("labels_accessed") is False
+        and adapter.get("model_coefficients_changed") is False
+        and parity.get("applicability_exact") is True
+        and parity.get("raw_adapter_cases", 0) > 0
+        and parity.get("raw_adapter_decisions_and_provenance_exact") is True
+        and privacy.get("external_api") is False
+        and privacy.get("local_file_import") is True
+        and privacy.get("outbound_sequence_transmission") is False
+        and boundaries.get("holdout_labels_accessed") is False
+        and boundaries.get("structure_inference_run") is False
+    )
+
+
 def audit_local(project_root: Path) -> list[dict[str, str]]:
     missing = [name for name in REQUIRED_FILES if not (project_root / name).is_file()]
     required_status = "pass" if not missing else "fail"
@@ -289,11 +319,21 @@ def audit_local(project_root: Path) -> list[dict[str, str]]:
         if example_screening_path.is_file()
         else None
     )
+    adapter_path = project_root / "configs" / "raw_alignment_adapter.json"
+    expected_adapter_sha256 = (
+        hashlib.sha256(adapter_path.read_bytes()).hexdigest()
+        if adapter_path.is_file()
+        else None
+    )
     expected_wheel = f"incretinselect_ai-{project_version}-py3-none-any.whl"
     distribution_pass = (
         receipt.get("status") == "passed"
         and receipt.get("wheel", {}).get("filename") == expected_wheel
         and installed_product.get("software_version") == project_version
+        and installed_product.get("alignment_adapter_id")
+        == "raw_alignment_adapter_v1"
+        and installed_product.get("alignment_adapter_sha256")
+        == expected_adapter_sha256
         and installed_product.get("screening_objective") == "dual"
         and installed_product.get("screening_rows") == 4
         and installed_product.get("screening_ranked_rows") == 3
@@ -311,18 +351,7 @@ def audit_local(project_root: Path) -> list[dict[str, str]]:
     static_receipt: dict[str, Any] = {}
     if static_receipt_path.is_file():
         static_receipt = json.loads(static_receipt_path.read_text(encoding="utf-8"))
-    static_boundaries = static_receipt.get("scientific_boundaries", {})
-    static_privacy = static_receipt.get("privacy", {})
-    static_demo_pass = (
-        static_receipt.get("status") == "passed"
-        and static_receipt.get("artifact", {}).get("source_and_demo_bytes_identical") is True
-        and static_receipt.get("browser_python_parity", {}).get("applicability_exact") is True
-        and static_privacy.get("external_api") is False
-        and static_privacy.get("local_file_import") is True
-        and static_privacy.get("outbound_sequence_transmission") is False
-        and static_boundaries.get("holdout_labels_accessed") is False
-        and static_boundaries.get("structure_inference_run") is False
-    )
+    static_demo_pass = static_demo_receipt_passes(static_receipt)
 
     readme = (project_root / "README.md").read_text(encoding="utf-8").lower()
     publishing = (project_root / "PUBLISHING.md").read_text(encoding="utf-8").lower()
@@ -417,7 +446,8 @@ def audit_local(project_root: Path) -> list[dict[str, str]]:
             "zero_install_browser_demo",
             "pass" if static_demo_pass else "fail",
             (
-                "static model bytes match; browser/Python parity and local-only privacy pass"
+                "static model and adapter bytes match; browser/Python prediction, "
+                "raw-mapping, provenance, and local-only privacy checks pass"
                 if static_demo_pass
                 else "static-demo receipt is missing, failed, stale, or violates boundaries"
             ),

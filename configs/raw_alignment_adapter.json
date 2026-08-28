@@ -1,0 +1,22 @@
+{
+  "acceptance_policy": {
+    "ambiguous_projection": "reject",
+    "maximum_raw_residues": 30,
+    "minimum_nearest_aligned_identity": 0.85,
+    "minimum_raw_residues": 26,
+    "terminal_trimming": false
+  },
+  "adapter_id": "raw_alignment_adapter_v1",
+  "adapter_version": "1.0.0",
+  "alignment_policy": {
+    "column_cost": "0 for an exact reference-column match; 1 for every differing column",
+    "model_columns": 30,
+    "projection": "order-preserving injection of every raw residue into the fixed model columns",
+    "reference_panel": "125 label-free aligned development sequences bundled with the frozen model",
+    "tie_policy": "accept only when all globally optimal paths produce one aligned sequence"
+  },
+  "canonical_alphabet": "ACDEFGHIKLMNPQRSTVWY",
+  "labels_accessed": false,
+  "model_coefficients_changed": false,
+  "schema_version": 1
+}

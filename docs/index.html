@@ -10,7 +10,7 @@
                  base-uri 'none'; form-action 'none'">
   <title>IncretinSelect-AI · browser application</title>
   <meta name="description" content="Browser application for estimating GLP-1R and
-        GCGR cAMP EC50 from aligned incretin-like peptide sequences.">
+        GCGR cAMP EC50 from incretin-like peptide sequences.">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,7 +20,8 @@
         <p class="eyebrow">Browser application · ridge regression · research use</p>
         <h1>IncretinSelect-AI</h1>
         <p class="lede">Estimate cell-based cAMP EC50 at GLP-1R and GCGR for
-          aligned incretin-like peptide sequences.</p>
+          incretin-like peptide sequences, with an explicit assessment of when the
+          model should and should not be used.</p>
       </div>
       <div class="privacy-card">
         <strong>Local processing</strong>
@@ -54,20 +55,28 @@
       </div>
 
       <form id="prediction-form" novalidate>
-        <label for="sequence">Aligned 30-position sequence</label>
+        <label for="sequence">Peptide sequence</label>
         <div class="ruler" aria-hidden="true">123456789012345678901234567890</div>
         <textarea id="sequence" name="sequence" rows="2" maxlength="256"
                   spellcheck="false" autocomplete="off"
                   aria-describedby="sequence-help sequence-count"></textarea>
         <div class="input-meta">
-          <p id="sequence-help">Enter exactly 30 aligned positions using standard
-            amino-acid letters and <code>-</code> for an alignment gap. The application
-            never guesses an alignment or trims a sequence.</p>
-          <p id="sequence-count" class="count">0 / 30</p>
+          <p id="sequence-help">Enter 26–30 standard amino-acid residues. Raw sequences
+            shorter than 30 residues are mapped to the fixed model columns only when the
+            label-free reference panel gives one unambiguous local-analog alignment.
+            Expert users may instead provide all 30 columns with explicit <code>-</code> gaps.
+            The application never truncates residues.</p>
+          <p id="sequence-count" class="count">0 residues</p>
         </div>
+        <label class="expert-toggle" for="expert-aligned-mode">
+          <input id="expert-aligned-mode" type="checkbox">
+          <span><strong>Expert 30-column mode</strong><small>Use only when alignment
+            positions are already known. This permits transparent inspection outside the
+            raw adapter's local-analog gate, but such results cannot be ranked.</small></span>
+        </label>
 
         <div class="file-import">
-          <label for="fasta-file">Or import one aligned FASTA or text file</label>
+          <label for="fasta-file">Or import one FASTA or text file</label>
           <input id="fasta-file" type="file"
                  accept=".fa,.fasta,.faa,.txt,text/plain">
           <p id="fasta-status" class="file-status" role="status">
@@ -85,8 +94,10 @@
         <div class="file-import prominent">
           <label for="batch-file">Candidate CSV</label>
           <input id="batch-file" type="file" accept=".csv,text/csv">
-          <p class="file-status">Required columns:
-            <code>candidate_id,aligned_sequence</code>. Maximum 500 candidates and 2 MB.
+          <p class="file-status">Preferred columns:
+            <code>candidate_id,sequence</code> for raw 26–30-residue inputs. The legacy
+            expert schema <code>candidate_id,aligned_sequence</code> remains supported.
+            Maximum 200 raw-sequence or 500 expert-alignment candidates, and 2 MB.
             Every invalid or out-of-scope row remains visible in the downloaded result.</p>
           <button id="template-button" class="link-button" type="button">
             Download CSV template
@@ -133,31 +144,42 @@
         <div class="section-heading">
           <div>
             <p class="step">Step 2</p>
-            <h2>Prediction summary</h2>
+            <h2>Result overview</h2>
           </div>
           <span id="applicability-badge" class="badge"></span>
         </div>
+        <div class="summary-grid result-overview">
+          <div><strong id="overview-applicability"></strong><span>Model applicability</span></div>
+          <div><strong id="overview-ranking"></strong><span>Comparison status</span></div>
+          <div><strong id="overview-profile"></strong><span>Predicted receptor profile</span></div>
+          <div><strong id="overview-evidence"></strong><span>Validation evidence</span></div>
+        </div>
+        <p class="reading-note">Read predicted functional potency and model applicability
+          together; neither establishes experimental performance.</p>
+        <h3>Model input</h3>
+        <p id="alignment-summary" class="fine"></p>
         <p id="normalized-sequence" class="sequence-output"></p>
+        <h3>Predicted functional potency</h3>
         <div class="metric-grid">
           <article class="metric-card">
-            <p class="metric-label">GLP-1R cAMP EC50</p>
+            <p class="metric-label">Predicted GLP-1R functional potency</p>
             <p id="glp1r-value" class="metric-value"></p>
             <p id="glp1r-detail" class="metric-detail"></p>
           </article>
           <article class="metric-card">
-            <p class="metric-label">GCGR cAMP EC50</p>
+            <p class="metric-label">Predicted GCGR functional potency</p>
             <p id="gcgr-value" class="metric-value"></p>
             <p id="gcgr-detail" class="metric-detail"></p>
           </article>
           <article class="metric-card">
-            <p class="metric-label">GCGR / GLP-1R EC50</p>
+            <p class="metric-label">Predicted receptor profile</p>
             <p id="balance-value" class="metric-value"></p>
             <p id="balance-detail" class="metric-detail"></p>
           </article>
         </div>
-        <p class="reading-note"><strong>Interpretation:</strong> lower predicted EC50 means
-          that half-maximal response occurred at a lower concentration in the source assay;
-          it does not imply tighter binding or a larger maximal response.</p>
+        <p class="reading-note"><strong>Interpretation:</strong> lower predicted EC50
+          indicates greater predicted functional potency in the source-assay context; it
+          does not imply tighter binding or greater maximal response.</p>
         <div class="actions result-actions">
           <button id="single-json-button" type="button">Download JSON</button>
           <button id="single-csv-button" class="secondary" type="button">Download CSV</button>
@@ -169,15 +191,15 @@
 
       <section id="applicability-panel" class="panel">
         <p class="step">Step 3</p>
-        <h2>Applicability assessment</h2>
+        <h2>Model applicability</h2>
         <div id="ranking-block" class="stop-box" hidden>
           <strong>Do not use this output to rank experiments.</strong>
           <span id="ranking-block-reason"></span>
         </div>
         <dl class="facts">
-          <div><dt>Applicability</dt><dd id="applicability-name"></dd></div>
-          <div><dt>Nearest identity</dt><dd id="nearest-identity"></dd></div>
-          <div><dt>Nearest reference</dt><dd id="nearest-reference"></dd></div>
+          <div><dt>Assessment</dt><dd id="applicability-name"></dd></div>
+          <div><dt>Identity to closest development sequence</dt><dd id="nearest-identity"></dd></div>
+          <div><dt>Closest development sequence</dt><dd id="nearest-reference"></dd></div>
         </dl>
         <p id="applicability-summary"></p>
         <p class="fine">The 85% threshold defines sequence-identity components in the
@@ -185,7 +207,7 @@
       </section>
 
       <section id="comparison-panel" class="panel">
-        <h2>Nearest-reference model comparison</h2>
+        <h2>Comparison with the closest development sequence</h2>
         <p>Because the fitted ridge model is additive, its query–reference difference
           can be decomposed exactly into contributions from changed positions.</p>
         <dl class="facts">
@@ -195,14 +217,14 @@
         </dl>
         <div class="comparison-grid">
           <div>
-            <strong id="comparison-glp1r-delta"></strong>
-            <span>GLP-1R Δ log10 EC50</span>
-            <small id="comparison-glp1r-fold"></small>
+            <strong id="comparison-glp1r-fold"></strong>
+            <span>GLP-1R predicted comparison</span>
+            <small id="comparison-glp1r-delta"></small>
           </div>
           <div>
-            <strong id="comparison-gcgr-delta"></strong>
-            <span>GCGR Δ log10 EC50</span>
-            <small id="comparison-gcgr-fold"></small>
+            <strong id="comparison-gcgr-fold"></strong>
+            <span>GCGR predicted comparison</span>
+            <small id="comparison-gcgr-delta"></small>
           </div>
         </div>
         <p class="fine">Positive values mean higher predicted EC50 for the query;
@@ -226,12 +248,13 @@
       </section>
 
       <section class="panel">
-        <h2>Validation context</h2>
-        <p>Development-set averages provide population-level context; they are not a
+        <h2>Benchmark performance</h2>
+        <p>Average cross-validated errors across the 125 development peptides provide
+          population-level context; they are not a
           confidence interval for this sequence.</p>
         <div class="error-grid">
-          <div><strong id="gcgr-error"></strong><span>GCGR geometric fold error</span></div>
           <div><strong id="glp1r-error"></strong><span>GLP-1R geometric fold error</span></div>
+          <div><strong id="gcgr-error"></strong><span>GCGR geometric fold error</span></div>
           <div><strong id="balance-error"></strong><span>Balance geometric fold error</span></div>
         </div>
         <p class="mixed-result"><strong>Locked retrospective P1–P15 evaluation:</strong>
@@ -240,7 +263,7 @@
       </section>
 
       <section class="panel limitations">
-        <h2>Scientific limitations</h2>
+        <h2>Interpretation limits</h2>
         <ul id="warnings"></ul>
         <p class="fine model-proof">Model <span id="model-id"></span><br>
           Artifact SHA-256: <code id="model-sha"></code></p>
@@ -258,7 +281,7 @@
         </div>
         <div class="summary-grid">
           <div><strong id="batch-total"></strong><span>Total rows</span></div>
-          <div><strong id="batch-ranked"></strong><span>Ordered local analogs</span></div>
+          <div><strong id="batch-ranked"></strong><span>Eligible for exploratory comparison</span></div>
           <div><strong id="batch-excluded"></strong><span>Excluded or invalid</span></div>
         </div>
         <p id="batch-context-note" class="fine"></p>
@@ -269,12 +292,13 @@
           <table>
             <caption>Candidate screening preview</caption>
             <thead><tr>
-              <th scope="col">Order</th><th scope="col">Candidate</th>
-              <th scope="col">Status</th><th scope="col">Δ from first (log10)</th>
+              <th scope="col">Exploratory rank</th><th scope="col">Candidate</th>
+              <th scope="col">Comparison status</th><th scope="col">Difference from top score</th>
               <th scope="col">Benchmark context</th>
               <th scope="col">Predicted GLP-1R EC50 (pM)</th>
               <th scope="col">Predicted GCGR EC50 (pM)</th>
-              <th scope="col">Applicability</th><th scope="col">Nearest identity</th>
+              <th scope="col">Model applicability</th>
+              <th scope="col">Identity to closest development sequence</th>
               <th scope="col">Exclusion or error</th>
             </tr></thead>
             <tbody id="batch-table-body"></tbody>

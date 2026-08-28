@@ -1,10 +1,12 @@
 # Publishing and verification
 
-Version 0.7.0 is public and independently reproducible.
+Version 0.8.0 is the current local release candidate. Version 0.7.0 remains the
+latest public release with completed independent verification; do not reuse its CI,
+Pages, or clone evidence for v0.8.0.
 
 - Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
 - Browser application: <https://darwinxcai.github.io/IncretinSelect-AI/>
-- Source commit: `517f97c1e31bc0c9fea5315184bde651bb6b671a`
+- Latest verified v0.7 source commit: `517f97c1e31bc0c9fea5315184bde651bb6b671a`
 - CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083830513>
 - Pages run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083916679>
 

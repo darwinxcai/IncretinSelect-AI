@@ -1,8 +1,8 @@
 # Browser application
 
 This directory contains the static application deployed through GitHub Pages. It
-runs the same released model as the Python package and supports aligned FASTA/text
-input, CSV screening, and local result downloads. Imported sequences and
+runs the same released model as the Python package and supports FASTA/text input,
+CSV screening, and local result downloads. Imported sequences and
 calculations remain in the browser; no sequence data are sent to a backend,
 analytics service, or external API.
 
@@ -30,10 +30,15 @@ checks, and browser/Python parity checks to pass.
 
 ## Input and ranking scope
 
-Single-sequence input must contain one 30-position alignment using the 20 standard
-amino-acid letters and `-` for gaps. Batch input must be a UTF-8 CSV with exactly
-`candidate_id,aligned_sequence` and an explicit GLP-1R, GCGR, or dual ranking
-objective.
+Default single-sequence input contains 26–30 standard amino-acid residues. A frozen,
+label-free adapter maps a local analog into the model's 30 columns only when the
+projection is unambiguous and passes the 85% nearest-reference identity gate; it
+never truncates residues. Expert users may instead provide a reviewed 30-column
+alignment with explicit `-` gaps.
+
+Preferred batch input uses exactly `candidate_id,sequence`; the expert schema
+`candidate_id,aligned_sequence` remains supported. Both require an explicit GLP-1R,
+GCGR, or dual ranking objective.
 
 The application ranks an input only when its nearest-reference aligned identity is
 at least 0.85 and it contains at least 26 standard residues. The 0.85 threshold was

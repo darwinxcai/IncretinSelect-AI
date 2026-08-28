@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
 import json
 import re
@@ -19,8 +20,40 @@ SPEC.loader.exec_module(audit_release_readiness)
 class ReleaseReadinessTests(unittest.TestCase):
     def test_current_tree_passes_every_local_gate(self) -> None:
         gates = audit_release_readiness.audit_local(PROJECT_ROOT)
+        if not (PROJECT_ROOT / ".git").exists():
+            # A source distribution cannot contain the receipt produced by the
+            # verification run that is still building it. The outer repository
+            # check validates that final receipt after this archive passes.
+            gates = [gate for gate in gates if gate["name"] != "built_distribution"]
         self.assertTrue(gates)
         self.assertEqual({item["status"] for item in gates}, {"pass"})
+
+    def test_static_demo_gate_requires_raw_adapter_evidence(self) -> None:
+        receipt = json.loads(
+            (PROJECT_ROOT / "reports/static_demo_verification.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertTrue(audit_release_readiness.static_demo_receipt_passes(receipt))
+
+        mutations = (
+            ("alignment_adapter", "source_and_demo_bytes_identical", False),
+            ("alignment_adapter", "labels_accessed", True),
+            ("alignment_adapter", "model_coefficients_changed", True),
+            ("browser_python_parity", "raw_adapter_cases", 0),
+            (
+                "browser_python_parity",
+                "raw_adapter_decisions_and_provenance_exact",
+                False,
+            ),
+        )
+        for section, key, value in mutations:
+            with self.subTest(section=section, key=key):
+                altered = copy.deepcopy(receipt)
+                altered[section][key] = value
+                self.assertFalse(
+                    audit_release_readiness.static_demo_receipt_passes(altered)
+                )
 
     def test_pages_deployment_requires_current_successful_ci(self) -> None:
         workflow = (PROJECT_ROOT / ".github/workflows/pages.yml").read_text(

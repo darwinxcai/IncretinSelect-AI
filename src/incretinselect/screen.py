@@ -23,10 +23,21 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from incretinselect import __version__
-from incretinselect.product import PortableModel, ProductError, load_model, predict
+from incretinselect.product import (
+    PortableModel,
+    ProductError,
+    load_alignment_policy,
+    load_model,
+    predict,
+    predict_raw,
+)
 
-INPUT_COLUMNS = ("candidate_id", "aligned_sequence")
+RAW_INPUT_COLUMNS = ("candidate_id", "sequence")
+ALIGNED_INPUT_COLUMNS = ("candidate_id", "aligned_sequence")
+# Backward-compatible public alias for callers that imported the v0.7 schema.
+INPUT_COLUMNS = ALIGNED_INPUT_COLUMNS
 MAX_CANDIDATES = 10_000
+MAX_RAW_CANDIDATES = 200
 MAX_INPUT_BYTES = 10_000_000
 MIN_RANKING_RESIDUES = 26
 RANKING_TIE_TOLERANCE = 1e-12
@@ -62,7 +73,15 @@ OBJECTIVES: dict[str, dict[str, str]] = {
 OUTPUT_COLUMNS = (
     "input_row",
     "candidate_id",
+    "input_sequence",
+    "input_mode",
     "aligned_sequence",
+    "alignment_method",
+    "alignment_status",
+    "alignment_reference_ids",
+    "alignment_adapter_id",
+    "alignment_adapter_version",
+    "alignment_adapter_sha256",
     "status",
     "error_code",
     "error_message",
@@ -147,6 +166,7 @@ def _blank_output_row(
     input_row: int,
     candidate_id: str,
     sequence: str,
+    input_mode: str,
     objective: str,
     model: PortableModel,
 ) -> dict[str, str]:
@@ -155,7 +175,11 @@ def _blank_output_row(
         {
             "input_row": str(input_row),
             "candidate_id": candidate_id,
-            "aligned_sequence": sequence,
+            "input_sequence": sequence,
+            "input_mode": input_mode,
+            "aligned_sequence": (
+                sequence if input_mode == "provided_alignment" else ""
+            ),
             "ranking_objective": objective,
             "ranking_objective_definition": OBJECTIVES[objective]["definition"],
             "ranking_eligible": "false",
@@ -213,10 +237,17 @@ def _read_candidates(raw: bytes) -> list[dict[str, str]]:
         fieldnames = tuple(name.strip() for name in reader.fieldnames)
         if len(fieldnames) != len(set(fieldnames)):
             raise ScreeningError("Input CSV has duplicate column names")
-        if set(fieldnames) != set(INPUT_COLUMNS) or len(fieldnames) != len(INPUT_COLUMNS):
+        field_set = set(fieldnames)
+        if field_set == set(RAW_INPUT_COLUMNS) and len(fieldnames) == 2:
+            sequence_column = "sequence"
+            input_mode = "raw_sequence"
+        elif field_set == set(ALIGNED_INPUT_COLUMNS) and len(fieldnames) == 2:
+            sequence_column = "aligned_sequence"
+            input_mode = "provided_alignment"
+        else:
             raise ScreeningError(
-                "Input CSV must contain exactly these columns: "
-                + ", ".join(INPUT_COLUMNS)
+                "Input CSV must contain exactly candidate_id,sequence (raw adapter) "
+                "or candidate_id,aligned_sequence (expert 30-column mode)"
             )
         reader.fieldnames = list(fieldnames)
         records = []
@@ -228,12 +259,13 @@ def _read_candidates(raw: bytes) -> list[dict[str, str]]:
                 )
             if None in row:
                 raise ScreeningError(
-                    f"Candidate row {row_number} has more than {len(INPUT_COLUMNS)} fields"
+                    f"Candidate row {row_number} has more than 2 fields"
                 )
             records.append(
                 {
                     "candidate_id": str(row.get("candidate_id") or "").strip(),
-                    "aligned_sequence": str(row.get("aligned_sequence") or ""),
+                    "sequence": str(row.get(sequence_column) or ""),
+                    "input_mode": input_mode,
                 }
             )
     except csv.Error as exc:
@@ -244,6 +276,12 @@ def _read_candidates(raw: bytes) -> list[dict[str, str]]:
     if len(records) > MAX_CANDIDATES:
         raise ScreeningError(
             f"Input CSV has {len(records)} rows; the safety limit is {MAX_CANDIDATES}"
+        )
+    if input_mode == "raw_sequence" and len(records) > MAX_RAW_CANDIDATES:
+        raise ScreeningError(
+            f"Raw-sequence CSV input has {len(records)} rows; the alignment-adapter "
+            f"limit is {MAX_RAW_CANDIDATES}. Use a smaller shortlist or reviewed "
+            "30-column input."
         )
 
     nonblank_ids = [row["candidate_id"] for row in records if row["candidate_id"]]
@@ -315,14 +353,17 @@ def screen_records(
     normalized_counts: dict[str, int] = {}
     normalized_by_input_row: dict[int, str] = {}
     raw_ranking_scores: dict[int, float] = {}
+    prediction_cache: dict[tuple[str, str], dict[str, Any] | str] = {}
 
     for input_row, record in enumerate(records, start=1):
         candidate_id = record["candidate_id"]
-        raw_sequence = record["aligned_sequence"]
+        input_mode = record.get("input_mode", "provided_alignment")
+        raw_sequence = record.get("sequence", record.get("aligned_sequence", ""))
         row = _blank_output_row(
             input_row,
             _safe_csv_text(candidate_id),
             _safe_csv_text(raw_sequence.strip()),
+            input_mode,
             objective,
             fitted,
         )
@@ -338,18 +379,36 @@ def screen_records(
             rows.append(row)
             continue
 
-        try:
-            result = predict(raw_sequence, fitted)
-        except ProductError as exc:
+        # Preserve the pre-validation characters in the cache key. Unicode case
+        # conversion can expand characters (for example, ſ -> S), so caching an
+        # uppercased key could let a rejected row inherit a valid row's result.
+        cache_key = (input_mode, "".join(raw_sequence.split()))
+        cached = prediction_cache.get(cache_key)
+        if cached is None:
+            try:
+                cached = (
+                    predict_raw(raw_sequence, fitted)
+                    if input_mode == "raw_sequence"
+                    else predict(raw_sequence, fitted)
+                )
+            except ProductError as exc:
+                cached = str(exc)
+            prediction_cache[cache_key] = cached
+        if isinstance(cached, str):
             row.update(
                 {
                     "status": "input_error",
-                    "error_code": "invalid_aligned_sequence",
-                    "error_message": str(exc),
+                    "error_code": (
+                        "invalid_raw_sequence"
+                        if input_mode == "raw_sequence"
+                        else "invalid_aligned_sequence"
+                    ),
+                    "error_message": cached,
                 }
             )
             rows.append(row)
             continue
+        result = cached
 
         normalized = str(result["input"]["aligned_sequence"])
         normalized_counts[normalized] = normalized_counts.get(normalized, 0) + 1
@@ -371,6 +430,20 @@ def screen_records(
         row.update(
             {
                 "aligned_sequence": _safe_csv_text(normalized),
+                "alignment_method": str(result["input"]["alignment_method"]),
+                "alignment_status": str(result["input"]["alignment_status"]),
+                "alignment_reference_ids": ";".join(
+                    result["input"]["alignment_reference_ids"]
+                ),
+                "alignment_adapter_id": str(
+                    result["input"]["alignment_adapter_id"] or ""
+                ),
+                "alignment_adapter_version": str(
+                    result["input"]["alignment_adapter_version"] or ""
+                ),
+                "alignment_adapter_sha256": str(
+                    result["input"]["alignment_adapter_sha256"] or ""
+                ),
                 "status": "pending_rank" if eligible else "not_ranked_out_of_scope",
                 "ranking_eligible": "true" if eligible else "false",
                 "ranking_exclusion_reason": "; ".join(exclusion_reasons),
@@ -489,6 +562,8 @@ def build_screening(
     records = _read_candidates(raw_input)
     rows, counts = screen_records(records, objective, model=fitted)
     mae_context, mae_source, mae_note = _development_mae_context(fitted, objective)
+    input_mode = records[0]["input_mode"]
+    alignment_policy = load_alignment_policy()
     rendered = _render_csv(rows)
     rendered_bytes = rendered.encode("utf-8")
     if counts["ranking_eligible_rows"] == 0:
@@ -508,8 +583,18 @@ def build_screening(
         "input": {
             "filename": input_filename,
             "sha256": _sha256(raw_input),
-            "required_columns": list(INPUT_COLUMNS),
-            "maximum_rows": MAX_CANDIDATES,
+            "accepted_column_schemas": [
+                list(RAW_INPUT_COLUMNS),
+                list(ALIGNED_INPUT_COLUMNS),
+            ],
+            "input_mode": input_mode,
+            "maximum_rows": (
+                MAX_RAW_CANDIDATES
+                if input_mode == "raw_sequence"
+                else MAX_CANDIDATES
+            ),
+            "raw_sequence_maximum_rows": MAX_RAW_CANDIDATES,
+            "expert_alignment_maximum_rows": MAX_CANDIDATES,
             "maximum_bytes": MAX_INPUT_BYTES,
         },
         "output": {
@@ -547,6 +632,17 @@ def build_screening(
             "artifact_version": fitted.artifact_version,
             "artifact_sha256": fitted.sha256,
             "benchmark_context": fitted.benchmark,
+        },
+        "alignment_adapter": {
+            "used_for_input": input_mode == "raw_sequence",
+            "adapter_id": alignment_policy["adapter_id"],
+            "adapter_version": alignment_policy["adapter_version"],
+            "sha256": alignment_policy["sha256"],
+            "acceptance_policy": alignment_policy["acceptance_policy"],
+            "labels_accessed": alignment_policy["labels_accessed"],
+            "model_coefficients_changed": alignment_policy[
+                "model_coefficients_changed"
+            ],
         },
         "scientific_boundaries": {
             "endpoint": "cell-based cAMP EC50 functional potency, not binding affinity",
@@ -702,11 +798,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="incretin-screen",
         description=(
-            "Compare a CSV of aligned 30-position incretin-like peptides. Only rows "
-            "meeting the 0.85 identity and 26-residue software gates are ranked."
+            "Compare a CSV of raw 26--30-residue incretin-like peptides or expert "
+            "30-column alignments. Only rows meeting the applicability gates are ranked."
         ),
         epilog=(
-            "Required CSV columns: candidate_id,aligned_sequence\n"
+            "Preferred CSV columns: candidate_id,sequence\n"
+            "Expert aligned schema: candidate_id,aligned_sequence\n"
             "Example: incretin-screen candidates.csv --objective dual "
             "--output screened.csv --receipt screening_receipt.json\n"
             "Outputs are research estimates of cell-based cAMP EC50, not affinity or "

@@ -1,10 +1,20 @@
-import { SOFTWARE_VERSION, normalizeSequence, predictFromModel } from "./model.mjs";
+import {
+  SOFTWARE_VERSION,
+  normalizeSequence,
+  predictFromModel,
+  predictRawFromModel,
+  prepareRawSequence,
+  validateAlignmentAdapter,
+} from "./model.mjs";
 
 export const MAX_BROWSER_ROWS = 500;
+export const MAX_BROWSER_RAW_ROWS = 200;
 export const MAX_BROWSER_BYTES = 2_000_000;
 export const MIN_RANKING_RESIDUES = 26;
 export const RANKING_TIE_TOLERANCE = 1e-12;
-export const INPUT_COLUMNS = Object.freeze(["candidate_id", "aligned_sequence"]);
+export const RAW_INPUT_COLUMNS = Object.freeze(["candidate_id", "sequence"]);
+export const ALIGNED_INPUT_COLUMNS = Object.freeze(["candidate_id", "aligned_sequence"]);
+export const INPUT_COLUMNS = RAW_INPUT_COLUMNS;
 
 export const OBJECTIVES = Object.freeze({
   glp1r: Object.freeze({
@@ -26,7 +36,15 @@ export const OBJECTIVES = Object.freeze({
 export const SCREENING_OUTPUT_COLUMNS = Object.freeze([
   "input_row",
   "candidate_id",
+  "input_sequence",
+  "input_mode",
   "aligned_sequence",
+  "alignment_method",
+  "alignment_status",
+  "alignment_reference_ids",
+  "alignment_adapter_id",
+  "alignment_adapter_version",
+  "alignment_adapter_sha256",
   "status",
   "error_code",
   "error_message",
@@ -63,7 +81,14 @@ export const SCREENING_OUTPUT_COLUMNS = Object.freeze([
 ]);
 
 const SINGLE_OUTPUT_COLUMNS = Object.freeze([
+  "original_sequence",
   "aligned_sequence",
+  "alignment_method",
+  "alignment_status",
+  "alignment_reference_ids",
+  "alignment_adapter_id",
+  "alignment_adapter_version",
+  "alignment_adapter_sha256",
   "glp1r_log10_ec50_pm",
   "glp1r_ec50_pm",
   "glp1r_ec50_nm",
@@ -141,8 +166,8 @@ function assertArtifactSha256(value) {
   }
 }
 
-/** Parse exactly one FASTA record and enforce the model's aligned-sequence contract. */
-export function parseSingleFasta(value, model) {
+/** Parse exactly one FASTA record under an explicit raw or expert input mode. */
+export function parseSingleFasta(value, model, inputMode = "raw_sequence") {
   const text = assertTextWithinLimit(value, "FASTA input");
   const lines = text.replace(/\r\n?/g, "\n").split("\n");
   while (lines.length && !lines[0].trim()) lines.shift();
@@ -157,9 +182,22 @@ export function parseSingleFasta(value, model) {
   }
   const sequenceText = lines.slice(1).join("");
   if (!sequenceText.trim()) throw new Error("FASTA record has no sequence.");
+  if (!new Set(["raw_sequence", "provided_alignment"]).has(inputMode)) {
+    throw new Error("FASTA input mode must be raw_sequence or provided_alignment.");
+  }
+  const prepared = inputMode === "provided_alignment"
+    ? {
+      originalSequence: normalizeSequence(sequenceText, model),
+      alignedSequence: normalizeSequence(sequenceText, model),
+      alignmentStatus: "provided",
+    }
+    : prepareRawSequence(sequenceText, model);
   return {
     header,
-    alignedSequence: normalizeSequence(sequenceText, model),
+    inputSequence: prepared.originalSequence,
+    alignedSequence: prepared.alignedSequence,
+    alignmentStatus: prepared.alignmentStatus,
+    inputMode,
   };
 }
 
@@ -251,13 +289,20 @@ export function parseCandidateCsv(value) {
   const rows = parseCsvRows(text, MAX_BROWSER_ROWS + 1);
   if (!rows.length) throw new Error("CSV input is empty.");
   const header = rows[0].map((name) => name.trim());
-  if (
-    header.length !== INPUT_COLUMNS.length ||
-    new Set(header).size !== INPUT_COLUMNS.length ||
-    header.some((name) => !INPUT_COLUMNS.includes(name))
-  ) {
+  const isRaw = (
+    header.length === RAW_INPUT_COLUMNS.length &&
+    new Set(header).size === RAW_INPUT_COLUMNS.length &&
+    header.every((name) => RAW_INPUT_COLUMNS.includes(name))
+  );
+  const isAligned = (
+    header.length === ALIGNED_INPUT_COLUMNS.length &&
+    new Set(header).size === ALIGNED_INPUT_COLUMNS.length &&
+    header.every((name) => ALIGNED_INPUT_COLUMNS.includes(name))
+  );
+  if (!isRaw && !isAligned) {
     throw new Error(
-      "CSV must contain exactly these columns: candidate_id, aligned_sequence.",
+      "CSV must contain exactly candidate_id,sequence (raw adapter) or " +
+      "candidate_id,aligned_sequence (expert 30-column mode).",
     );
   }
   const dataRows = rows.slice(1).filter(
@@ -269,8 +314,14 @@ export function parseCandidateCsv(value) {
       `CSV input has ${dataRows.length} rows; the browser limit is ${MAX_BROWSER_ROWS}.`,
     );
   }
+  if (isRaw && dataRows.length > MAX_BROWSER_RAW_ROWS) {
+    throw new Error(
+      `Raw-sequence CSV input has ${dataRows.length} rows; the browser adapter limit ` +
+      `is ${MAX_BROWSER_RAW_ROWS}. Use a smaller shortlist or reviewed 30-column input.`,
+    );
+  }
   const idIndex = header.indexOf("candidate_id");
-  const sequenceIndex = header.indexOf("aligned_sequence");
+  const sequenceIndex = header.indexOf(isRaw ? "sequence" : "aligned_sequence");
   const records = dataRows.map((originalCells, index) => {
     if (originalCells.length > INPUT_COLUMNS.length) {
       throw new Error(
@@ -281,7 +332,9 @@ export function parseCandidateCsv(value) {
     while (cells.length < INPUT_COLUMNS.length) cells.push("");
     return {
       candidateId: cells[idIndex].trim(),
-      alignedSequence: cells[sequenceIndex],
+      inputSequence: cells[sequenceIndex],
+      inputMode: isRaw ? "raw_sequence" : "provided_alignment",
+      alignedSequence: isAligned ? cells[sequenceIndex] : "",
     };
   });
   const seen = new Set();
@@ -342,7 +395,15 @@ function blankScreeningRow(inputRow, record, objective, model, artifactSha256) {
   return {
     input_row: String(inputRow),
     candidate_id: record.candidateId,
-    aligned_sequence: record.alignedSequence.trim(),
+    input_sequence: record.inputSequence.trim(),
+    input_mode: record.inputMode,
+    aligned_sequence: record.inputMode === "provided_alignment" ? record.inputSequence.trim() : "",
+    alignment_method: "",
+    alignment_status: "",
+    alignment_reference_ids: "",
+    alignment_adapter_id: "",
+    alignment_adapter_version: "",
+    alignment_adapter_sha256: "",
     status: "",
     error_code: "",
     error_message: "",
@@ -393,8 +454,20 @@ export function screenCandidates(records, objective, model, artifactSha256) {
   assertArtifactSha256(artifactSha256);
   const normalizedRecords = records.map((record) => ({
     candidateId: String(record?.candidateId ?? "").trim(),
-    alignedSequence: String(record?.alignedSequence ?? ""),
+    inputSequence: String(record?.inputSequence ?? record?.alignedSequence ?? ""),
+    inputMode: record?.inputMode === "raw_sequence"
+      ? "raw_sequence"
+      : "provided_alignment",
   }));
+  if (
+    normalizedRecords.some((record) => record.inputMode === "raw_sequence") &&
+    normalizedRecords.length > MAX_BROWSER_RAW_ROWS
+  ) {
+    throw new Error(
+      `Raw-sequence screening has ${normalizedRecords.length} rows; the browser ` +
+      `adapter limit is ${MAX_BROWSER_RAW_ROWS}.`,
+    );
+  }
   const seenIds = new Set();
   const duplicateIds = new Set();
   for (const record of normalizedRecords) {
@@ -410,6 +483,7 @@ export function screenCandidates(records, objective, model, artifactSha256) {
   const rows = [];
   const scores = new Map();
   const sequenceCounts = new Map();
+  const predictionCache = new Map();
 
   normalizedRecords.forEach((record, index) => {
     const inputRow = index + 1;
@@ -425,16 +499,32 @@ export function screenCandidates(records, objective, model, artifactSha256) {
       return;
     }
 
-    let result;
-    try {
-      result = predictFromModel(record.alignedSequence, model);
-    } catch (error) {
+    // Keep pre-validation characters distinct. Unicode uppercasing can expand a
+    // glyph, so an uppercased key could otherwise alias an invalid and valid row.
+    const cacheKey = `${record.inputMode}\0${record.inputSequence.replace(/\s/g, "")}`;
+    let cached = predictionCache.get(cacheKey);
+    if (!cached) {
+      try {
+        cached = {
+          result: record.inputMode === "raw_sequence"
+            ? predictRawFromModel(record.inputSequence, model)
+            : predictFromModel(record.inputSequence, model),
+        };
+      } catch (error) {
+        cached = { error: error instanceof Error ? error.message : String(error) };
+      }
+      predictionCache.set(cacheKey, cached);
+    }
+    if (cached.error) {
       row.status = "input_error";
-      row.error_code = "invalid_aligned_sequence";
-      row.error_message = error instanceof Error ? error.message : String(error);
+      row.error_code = record.inputMode === "raw_sequence"
+        ? "invalid_raw_sequence"
+        : "invalid_aligned_sequence";
+      row.error_message = cached.error;
       rows.push(row);
       return;
     }
+    const result = cached.result;
 
     const normalized = result.input.alignedSequence;
     const residueCount = Number(result.input.standardResidueCount);
@@ -453,6 +543,12 @@ export function screenCandidates(records, objective, model, artifactSha256) {
     sequenceCounts.set(normalized, (sequenceCounts.get(normalized) ?? 0) + 1);
     if (eligible) scores.set(inputRow, score);
     row.aligned_sequence = normalized;
+    row.alignment_method = result.input.alignmentMethod;
+    row.alignment_status = result.input.alignmentStatus;
+    row.alignment_reference_ids = result.input.alignmentReferenceIds.join(";");
+    row.alignment_adapter_id = result.input.alignmentAdapterId ?? "";
+    row.alignment_adapter_version = result.input.alignmentAdapterVersion ?? "";
+    row.alignment_adapter_sha256 = result.input.alignmentAdapterSha256 ?? "";
     row.status = eligible ? "pending_rank" : "not_ranked_out_of_scope";
     row.ranking_eligible = eligible ? "true" : "false";
     row.ranking_exclusion_reason = exclusions.join("; ");
@@ -569,7 +665,7 @@ export function renderScreeningCsv(rows) {
   return renderRows(
     SCREENING_OUTPUT_COLUMNS,
     rows,
-    new Set(["candidate_id", "aligned_sequence"]),
+    new Set(["candidate_id", "input_sequence", "aligned_sequence"]),
   );
 }
 
@@ -594,10 +690,20 @@ export function buildSingleResultDocument(result, model, artifactSha256) {
       training_records: Number(model.applicability_reference?.sequences?.length),
     },
     input: {
+      original_sequence: result.input.originalSequence,
       aligned_sequence: result.input.alignedSequence,
       aligned_length: result.input.alignedSequence.length,
       standard_residue_count: result.input.standardResidueCount,
       alignment_gaps: [...result.input.alignedSequence].filter((symbol) => symbol === "-").length,
+      input_residue_count: result.input.inputResidueCount,
+      alignment_method: result.input.alignmentMethod,
+      alignment_status: result.input.alignmentStatus,
+      alignment_reference_ids: [...result.input.alignmentReferenceIds],
+      alignment_score: result.input.alignmentScore,
+      alignment_note: result.input.alignmentNote,
+      alignment_adapter_id: result.input.alignmentAdapterId,
+      alignment_adapter_version: result.input.alignmentAdapterVersion,
+      alignment_adapter_sha256: result.input.alignmentAdapterSha256,
     },
     predictions: {
       gcgr: {
@@ -697,7 +803,14 @@ export function renderSingleResultCsv(result, model, artifactSha256) {
   const delta = comparison.query_minus_reference;
   const ranking = document.exploratory_ranking;
   const row = {
+    original_sequence: document.input.original_sequence,
     aligned_sequence: document.input.aligned_sequence,
+    alignment_method: document.input.alignment_method,
+    alignment_status: document.input.alignment_status,
+    alignment_reference_ids: document.input.alignment_reference_ids.join(";"),
+    alignment_adapter_id: document.input.alignment_adapter_id ?? "",
+    alignment_adapter_version: document.input.alignment_adapter_version ?? "",
+    alignment_adapter_sha256: document.input.alignment_adapter_sha256 ?? "",
     glp1r_log10_ec50_pm: predictions.glp1r.log10_ec50_pm,
     glp1r_ec50_pm: predictions.glp1r.ec50_pm,
     glp1r_ec50_nm: predictions.glp1r.ec50_nm,
@@ -726,13 +839,46 @@ export function renderSingleResultCsv(result, model, artifactSha256) {
     endpoint_warning: ENDPOINT_WARNING,
     validation_warning: String(model.benchmark_context?.external_evaluation ?? ""),
   };
-  return renderRows(SINGLE_OUTPUT_COLUMNS, [row], new Set(["aligned_sequence"]));
+  return renderRows(
+    SINGLE_OUTPUT_COLUMNS,
+    [row],
+    new Set(["original_sequence", "aligned_sequence"]),
+  );
 }
 
 function markdownNumber(value) {
   if (value === 0) return "0";
   if (Math.abs(value) >= 10000 || Math.abs(value) < 0.001) return value.toExponential(4);
   return value.toFixed(4).replace(/\.?0+$/, "");
+}
+
+function comparisonStatus(evidenceState, rankingEnabled) {
+  if (evidenceState === "training_reference_match") {
+    return "In-sample reference · not an independent prediction";
+  }
+  return rankingEnabled
+    ? "Eligible for exploratory comparison"
+    : "Do not use for candidate ranking";
+}
+
+function validationEvidence(evidenceState) {
+  if (evidenceState === "training_reference_match") return "In-sample evidence only";
+  if (evidenceState === "local_analogue_mixed_evidence") {
+    return "Mixed retrospective transfer";
+  }
+  return "No supported transfer evidence";
+}
+
+function foldComparison(foldRatio, receptor) {
+  if (Math.abs(foldRatio - 1) <= 1e-12) {
+    return `${receptor} EC50 is unchanged from the closest development sequence.`;
+  }
+  if (foldRatio > 1) {
+    return `Query ${receptor} EC50 is predicted ${markdownNumber(foldRatio)}× higher than ` +
+      "the closest development sequence.";
+  }
+  return `Query ${receptor} EC50 is predicted ${markdownNumber(1 / foldRatio)}× lower than ` +
+    "the closest development sequence.";
 }
 
 /** Render a concise human-readable result for lab notes or review. */
@@ -743,43 +889,75 @@ export function renderSingleResultMarkdown(result, model, artifactSha256) {
   const comparison = document.nearest_reference_comparison;
   const delta = comparison.query_minus_reference;
   const ranking = document.exploratory_ranking;
+  const applicabilityLabels = {
+    training_reference_match: "Training-set match · in-sample",
+    local_analogue_mixed_evidence: "Within local-analog scope · exploratory use",
+    outside_ranking_scope: "Outside supported comparison scope",
+    far_outside_ranking_scope: "Distant extrapolation · do not rank",
+  };
+  const applicabilityLabel = applicabilityLabels[applicability.evidence_state]
+    ?? "Applicability unavailable";
+  const comparisonState = comparisonStatus(applicability.evidence_state, ranking.enabled);
+  const evidence = validationEvidence(applicability.evidence_state);
+  const ratio = predictions.selectivity.ec50_fold_ratio;
+  const ratioSentence = ratio >= 3
+    ? `GCGR EC50 is predicted to be ${markdownNumber(ratio)}× higher than GLP-1R EC50.`
+    : ratio <= 1 / 3
+    ? `GLP-1R EC50 is predicted to be ${markdownNumber(1 / ratio)}× higher than GCGR EC50.`
+    : `The two predicted EC50 values are within ` +
+      `${markdownNumber(Math.max(ratio, 1 / ratio))}×.`;
   const lines = [
     "# IncretinSelect-AI result",
     "",
-    `**Aligned sequence:** \`${document.input.aligned_sequence}\``,
+    "## Result overview",
     "",
-    "## Predicted cell-based cAMP EC50",
+    "| Question | Assessment |",
+    "|:--|:--|",
+    `| Model applicability | ${applicabilityLabel} |`,
+    `| Comparison status | ${comparisonState} |`,
+    `| Predicted receptor profile | ${predictions.selectivity.interpretation} |`,
+    `| Validation evidence | ${evidence} |`,
     "",
-    "| Endpoint | log10(EC50 / 1 pM) | pM | nM |",
+    `**Input sequence:** \`${document.input.original_sequence}\`  `,
+    `**Model alignment:** \`${document.input.aligned_sequence}\`  `,
+    `**Input mapping:** ${document.input.alignment_note}`,
+    "",
+    "## Predicted functional potency",
+    "",
+    "Cell-based cAMP EC50 in the source assay; lower predicted EC50 means greater " +
+      "functional potency in that assay.",
+    "",
+    "| Receptor | pM | nM | Model scale: log10(EC50 / 1 pM) |",
     "|:--|--:|--:|--:|",
-    `| GLP-1R | ${predictions.glp1r.log10_ec50_pm.toFixed(4)} | ` +
-      `${markdownNumber(predictions.glp1r.ec50_pm)} | ` +
-      `${markdownNumber(predictions.glp1r.ec50_nm)} |`,
-    `| GCGR | ${predictions.gcgr.log10_ec50_pm.toFixed(4)} | ` +
-      `${markdownNumber(predictions.gcgr.ec50_pm)} | ` +
-      `${markdownNumber(predictions.gcgr.ec50_nm)} |`,
+    `| GLP-1R | ${markdownNumber(predictions.glp1r.ec50_pm)} | ` +
+      `${markdownNumber(predictions.glp1r.ec50_nm)} | ` +
+      `${predictions.glp1r.log10_ec50_pm.toFixed(4)} |`,
+    `| GCGR | ${markdownNumber(predictions.gcgr.ec50_pm)} | ` +
+      `${markdownNumber(predictions.gcgr.ec50_nm)} | ` +
+      `${predictions.gcgr.log10_ec50_pm.toFixed(4)} |`,
     "",
-    `Predicted GCGR/GLP-1R EC50 ratio: **` +
-      `${markdownNumber(predictions.selectivity.ec50_fold_ratio)}-fold** ` +
-      `(${predictions.selectivity.interpretation}).`,
+    `**Predicted receptor profile: ${predictions.selectivity.interpretation}.** ` +
+      ratioSentence,
+    "This describes functional-potency balance, not binding selectivity or evidence " +
+      "of dual agonism.",
     "",
-    "## Applicability",
+    "## Model applicability",
     "",
-    `- Tier: \`${applicability.tier}\``,
+    `- Assessment: ${applicabilityLabel}`,
     `- Nearest aligned identity: ${(applicability.nearest_aligned_identity * 100).toFixed(1)}%`,
     `- Nearest reference: \`${comparison.reference_id}\``,
     `- Changed alignment positions: ${comparison.changed_position_count}`,
-    `- Assessment: ${applicability.summary}`,
-    `- Exploratory ranking: ${ranking.enabled ? "enabled" : "disabled"}`,
+    `- Meaning: ${applicability.summary}`,
+    `- Candidate comparison: ${comparisonState}`,
     "",
-    "## Nearest-reference model comparison",
+    "## Comparison with the closest development sequence",
     "",
-    "| Endpoint | Query − reference, log10 units | Query/reference EC50 |",
-    "|:--|--:|--:|",
-    `| GLP-1R | ${delta.glp1r_delta_log10_ec50_pm.toFixed(4)} | ` +
-      `${markdownNumber(delta.glp1r_ec50_fold_ratio)}x |`,
-    `| GCGR | ${delta.gcgr_delta_log10_ec50_pm.toFixed(4)} | ` +
-      `${markdownNumber(delta.gcgr_ec50_fold_ratio)}x |`,
+    "| Endpoint | Plain-language comparison | Δ log10 EC50 |",
+    "|:--|:--|--:|",
+    `| GLP-1R | ${foldComparison(delta.glp1r_ec50_fold_ratio, "GLP-1R")} | ` +
+      `${delta.glp1r_delta_log10_ec50_pm.toFixed(4)} |`,
+    `| GCGR | ${foldComparison(delta.gcgr_ec50_fold_ratio, "GCGR")} | ` +
+      `${delta.gcgr_delta_log10_ec50_pm.toFixed(4)} |`,
     "",
   ];
   if (comparison.position_contributions.length) {
@@ -816,12 +994,30 @@ export function renderSingleResultMarkdown(result, model, artifactSha256) {
     `> ${comparison.scientific_boundary}`,
     "> Reference values in this report are model predictions, not observed assay values.",
     "",
-    "## Interpretation boundary",
+    "## Benchmark performance",
     "",
-    "These are sequence-model point estimates of cell-based cAMP EC50. They are not " +
-      "binding affinity, maximal assay response, safety, or evidence of activity in vivo.",
-    "The locked retrospective P1–P15 external evaluation was mixed and showed no " +
-      "overall model superiority.",
+    `- GLP-1R development MAE: ` +
+      `${model.benchmark_context.metrics.glp1r.development_oof_mae_log10.toFixed(2)} ` +
+      `log10 units (~${model.benchmark_context.metrics.glp1r.development_oof_geometric_fold_error.toFixed(1)}-fold)`,
+    `- GCGR development MAE: ` +
+      `${model.benchmark_context.metrics.gcgr.development_oof_mae_log10.toFixed(2)} ` +
+      `log10 units (~${model.benchmark_context.metrics.gcgr.development_oof_geometric_fold_error.toFixed(1)}-fold)`,
+    `- Receptor-balance development MAE: ` +
+      `${model.benchmark_context.metrics.selectivity.development_oof_mae_log10.toFixed(2)} ` +
+      `log10 units (~${model.benchmark_context.metrics.selectivity.development_oof_geometric_fold_error.toFixed(1)}-fold)`,
+    "",
+    "These are population-level cross-validated errors, not uncertainty intervals for " +
+      "this peptide. Evaluation on 15 published designs showed mixed transfer and no " +
+      "overall superiority over nearest-neighbor prediction.",
+    "",
+    "## Interpretation limits",
+    "",
+    "- Endpoint: cell-based cAMP EC50—not binding affinity, maximal response, safety, " +
+      "stability, pharmacokinetics, or in vivo efficacy.",
+    "- Chemistry: Aib, lipidation, amidation, cyclization, stapling, D-amino acids, and " +
+      "other noncanonical modifications are not represented.",
+    "- Applicability: estimates outside the local-analog gate are extrapolations and " +
+      "should not be used for ranking.",
     "",
     `Model: \`${document.model.artifact_id}\` v${document.model.artifact_version}`,
     "",
@@ -853,6 +1049,11 @@ export async function buildBatchArtifacts(value, objective, model, options = {})
   const artifactSha256 = options.artifactSha256;
   assertArtifactSha256(artifactSha256);
   const records = parseCandidateCsv(value);
+  const alignmentAdapter = validateAlignmentAdapter(model.raw_alignment_adapter);
+  const alignmentAdapterSha256 = String(model.raw_alignment_adapter_sha256 ?? "");
+  if (!/^[0-9a-f]{64}$/.test(alignmentAdapterSha256)) {
+    throw new Error("Raw-alignment adapter checksum is missing or invalid.");
+  }
   const screening = screenCandidates(records, objective, model, artifactSha256);
   const csv = renderScreeningCsv(screening.rows);
   const inputFilename = options.inputFilename ?? "candidates.csv";
@@ -876,8 +1077,16 @@ export async function buildBatchArtifacts(value, objective, model, options = {})
     input: {
       filename: inputFilename,
       sha256: inputSha256,
-      required_columns: [...INPUT_COLUMNS],
-      maximum_rows: MAX_BROWSER_ROWS,
+      accepted_column_schemas: [
+        [...RAW_INPUT_COLUMNS],
+        [...ALIGNED_INPUT_COLUMNS],
+      ],
+      input_mode: records[0].inputMode,
+      maximum_rows: records[0].inputMode === "raw_sequence"
+        ? MAX_BROWSER_RAW_ROWS
+        : MAX_BROWSER_ROWS,
+      raw_sequence_maximum_rows: MAX_BROWSER_RAW_ROWS,
+      expert_alignment_maximum_rows: MAX_BROWSER_ROWS,
       maximum_bytes: MAX_BROWSER_BYTES,
     },
     output: {
@@ -915,6 +1124,15 @@ export async function buildBatchArtifacts(value, objective, model, options = {})
       artifact_version: String(model.artifact_version ?? ""),
       artifact_sha256: artifactSha256,
       benchmark_context: model.benchmark_context,
+    },
+    alignment_adapter: {
+      used_for_input: records[0].inputMode === "raw_sequence",
+      adapter_id: alignmentAdapter.adapter_id,
+      adapter_version: alignmentAdapter.adapter_version,
+      sha256: alignmentAdapterSha256,
+      acceptance_policy: alignmentAdapter.acceptance_policy,
+      labels_accessed: alignmentAdapter.labels_accessed,
+      model_coefficients_changed: alignmentAdapter.model_coefficients_changed,
     },
     scientific_boundaries: {
       endpoint: "cell-based cAMP EC50 functional potency, not binding affinity",

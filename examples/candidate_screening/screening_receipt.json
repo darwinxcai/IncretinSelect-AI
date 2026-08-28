@@ -1,4 +1,19 @@
 {
+  "alignment_adapter": {
+    "acceptance_policy": {
+      "ambiguous_projection": "reject",
+      "maximum_raw_residues": 30,
+      "minimum_nearest_aligned_identity": 0.85,
+      "minimum_raw_residues": 26,
+      "terminal_trimming": false
+    },
+    "adapter_id": "raw_alignment_adapter_v1",
+    "adapter_version": "1.0.0",
+    "labels_accessed": false,
+    "model_coefficients_changed": false,
+    "sha256": "a606f0edda342471dc5e42d667d05506ac604c53cd221ecd8e1821edff6fd5fe",
+    "used_for_input": false
+  },
   "counts": {
     "input_error_rows": 0,
     "out_of_scope_rows": 1,
@@ -10,13 +25,22 @@
   },
   "exit_code": 0,
   "input": {
+    "accepted_column_schemas": [
+      [
+        "candidate_id",
+        "sequence"
+      ],
+      [
+        "candidate_id",
+        "aligned_sequence"
+      ]
+    ],
+    "expert_alignment_maximum_rows": 10000,
     "filename": "candidates.csv",
+    "input_mode": "provided_alignment",
     "maximum_bytes": 10000000,
     "maximum_rows": 10000,
-    "required_columns": [
-      "candidate_id",
-      "aligned_sequence"
-    ],
+    "raw_sequence_maximum_rows": 200,
     "sha256": "96e39e9116693c6b0217212a25e22894e2e17c389bed0ff3fc4e6da63f46c01f"
   },
   "model": {
@@ -43,7 +67,7 @@
         }
       }
     },
-    "software_version": "0.7.0"
+    "software_version": "0.8.0"
   },
   "objective": {
     "definition": "minimize the larger of predicted GLP-1R and GCGR log10(EC50 / 1 pM) values",
@@ -54,7 +78,15 @@
     "columns": [
       "input_row",
       "candidate_id",
+      "input_sequence",
+      "input_mode",
       "aligned_sequence",
+      "alignment_method",
+      "alignment_status",
+      "alignment_reference_ids",
+      "alignment_adapter_id",
+      "alignment_adapter_version",
+      "alignment_adapter_sha256",
       "status",
       "error_code",
       "error_message",
@@ -90,7 +122,7 @@
       "ranking_warning"
     ],
     "filename": "screened_dual.csv",
-    "sha256": "f8b5a861015f3323801213df537bebed5590e6485cee90c5d87f3a6284170655"
+    "sha256": "f88b856c8861837c07b5e71fde9dc32caae7ee3cc6bba6d33ceb71e22cffad5f"
   },
   "ranking_context": {
     "development_mae_log10": 1.0695780120593172,

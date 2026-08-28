@@ -41,6 +41,7 @@ REQUIRED_WHEEL_MEMBERS = (
     "incretinselect/notices/DATA_LICENSE.md",
     "incretinselect/notices/LICENSE",
     "incretinselect/resources/activity_schema.json",
+    "incretinselect/resources/raw_alignment_adapter.json",
     "incretinselect/resources/sources.json",
     "incretinselect/resources/structure_targets.csv",
     "incretinselect/web_assets/index.html",
@@ -66,15 +67,18 @@ REQUIRED_SDIST_PATHS = (
     "RELEASE_READINESS.md",
     "configs/activity_schema.json",
     "configs/cpu_sequence_model.json",
+    "configs/raw_alignment_adapter.json",
     "configs/structure_targets.csv",
     "data/derived/sequence_model_oof_predictions.csv",
     "data/manifests/sources.json",
     "docs/index.html",
+    "docs/assets/raw_alignment_adapter.json",
     "examples/candidate_screening/candidates.csv",
     "reports/CPU_SEQUENCE_MODEL.md",
     "scripts/verify_distribution.py",
     "src/incretinselect/__init__.py",
     "tests/test_product.py",
+    "tests/test_alignment_adapter.py",
 )
 
 GENERATED_SDIST_PATHS = frozenset(
@@ -401,6 +405,13 @@ def executable(environment: Path, name: str) -> Path:
 def main() -> int:
     args = parse_args()
     repository = Path(__file__).resolve().parents[1]
+    project_text = (repository / "pyproject.toml").read_text(encoding="utf-8")
+    version_match = re.search(
+        r'^version\s*=\s*"([^"]+)"', project_text, flags=re.MULTILINE
+    )
+    if version_match is None:
+        raise RuntimeError("pyproject.toml does not declare a project version")
+    project_version = version_match.group(1)
     clean_env = os.environ.copy()
     clean_env.pop("PYTHONPATH", None)
     clean_env["PYTHONNOUSERSITE"] = "1"
@@ -501,11 +512,11 @@ def main() -> int:
         screen = entry_points["incretin-screen"]
         web = entry_points["incretin-web"]
         if run([str(predict), "--version"], cwd=temp, env=clean_env).strip() != (
-            "incretin-predict 0.7.0"
+            f"incretin-predict {project_version}"
         ):
             raise RuntimeError("Installed prediction command reports the wrong version")
         if run([str(screen), "--version"], cwd=temp, env=clean_env).strip() != (
-            "incretin-screen 0.7.0"
+            f"incretin-screen {project_version}"
         ):
             raise RuntimeError("Installed screening command reports the wrong version")
 
@@ -576,6 +587,14 @@ def main() -> int:
             raise RuntimeError("Installed screening receipt lost the explicit objective")
         if screening_receipt.get("output", {}).get("sha256") != sha256(screening_output):
             raise RuntimeError("Installed screening receipt does not bind the output checksum")
+        screening_adapter = screening_receipt.get("alignment_adapter", {})
+        if (
+            screening_adapter.get("adapter_id") != "raw_alignment_adapter_v1"
+            or not re.fullmatch(r"[0-9a-f]{64}", str(screening_adapter.get("sha256", "")))
+            or screening_adapter.get("labels_accessed") is not False
+            or screening_adapter.get("model_coefficients_changed") is not False
+        ):
+            raise RuntimeError("Installed screening receipt lost raw-adapter provenance")
         screening_boundaries = screening_receipt.get("scientific_boundaries", {})
         if (
             screening_boundaries.get("p1_p15_outcomes_accessed") is not False
@@ -621,6 +640,8 @@ def main() -> int:
             "installed_product": {
                 "model_artifact_id": prediction["model"]["artifact_id"],
                 "model_artifact_sha256": artifact_sha256,
+                "alignment_adapter_id": screening_adapter["adapter_id"],
+                "alignment_adapter_sha256": screening_adapter["sha256"],
                 "prediction_schema_version": prediction["schema_version"],
                 "software_version": screening_receipt["model"]["software_version"],
                 "csv_rows": len(rows),
