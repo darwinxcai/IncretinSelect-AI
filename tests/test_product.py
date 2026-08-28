@@ -187,7 +187,7 @@ class ProductTests(unittest.TestCase):
         outside_csv = next(csv.DictReader(io.StringIO(format_csv(outside))))
         self.assertEqual(outside_csv["exploratory_ranking_enabled"], "false")
         self.assertIn("should not be used to rank", outside_csv["exploratory_ranking_exclusion_reason"])
-        self.assertEqual(outside_csv["software_version"], "0.8.0")
+        self.assertEqual(outside_csv["software_version"], "0.9.0")
         self.assertIn("no overall superiority", outside_csv["validation_warning"])
         outside_report = format_markdown(outside)
         self.assertIn("Do not use this output to rank experiments", outside_report)

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/darwinxcai/IncretinSelect-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/darwinxcai/IncretinSelect-AI/actions/workflows/ci.yml)
 [![Browser application](https://img.shields.io/badge/browser%20application-open-0b6b53)](https://darwinxcai.github.io/IncretinSelect-AI/)
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.12-345995)](https://github.com/darwinxcai/IncretinSelect-AI/actions)
+[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-345995)](https://github.com/darwinxcai/IncretinSelect-AI/actions)
 
 **[Open the browser application](https://darwinxcai.github.io/IncretinSelect-AI/)**
 · [Read the model report](reports/CPU_SEQUENCE_MODEL.md)
@@ -23,6 +23,19 @@ endpoint did not improve. In the locked retrospective P1–P15 external evaluati
 ridge had lower GCGR point error and higher pooled GLP-1R error. These mixed
 results do not establish overall superiority or support standalone candidate
 selection.
+
+## Try it in 30 seconds
+
+1. Open the [browser application](https://darwinxcai.github.io/IncretinSelect-AI/);
+   a compatible example sequence is already loaded.
+2. Select **Run prediction**.
+3. Read the result in this order: **predicted EC50**, **model applicability**, then
+   **comparison with the closest development sequence**.
+
+Lower predicted EC50 means greater predicted functional potency only in the source
+cell-assay context. The applicability gate determines whether the software permits
+exploratory comparison; it is not a confidence score. A numeric estimate is not a
+candidate recommendation. All computation remains in your browser.
 
 ## Results at a glance
 
@@ -97,6 +110,12 @@ sequence, including applicability and nearest-reference attribution. Browser bat
 behavior and exported fields are also checked against the Python implementation.
 The raw adapter round-trips all 125 label-free reference sequences, and explicit
 ambiguity, distance, gap, and no-truncation cases must match across both runtimes.
+Real-Chromium acceptance tests additionally exercise the complete single-prediction
+and batch-download workflows and scan the initial and rendered interfaces for WCAG
+2.1 A/AA and WCAG 2.2 AA accessibility violations.
+The Python suite records branch coverage and enforces a measured 70% floor as an
+initial regression ratchet; this is a maintenance signal, not evidence of scientific
+validity.
 
 ## Input requirements
 

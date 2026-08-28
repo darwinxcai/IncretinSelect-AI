@@ -1,0 +1,13 @@
+{
+  "name": "incretinselect-ai-browser-tests",
+  "private": true,
+  "version": "0.9.0",
+  "description": "Real-browser acceptance and accessibility tests for IncretinSelect-AI",
+  "scripts": {
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.62.1"
+  }
+}

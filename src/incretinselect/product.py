@@ -557,10 +557,10 @@ def _applicability(sequence: str, model: PortableModel) -> dict[str, Any]:
 def _direction(selectivity_log10: float) -> str:
     fold_ratio = 10.0**selectivity_log10
     if fold_ratio >= 3.0:
-        return "GLP-1R-favored"
+        return "Lower predicted EC50 at GLP-1R"
     if fold_ratio <= 1.0 / 3.0:
-        return "GCGR-favored"
-    return "Approximately balanced"
+        return "Lower predicted EC50 at GCGR"
+    return "Predicted EC50 values within 3-fold"
 
 
 def _predict_log10_values(sequence: str, model: PortableModel) -> np.ndarray:

@@ -49,7 +49,7 @@ def expected_assets(root: Path) -> tuple[bytes, bytes, bytes]:
         "local_file_import": True,
         "outbound_sequence_transmission": False,
         "schema_version": 1,
-        "software_version": "0.8.0",
+        "software_version": "0.9.0",
         "structure_inference": False,
     }
     rendered_manifest = json.dumps(manifest, indent=2, sort_keys=True).encode() + b"\n"

@@ -79,7 +79,7 @@ class ReleaseReadinessTests(unittest.TestCase):
             'if [ "${checked_out_sha}" != "${VALIDATED_SHA}" ]; then',
             'if [ "${current_default_sha}" != "${VALIDATED_SHA}" ]; then',
             "needs.manual_ci.result == 'success'",
-            'python-version: ["3.10", "3.12"]',
+            'python-version: ["3.10", "3.11", "3.12"]',
             "python -m ruff check .",
             "make test",
             "make product-smoke",

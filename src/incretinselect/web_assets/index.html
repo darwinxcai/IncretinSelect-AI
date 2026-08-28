@@ -55,19 +55,27 @@
       </div>
 
       <form id="prediction-form" novalidate>
+        <p class="quick-start"><strong>Quick start:</strong> a compatible example is
+          already loaded. Select <strong>Run prediction</strong>, then read the estimate
+          together with its applicability assessment.</p>
         <label for="sequence">Peptide sequence</label>
         <div class="ruler" aria-hidden="true">123456789012345678901234567890</div>
         <textarea id="sequence" name="sequence" rows="2" maxlength="256"
                   spellcheck="false" autocomplete="off"
                   aria-describedby="sequence-help sequence-count"></textarea>
         <div class="input-meta">
-          <p id="sequence-help">Enter 26–30 standard amino-acid residues. Raw sequences
-            shorter than 30 residues are mapped to the fixed model columns only when the
-            label-free reference panel gives one unambiguous local-analog alignment.
-            Expert users may instead provide all 30 columns with explicit <code>-</code> gaps.
-            The application never truncates residues.</p>
+          <p id="sequence-help">Enter one 26–30-residue sequence using the 20 standard
+            amino-acid letters. Close analogs are mapped to the model's 30 alignment
+            columns without trimming.</p>
           <p id="sequence-count" class="count">0 residues</p>
         </div>
+        <details class="input-details">
+          <summary>How automatic mapping works</summary>
+          <p>Automatic mapping is accepted only when all best-scoring reference-guided
+            mappings agree and the mapped sequence is at least 85% identical to the
+            reference panel. The 85% gate is a software scope rule, not a confidence
+            estimate. Use Expert mode only for a reviewed 30-column alignment.</p>
+        </details>
         <label class="expert-toggle" for="expert-aligned-mode">
           <input id="expert-aligned-mode" type="checkbox">
           <span><strong>Expert 30-column mode</strong><small>Use only when alignment
@@ -78,7 +86,8 @@
         <div class="file-import">
           <label for="fasta-file">Or import one FASTA or text file</label>
           <input id="fasta-file" type="file"
-                 accept=".fa,.fasta,.faa,.txt,text/plain">
+                 accept=".fa,.fasta,.faa,.txt,text/plain"
+                 aria-describedby="fasta-status">
           <p id="fasta-status" class="file-status" role="status">
             One sequence only; importing a file never sends it to a server.
           </p>
@@ -93,8 +102,9 @@
       <form id="batch-form" hidden novalidate>
         <div class="file-import prominent">
           <label for="batch-file">Candidate CSV</label>
-          <input id="batch-file" type="file" accept=".csv,text/csv">
-          <p class="file-status">Preferred columns:
+          <input id="batch-file" type="file" accept=".csv,text/csv"
+                 aria-describedby="batch-file-help batch-status">
+          <p id="batch-file-help" class="file-status">Preferred columns:
             <code>candidate_id,sequence</code> for raw 26–30-residue inputs. The legacy
             expert schema <code>candidate_id,aligned_sequence</code> remains supported.
             Maximum 200 raw-sequence or 500 expert-alignment candidates, and 2 MB.
@@ -102,13 +112,16 @@
           <button id="template-button" class="link-button" type="button">
             Download CSV template
           </button>
+          <button id="example-batch-button" class="link-button" type="button">
+            Use example candidates
+          </button>
         </div>
 
         <fieldset>
           <legend>Screening objective</legend>
           <p class="fieldset-help">Select a ranking objective. Lower predicted EC50
             ranks first; only inputs meeting the ≥0.85 identity and ≥26-residue criteria
-            are ordered.</p>
+            are ordered. Passing these gates does not establish prediction accuracy.</p>
           <div class="objective-grid">
             <label class="objective-card">
               <input type="radio" name="objective" value="glp1r">
@@ -120,7 +133,8 @@
             </label>
             <label class="objective-card">
               <input type="radio" name="objective" value="dual">
-              <span><strong>Both receptors</strong><small>Rank by the larger predicted EC50</small></span>
+              <span><strong>Both receptors (minimax)</strong><small>Minimize the
+                less-favorable predicted EC50; not evidence of dual agonism</small></span>
             </label>
           </div>
         </fieldset>
@@ -132,8 +146,11 @@
       </form>
 
       <details class="structure-note">
-        <summary>Input scope</summary>
-        <p>Structure files are not supported because this model uses sequence features only.</p>
+        <summary>Supported inputs and chemistry</summary>
+        <p>This sequence-only model accepts canonical 26–30-residue peptides. It cannot
+          represent Aib, lipidation, amidation, cyclization, stapling, D-amino acids, or
+          other noncanonical chemistry. Structure files are not supported because the
+          model uses no structural features.</p>
       </details>
 
       <div id="input-error" class="error-box" role="alert" hidden></div>
@@ -154,8 +171,9 @@
           <div><strong id="overview-profile"></strong><span>Predicted receptor profile</span></div>
           <div><strong id="overview-evidence"></strong><span>Validation evidence</span></div>
         </div>
-        <p class="reading-note">Read predicted functional potency and model applicability
-          together; neither establishes experimental performance.</p>
+        <p class="reading-note">Read in this order: predicted EC50 → model applicability
+          → closest-reference comparison. The applicability gate controls whether
+          exploratory comparison is allowed; it is not a probability or confidence score.</p>
         <h3>Model input</h3>
         <p id="alignment-summary" class="fine"></p>
         <p id="normalized-sequence" class="sequence-output"></p>
@@ -175,8 +193,11 @@
             <p class="metric-label">Predicted receptor profile</p>
             <p id="balance-value" class="metric-value"></p>
             <p id="balance-detail" class="metric-detail"></p>
+            <p class="metric-detail">The threefold profile boundary is descriptive,
+              not calibrated or experimentally validated.</p>
           </article>
         </div>
+        <p class="fine">Display values are rounded; downloads retain full numerical precision.</p>
         <p class="reading-note"><strong>Interpretation:</strong> lower predicted EC50
           indicates greater predicted functional potency in the source-assay context; it
           does not imply tighter binding or greater maximal response.</p>
@@ -229,7 +250,7 @@
         </div>
         <p class="fine">Positive values mean higher predicted EC50 for the query;
           negative values mean lower predicted EC50.</p>
-        <div id="comparison-table-wrap" class="table-wrap" tabindex="0"
+        <div id="comparison-table-wrap" class="table-wrap" role="region" tabindex="0"
              aria-label="Position-level model contributions">
           <table>
             <caption>Changed alignment positions and their exact model contributions</caption>
@@ -248,7 +269,7 @@
       </section>
 
       <section class="panel">
-        <h2>Benchmark performance</h2>
+        <h2>Population-level benchmark context</h2>
         <p>Average cross-validated errors across the 125 development peptides provide
           population-level context; they are not a
           confidence interval for this sequence.</p>
@@ -257,6 +278,9 @@
           <div><strong id="gcgr-error"></strong><span>GCGR geometric fold error</span></div>
           <div><strong id="balance-error"></strong><span>Balance geometric fold error</span></div>
         </div>
+        <p class="fine">Geometric fold error is 10 raised to the mean absolute log10
+          error. It summarizes the development benchmark and is not an error bound for
+          this sequence.</p>
         <p class="mixed-result"><strong>Locked retrospective P1–P15 evaluation:</strong>
           ridge had lower GCGR error but higher pooled GLP-1R error than 1-NN; the results
           did not support overall superiority.</p>
@@ -288,7 +312,8 @@
         <p class="reading-note"><strong>Interpretation:</strong> this is an exploratory
           model ordering for review, not an experimental recommendation. Downloads retain
           every row, the model checksum, and each exclusion reason.</p>
-        <div class="table-wrap" tabindex="0" aria-label="Batch screening preview">
+        <div class="table-wrap" role="region" tabindex="0"
+             aria-label="Batch screening preview">
           <table>
             <caption>Candidate screening preview</caption>
             <thead><tr>

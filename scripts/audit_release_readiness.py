@@ -13,7 +13,9 @@ from typing import Any
 
 REQUIRED_FILES = (
     ".github/workflows/ci.yml",
+    ".github/dependabot.yml",
     ".github/workflows/pages.yml",
+    ".github/workflows/release.yml",
     "CHANGELOG.md",
     "CITATION.cff",
     "configs/raw_alignment_adapter.json",
@@ -21,6 +23,7 @@ REQUIRED_FILES = (
     "PUBLISHING.md",
     "README.md",
     "RELEASE_READINESS.md",
+    "SECURITY.md",
     "docs/app.mjs",
     "docs/assets/incretin_ridge_v1.json",
     "docs/assets/raw_alignment_adapter.json",
@@ -29,6 +32,9 @@ REQUIRED_FILES = (
     "examples/candidate_screening/candidates.csv",
     "examples/candidate_screening/screened_dual.csv",
     "examples/candidate_screening/screening_receipt.json",
+    "package-lock.json",
+    "package.json",
+    "playwright.config.mjs",
     "reports/EXTERNAL_EVALUATION.md",
     "reports/PRODUCT_GUIDE.md",
     "reports/distribution_verification.json",
@@ -37,6 +43,7 @@ REQUIRED_FILES = (
     "scripts/audit_release_readiness.py",
     "scripts/verify_static_demo.py",
     "tests/test_alignment_adapter.py",
+    "tests/browser/application.spec.mjs",
 )
 FORBIDDEN_TRACKED_PATTERNS = (
     re.compile(r"^data/raw/(?!README\.md$)"),
@@ -57,6 +64,7 @@ MINIMUM_RELEASE_TESTS = 100
 RELEASE_WORKFLOW_FILES = (
     ".github/workflows/ci.yml",
     ".github/workflows/pages.yml",
+    ".github/workflows/release.yml",
 )
 PINNED_ACTION_SHA_PATTERN = re.compile(r"[0-9a-fA-F]{40}")
 WORKFLOW_USES_LINE_PATTERN = re.compile(
@@ -389,11 +397,13 @@ def audit_local(project_root: Path) -> list[dict[str, str]]:
     ci_contract = pages_permissions_scoped and all(
         token in workflow
         for token in (
-            'python-version: ["3.10", "3.12"]',
+            'python-version: ["3.10", "3.11", "3.12"]',
             "make test",
             "make product-smoke",
             "make static-demo",
             "make release-check",
+            "make coverage",
+            "make browser-acceptance",
         )
     )
 
@@ -461,7 +471,8 @@ def audit_local(project_root: Path) -> list[dict[str, str]]:
             "ci_contract",
             "pass" if ci_contract else "fail",
             (
-                "Python 3.10/3.12 CI runs tests, product smoke, static-demo parity, "
+                "Python 3.10/3.11/3.12 CI runs tests, measured coverage, product "
+                "smoke, static-demo parity, real-browser acceptance, accessibility, "
                 "and built-distribution verification; Pages write permissions are "
                 "scoped to deployment"
             ),

@@ -36,6 +36,7 @@ const ELEMENT_IDS = [
   "comparison-table-wrap",
   "comparison-tie-count",
   "example-button",
+  "example-batch-button",
   "expert-aligned-mode",
   "fasta-file",
   "fasta-status",

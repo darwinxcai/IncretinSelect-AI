@@ -1,6 +1,6 @@
 {
-  "as_of": "2026-08-28",
-  "decision": "PUBLIC_RELEASE_VERIFIED",
+  "as_of": null,
+  "decision": "LOCAL_RELEASE_READY_PUBLICATION_BLOCKED",
   "local_gates": [
     {
       "evidence": "all required release files present",
@@ -8,7 +8,7 @@
       "status": "pass"
     },
     {
-      "evidence": "pyproject=0.8.0; citation=0.8.0; changelog entry=True",
+      "evidence": "pyproject=0.9.0; citation=0.9.0; changelog entry=True",
       "name": "version_alignment",
       "status": "pass"
     },
@@ -33,17 +33,17 @@
       "status": "pass"
     },
     {
-      "evidence": "Python 3.10/3.12 CI runs tests, product smoke, static-demo parity, and built-distribution verification; Pages write permissions are scoped to deployment",
+      "evidence": "Python 3.10/3.11/3.12 CI runs tests, measured coverage, product smoke, static-demo parity, real-browser acceptance, accessibility, and built-distribution verification; Pages write permissions are scoped to deployment",
       "name": "ci_contract",
       "status": "pass"
     },
     {
-      "evidence": "12 official action uses are pinned to full 40-hex commit SHAs",
+      "evidence": "20 official action uses are pinned to full 40-hex commit SHAs",
       "name": "workflow_action_pinning",
       "status": "pass"
     },
     {
-      "evidence": "canonical-path-content-manifest-sha256-v1 covers 139 files: aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe",
+      "evidence": "canonical-path-content-manifest-sha256-v1 covers 146 files: f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7",
       "name": "release_payload_integrity",
       "status": "pass"
     }
@@ -52,27 +52,27 @@
   "project": "IncretinSelect-AI",
   "public_gates": [
     {
-      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI",
+      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7'",
       "name": "public_repository",
-      "status": "pass"
+      "status": "blocked"
     },
     {
-      "evidence": "https://darwinxcai.github.io/IncretinSelect-AI/",
+      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7'",
       "name": "public_browser_demo",
-      "status": "pass"
+      "status": "blocked"
     },
     {
-      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33197985085",
+      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7'",
       "name": "remote_ci",
-      "status": "pass"
+      "status": "blocked"
     },
     {
-      "evidence": "make release-check passed in a separately cloned public checkout",
+      "evidence": "publication receipt does not match the current source payload: recorded='aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe'; current='f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7'",
       "name": "fresh_public_clone",
-      "status": "pass"
+      "status": "blocked"
     }
   ],
-  "public_release_verified": true,
+  "public_release_verified": false,
   "release_payload": {
     "excluded_paths": [
       "PUBLISHING.md",
@@ -81,10 +81,10 @@
       "reports/publication_receipt.json",
       "reports/release_readiness.json"
     ],
-    "file_count": 139,
+    "file_count": 146,
     "hash_contract": "canonical-path-content-manifest-sha256-v1",
     "schema_version": 1,
-    "sha256": "aa000a9a7f6f18b9ad0ab7d6fa17e17710de0bc7ae3ade4d55fc3ea8c14d66fe"
+    "sha256": "f9f832ae327a361675cb1ffc6d9326599bd33cf67a670ed09d369ba2654ac7a7"
   },
   "schema_version": 1,
   "scientific_scope": {
@@ -94,5 +94,5 @@
     "p1_p15_reused_for_tuning": false,
     "structure_inference_claim": false
   },
-  "version": "0.8.0"
+  "version": "0.9.0"
 }

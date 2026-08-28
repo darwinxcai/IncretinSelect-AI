@@ -445,6 +445,16 @@ async function initialize() {
   element("template-button").addEventListener("click", () => {
     downloadText("incretinselect_candidates_template.csv", BATCH_TEMPLATE, "text/csv");
   });
+  element("example-batch-button").addEventListener("click", () => {
+    invalidateBatchResult();
+    batchFile.value = "";
+    batchText = BATCH_TEMPLATE;
+    batchBytes = new TextEncoder().encode(BATCH_TEMPLATE);
+    batchFilename = "example_candidates.csv";
+    setText("batch-status", "Loaded 2 example candidates. Choose an objective to continue.");
+    clearError();
+    updateBatchButton();
+  });
 
   let verified;
   try {
