@@ -1,9 +1,8 @@
 # Project status
 
 **Updated:** 2026-08-28
-**Local release candidate:** 0.8.0
-**Latest verified public release:** 0.7.0
-**State:** v0.8.0 local gates passed; public verification pending
+**Current verified public release:** 0.8.0
+**State:** released; source, CI, Pages, and fresh-clone checks passed
 
 IncretinSelect-AI is research software for estimating GLP-1R and GCGR cell-based
 cAMP EC50 from compatible incretin-like peptide sequences. Version 0.8.0 adds a
@@ -12,18 +11,21 @@ the fitted 30-column model unchanged. It supports single-sequence review and gua
 batch ranking for laboratory follow-up. It is not a binding-affinity, efficacy,
 safety, or clinical-outcome predictor.
 
-## Latest verified public release
+## Verified public release
 
 - Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
 - Browser application: <https://darwinxcai.github.io/IncretinSelect-AI/>
-- Verified source commit: `517f97c1e31bc0c9fea5315184bde651bb6b671a`
-- CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083830513>
-- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083916679>
+- Verified source commit: `1e0e31b66d0ca417646e8bf42101b1bd243d3288`
+- Verified source tree: `9eed525d88a3e375f2e7aa253e85614ec0b15fab`
+- CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33197985085>
+- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33198064933>
 
-The v0.7 public source tree matches its audited local release. Python 3.10 and 3.12
-both passed Ruff, 100 tests, product smoke tests, browser/Python parity, wheel
+The v0.8 public source tree matches its audited local release. Python 3.10 and 3.12
+both passed Ruff, 113 tests, product smoke tests, browser/Python parity, wheel
 installation, deterministic source packaging, and the release-readiness audit. A
-fresh public clone passed the same release checks and remained clean.
+fresh public clone passed the same release checks and remained clean. All 125
+label-free development references round-trip through the raw-sequence adapter, and
+11 accepted/rejected adapter cases match between Python and the browser.
 
 ## Product capabilities
 
@@ -60,11 +62,9 @@ to future tuning.
 
 ## Next work
 
-1. Publish v0.8.0, require green Python 3.10/3.12 CI and Pages deployment, and
-   repeat the release checks from a fresh public clone.
-2. Collect user feedback on mapping failures, CSV exclusions, result wording, and
+1. Collect user feedback on mapping failures, CSV exclusions, result wording, and
    downloaded receipts before adding model complexity.
-3. Add structural inputs only if a preregistered structure-aware model improves on
+2. Add structural inputs only if a preregistered structure-aware model improves on
    this sequence baseline beyond seed variation.
 
 No peptide–receptor structure prediction, prospective experimental result, or overall

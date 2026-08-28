@@ -7,11 +7,12 @@ The audit separates two questions:
 2. **Is the public release verified?** The exact source payload must also have green
    CI, a successful Pages deployment, and a passing check from a fresh public clone.
 
-Version 0.8.0 satisfies the local criteria. Public verification is intentionally
-blocked until its exact source commit has green Python 3.10/3.12 CI, a successful
-Pages deployment, and a passing fresh-clone release check. Version 0.7.0 is the
-latest release satisfying both criteria; its verified CI run is
-<https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33083830513>.
+Version 0.8.0 satisfies both criteria. Its exact public source tree passed Python
+3.10/3.12 CI, Pages deployment, and the complete release check from a fresh public
+clone. The verified CI run is
+<https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33197985085> and the
+verified deployment is
+<https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33198064933>.
 
 ## Local audit
 
