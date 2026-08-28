@@ -1,42 +1,42 @@
 # Project status
 
 **Updated:** 2026-08-28  
-**Current public release:** 0.9.0  
-**Next patch:** 0.9.1 release-assurance candidate
+**Current verified public release:** 0.9.1  
+**State:** source, CI, browser, Pages, release assets, and clean-clone checks passed
 
 IncretinSelect-AI is research software for estimating GLP-1R and GCGR cell-based
 cAMP EC50 from compatible incretin-like peptide sequences. It supports guarded
 single-sequence review and batch ordering for laboratory follow-up. It is not a
 binding-affinity, efficacy, safety, or clinical-outcome predictor.
 
-Version 0.9.0 strengthens product and release assurance without refitting the model
+Version 0.9 strengthens product and release assurance without refitting the model
 or changing its 26–30-residue local-analog scope. It adds Python 3.11 CI, measured
 branch coverage, real-Chromium acceptance/accessibility testing, clearer first-use
 and interpretation copy, versioned release assets, and security/dependency policy.
 Version 0.9.1 closes the remaining release-provenance gap by publishing the exact
 deterministic wheel and source archive exercised by distribution verification.
 
-## Public evidence for v0.9.0
+## Verified public release
 
 - Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
 - Browser application: <https://darwinxcai.github.io/IncretinSelect-AI/>
-- Source commit: `d8fea1b6df862729a42bd19a997a5be6ca90f01f`
-- Source tree: `7843817e055cfaf54a6ac11a103d57aac195b1ee`
-- CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206129159>
-- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206238008>
-- Release workflow: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206238005>
-- GitHub Release: <https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v0.9.0>
+- Source commit: `366accfea5178bbabccddf9f1791c4a392f05764`
+- Source tree: `b47cbea88ba57b460b721e78fcf4c352bc9795e0`
+- CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33207902327>
+- Pages deployment: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33208008086>
+- Release workflow: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33208008122>
+- GitHub Release: <https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v0.9.1>
 
-Python 3.10, 3.11, and 3.12 each passed 113 tests. Python 3.12 measured 72%
+Python 3.10, 3.11, and 3.12 each passed 115 tests. Python 3.12 measured 72%
 branch-mode coverage against a 70% floor, and four real-Chromium
-acceptance/accessibility tests passed. A clean clone of the exact v0.9.0 tag passed
+acceptance/accessibility tests passed. A clean clone of the exact v0.9.1 tag passed
 Ruff, the complete Python suite, product smoke, static parity, and distribution
 verification without changing tracked files.
 
-The v0.9.0 release assets have published SHA-256 digests, but their wheel bytes were
-rebuilt after the verifier completed and do not equal its recorded deterministic
-wheel. The strengthened public audit records this rather than overstating the
-release. Version 0.9.1 makes exact uploaded-artifact equality mandatory.
+That clean clone reproduced the published wheel and source archive byte-for-byte.
+The strengthened public audit requires this equality, the three-version matrix, the
+version tag, all three release assets, Pages, and the clean-clone evidence before it
+can report `PUBLIC_RELEASE_VERIFIED`.
 
 ## Product capabilities
 
