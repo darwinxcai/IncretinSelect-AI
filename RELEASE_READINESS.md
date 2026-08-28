@@ -10,16 +10,14 @@ The audit separates two questions:
    wheel and source archive are the exact bytes exercised by distribution
    verification.
 
-Version 0.9.0 is publicly released and its source passed CI, Pages deployment, the
-release workflow, and a clean-clone check. The strengthened audit deliberately does
-not mark it fully public-release verified because the workflow rebuilt the upload
-assets after verification. Version 0.9.1 changes the workflow to publish the exact
-verified artifacts and makes that equality a required receipt gate.
+Version 0.9.1 satisfies both criteria. Its source passed CI, Pages deployment, the
+release workflow, and a clean-clone check; that clean clone reproduced wheel and
+source-archive SHA-256 digests identical to the published assets.
 
-- v0.9.0 CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206129159>
-- v0.9.0 Pages: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206238008>
-- v0.9.0 release workflow: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206238005>
-- v0.9.0 Release: <https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v0.9.0>
+- v0.9.1 CI: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33207902327>
+- v0.9.1 Pages: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33208008086>
+- v0.9.1 release workflow: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33208008122>
+- v0.9.1 Release: <https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v0.9.1>
 
 ## Local audit
 

@@ -1,20 +1,19 @@
 # Publishing and verification
 
-Version 0.9.0 is the current public release. Its exact source passed the
+Version 0.9.1 is the current verified public release. Its exact source passed the
 three-version CI matrix, real-browser acceptance/accessibility tests, Pages
-deployment, and a clean public-clone check. The release assets are checksum-bound,
-but the v0.9.0 workflow rebuilt them after distribution verification; therefore the
-strengthened public audit does not claim that those uploaded bytes are the exact
-verified bytes. Version 0.9.1 is a release-assurance patch that closes this gap.
+deployment, versioned release workflow, and a clean public-clone check. The
+published wheel and source archive are the exact deterministic bytes exercised by
+distribution verification.
 
 - Repository: <https://github.com/darwinxcai/IncretinSelect-AI>
 - Browser application: <https://darwinxcai.github.io/IncretinSelect-AI/>
-- v0.9.0 source commit: `d8fea1b6df862729a42bd19a997a5be6ca90f01f`
-- v0.9.0 source tree: `7843817e055cfaf54a6ac11a103d57aac195b1ee`
-- CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206129159>
-- Pages run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206238008>
-- Release workflow: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33206238005>
-- GitHub Release: <https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v0.9.0>
+- v0.9.1 source commit: `366accfea5178bbabccddf9f1791c4a392f05764`
+- v0.9.1 source tree: `b47cbea88ba57b460b721e78fcf4c352bc9795e0`
+- CI run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33207902327>
+- Pages run: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33208008086>
+- Release workflow: <https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33208008122>
+- GitHub Release: <https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v0.9.1>
 
 ## Release procedure
 
@@ -48,7 +47,7 @@ retrospective test with mixed results and must not be reused for model selection
 Raw source workbooks and the label-bearing holdout mirror are not part of the public
 release.
 
-Versions 0.9.0 and 0.9.1 change usability, testing, and release assurance. They do
+The 0.9 release series changes usability, testing, and release assurance. It does
 not refit the frozen model or adapter, access P1–P15 outcomes, or broaden the
 26–30-residue scope.
 

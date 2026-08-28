@@ -1,6 +1,6 @@
 {
   "as_of": "2026-08-28",
-  "decision": "LOCAL_RELEASE_READY_PUBLICATION_BLOCKED",
+  "decision": "PUBLIC_RELEASE_VERIFIED",
   "local_gates": [
     {
       "evidence": "all required release files present",
@@ -52,32 +52,32 @@
   "project": "IncretinSelect-AI",
   "public_gates": [
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'; current='84e63dbfc4a3e89d9bd4cace4133cacac3f470a7122227d7036993d81ccce183'",
+      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI",
       "name": "public_repository",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'; current='84e63dbfc4a3e89d9bd4cace4133cacac3f470a7122227d7036993d81ccce183'",
+      "evidence": "https://darwinxcai.github.io/IncretinSelect-AI/",
       "name": "public_browser_demo",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'; current='84e63dbfc4a3e89d9bd4cace4133cacac3f470a7122227d7036993d81ccce183'",
+      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI/actions/runs/33207902327",
       "name": "remote_ci",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'; current='84e63dbfc4a3e89d9bd4cace4133cacac3f470a7122227d7036993d81ccce183'",
+      "evidence": "115 tests, Ruff, product smoke, distribution, and 12 browser parity cases passed in a clean public clone",
       "name": "fresh_public_clone",
-      "status": "blocked"
+      "status": "pass"
     },
     {
-      "evidence": "publication receipt does not match the current source payload: recorded='86274c5e7e1617a56436f36513ab1b36ab0e9c4fa17605e41bee093dbc3ba5b3'; current='84e63dbfc4a3e89d9bd4cace4133cacac3f470a7122227d7036993d81ccce183'",
+      "evidence": "https://github.com/darwinxcai/IncretinSelect-AI/releases/tag/v0.9.1",
       "name": "versioned_release",
-      "status": "blocked"
+      "status": "pass"
     }
   ],
-  "public_release_verified": false,
+  "public_release_verified": true,
   "release_payload": {
     "excluded_paths": [
       "PUBLISHING.md",
