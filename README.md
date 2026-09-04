@@ -5,6 +5,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-345995)](https://github.com/darwinxcai/IncretinSelect-AI/actions)
 
 **[Open the browser application](https://darwinxcai.github.io/IncretinSelect-AI/)**
+· [Read the current project state](PROJECT_STATE.md)
 · [Read the model report](reports/CPU_SEQUENCE_MODEL.md)
 · [Read the external evaluation](reports/EXTERNAL_EVALUATION.md)
 
