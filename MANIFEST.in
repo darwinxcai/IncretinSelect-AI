@@ -13,6 +13,7 @@ include DATA_LICENSE.md
 include LICENSE
 include MANIFEST.in
 include Makefile
+include PROJECT_STATE.md
 include PUBLISHING.md
 include README.md
 include RELEASE_READINESS.md
