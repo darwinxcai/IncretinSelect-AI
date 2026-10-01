@@ -23,7 +23,7 @@ Documentation = "https://github.com/darwinxcai/IncretinSelect-AI#readme"
 data = ["openpyxl>=3.1,<4"]
 plot = ["matplotlib>=3.8,<4"]
 dev = [
-  "build==1.6.0",
+  "build==1.6.1",
   "coverage==7.15.4",
   "matplotlib>=3.8,<4",
   "openpyxl>=3.1,<4",
